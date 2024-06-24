@@ -32,6 +32,7 @@ jspm_packages/
 .cache
 /test-reports/
 junit.xml
+!/jest.config.json
 /coverage/
 !/.github/workflows/build.yml
 !/.mergify.yml
