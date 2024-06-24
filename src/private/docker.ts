@@ -52,11 +52,9 @@ export interface DockerCacheOption {
 }
 
 export class Docker {
-
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly logger?: Logger) {
-  }
+  constructor(private readonly logger?: Logger) {}
 
   /**
    * Whether an image with the given tag exists
@@ -97,18 +95,29 @@ export class Docker {
   public async build(options: BuildOptions) {
     const buildCommand = [
       'build',
-      ...flatten(Object.entries(options.buildArgs || {}).map(([k, v]) => ['--build-arg', `${k}=${v}`])),
-      ...flatten(Object.entries(options.buildSecrets || {}).map(([k, v]) => ['--secret', `id=${k},${v}`])),
-      ...options.buildSsh ? ['--ssh', options.buildSsh] : [],
-      '--tag', options.tag,
-      ...options.target ? ['--target', options.target] : [],
-      ...options.file ? ['--file', options.file] : [],
-      ...options.networkMode ? ['--network', options.networkMode] : [],
-      ...options.platform ? ['--platform', options.platform] : [],
-      ...options.outputs ? options.outputs.map(output => [`--output=${output}`]) : [],
-      ...options.cacheFrom ? [...options.cacheFrom.map(cacheFrom => ['--cache-from', this.cacheOptionToFlag(cacheFrom)]).flat()] : [],
-      ...options.cacheTo ? ['--cache-to', this.cacheOptionToFlag(options.cacheTo)] : [],
-      ...options.cacheDisabled ? ['--no-cache'] : [],
+      ...flatten(
+        Object.entries(options.buildArgs || {}).map(([k, v]) => ['--build-arg', `${k}=${v}`])
+      ),
+      ...flatten(
+        Object.entries(options.buildSecrets || {}).map(([k, v]) => ['--secret', `id=${k},${v}`])
+      ),
+      ...(options.buildSsh ? ['--ssh', options.buildSsh] : []),
+      '--tag',
+      options.tag,
+      ...(options.target ? ['--target', options.target] : []),
+      ...(options.file ? ['--file', options.file] : []),
+      ...(options.networkMode ? ['--network', options.networkMode] : []),
+      ...(options.platform ? ['--platform', options.platform] : []),
+      ...(options.outputs ? options.outputs.map((output) => [`--output=${output}`]) : []),
+      ...(options.cacheFrom
+        ? [
+            ...options.cacheFrom
+              .map((cacheFrom) => ['--cache-from', this.cacheOptionToFlag(cacheFrom)])
+              .flat(),
+          ]
+        : []),
+      ...(options.cacheTo ? ['--cache-to', this.cacheOptionToFlag(options.cacheTo)] : []),
+      ...(options.cacheDisabled ? ['--no-cache'] : []),
       '.',
     ];
     await this.execute(buildCommand, {
@@ -124,17 +133,17 @@ export class Docker {
     const credentials = await obtainEcrCredentials(ecr);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
-    await this.execute(['login',
-      '--username', credentials.username,
-      '--password-stdin',
-      credentials.endpoint], {
-      input: credentials.password,
+    await this.execute(
+      ['login', '--username', credentials.username, '--password-stdin', credentials.endpoint],
+      {
+        input: credentials.password,
 
-      // Need to quiet otherwise Docker will complain
-      // 'WARNING! Your password will be stored unencrypted'
-      // doesn't really matter since it's a token.
-      quiet: true,
-    });
+        // Need to quiet otherwise Docker will complain
+        // 'WARNING! Your password will be stored unencrypted'
+        // doesn't really matter since it's a token.
+        quiet: true,
+      }
+    );
   }
 
   public async tag(sourceTag: string, targetTag: string) {
@@ -156,7 +165,9 @@ export class Docker {
    */
   public configureCdkCredentials(): boolean {
     const config = cdkCredentialsConfig();
-    if (!config) { return false; }
+    if (!config) {
+      return false;
+    }
 
     this.configDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdkDockerConfig'));
 
@@ -165,7 +176,9 @@ export class Docker {
       map[domain] = 'cdk-assets'; // Use docker-credential-cdk-assets for this domain
       return map;
     }, {});
-    fs.writeFileSync(path.join(this.configDir, 'config.json'), JSON.stringify({ credHelpers }), { encoding: 'utf-8' });
+    fs.writeFileSync(path.join(this.configDir, 'config.json'), JSON.stringify({ credHelpers }), {
+      encoding: 'utf-8',
+    });
 
     return true;
   }
@@ -196,7 +209,9 @@ export class Docker {
       });
     } catch (e: any) {
       if (e.code === 'ENOENT') {
-        throw new Error('Unable to execute \'docker\' in order to build a container asset. Please install \'docker\' and try again.');
+        throw new Error(
+          "Unable to execute 'docker' in order to build a container asset. Please install 'docker' and try again."
+        );
       }
       throw e;
     }
@@ -205,7 +220,11 @@ export class Docker {
   private cacheOptionToFlag(option: DockerCacheOption): string {
     let flag = `type=${option.type}`;
     if (option.params) {
-      flag += ',' + Object.entries(option.params).map(([k, v]) => `${k}=${v}`).join(',');
+      flag +=
+        ',' +
+        Object.entries(option.params)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(',');
     }
     return flag;
   }

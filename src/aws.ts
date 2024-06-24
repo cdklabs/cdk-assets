@@ -115,7 +115,11 @@ export class DefaultAwsClient implements IAws {
     let credentials;
 
     if (options.assumeRoleArn) {
-      credentials = await this.assumeRole(options.region, options.assumeRoleArn, options.assumeRoleExternalId);
+      credentials = await this.assumeRole(
+        options.region,
+        options.assumeRoleArn,
+        options.assumeRoleExternalId
+      );
     }
 
     return {
@@ -133,7 +137,11 @@ export class DefaultAwsClient implements IAws {
    * It needs an explicit configuration of `masterCredentials`, we need to put
    * a `DefaultCredentialProverChain()` in there but that is not possible.
    */
-  private async assumeRole(region: string | undefined, roleArn: string, externalId?: string): Promise<AWS.Credentials> {
+  private async assumeRole(
+    region: string | undefined,
+    roleArn: string,
+    externalId?: string
+  ): Promise<AWS.Credentials> {
     return new this.AWS.ChainableTemporaryCredentials({
       params: {
         RoleArn: roleArn,
@@ -160,4 +168,3 @@ function safeUsername() {
     return 'noname';
   }
 }
-

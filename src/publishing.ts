@@ -91,7 +91,10 @@ export class AssetPublishing implements IPublishProgress {
   private readonly publishAssets: boolean;
   private readonly handlerCache = new Map<IManifestEntry, IAssetHandler>();
 
-  constructor(private readonly manifest: AssetManifest, private readonly options: AssetPublishingOptions) {
+  constructor(
+    private readonly manifest: AssetManifest,
+    private readonly options: AssetPublishingOptions
+  ) {
     this.assets = manifest.entries;
     this.totalOperations = this.assets.length;
     this.publishInParallel = options.publishInParallel ?? false;
@@ -101,8 +104,12 @@ export class AssetPublishing implements IPublishProgress {
     const self = this;
     this.handlerHost = {
       aws: this.options.aws,
-      get aborted() { return self.aborted; },
-      emitMessage(t, m) { self.progressEvent(t, m); },
+      get aborted() {
+        return self.aborted;
+      },
+      emitMessage(t, m) {
+        self.progressEvent(t, m);
+      },
       dockerFactory: new DockerFactory(),
     };
   }
@@ -115,14 +122,14 @@ export class AssetPublishing implements IPublishProgress {
       await Promise.all(this.assets.map(async (asset) => this.publishAsset(asset)));
     } else {
       for (const asset of this.assets) {
-        if (!await this.publishAsset(asset)) {
+        if (!(await this.publishAsset(asset))) {
           break;
         }
       }
     }
 
     if ((this.options.throwOnError ?? true) && this.failures.length > 0) {
-      throw new Error(`Error publishing: ${this.failures.map(e => e.error.message)}`);
+      throw new Error(`Error publishing: ${this.failures.map((e) => e.error.message)}`);
     }
   }
 
@@ -131,7 +138,9 @@ export class AssetPublishing implements IPublishProgress {
    */
   public async buildEntry(asset: IManifestEntry) {
     try {
-      if (this.progressEvent(EventType.START, `Building ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.START, `Building ${asset.id}`)) {
+        return false;
+      }
 
       const handler = this.assetHandler(asset);
       await handler.build();
@@ -141,11 +150,15 @@ export class AssetPublishing implements IPublishProgress {
       }
 
       this.completedOperations++;
-      if (this.progressEvent(EventType.SUCCESS, `Built ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.SUCCESS, `Built ${asset.id}`)) {
+        return false;
+      }
     } catch (e: any) {
       this.failures.push({ asset, error: e });
       this.completedOperations++;
-      if (this.progressEvent(EventType.FAIL, e.message)) { return false; }
+      if (this.progressEvent(EventType.FAIL, e.message)) {
+        return false;
+      }
     }
 
     return true;
@@ -156,7 +169,9 @@ export class AssetPublishing implements IPublishProgress {
    */
   public async publishEntry(asset: IManifestEntry) {
     try {
-      if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) {
+        return false;
+      }
 
       const handler = this.assetHandler(asset);
       await handler.publish();
@@ -166,11 +181,15 @@ export class AssetPublishing implements IPublishProgress {
       }
 
       this.completedOperations++;
-      if (this.progressEvent(EventType.SUCCESS, `Published ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.SUCCESS, `Published ${asset.id}`)) {
+        return false;
+      }
     } catch (e: any) {
       this.failures.push({ asset, error: e });
       this.completedOperations++;
-      if (this.progressEvent(EventType.FAIL, e.message)) { return false; }
+      if (this.progressEvent(EventType.FAIL, e.message)) {
+        return false;
+      }
     }
 
     return true;
@@ -191,7 +210,9 @@ export class AssetPublishing implements IPublishProgress {
    */
   private async publishAsset(asset: IManifestEntry) {
     try {
-      if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) {
+        return false;
+      }
 
       const handler = this.assetHandler(asset);
 
@@ -208,18 +229,24 @@ export class AssetPublishing implements IPublishProgress {
       }
 
       this.completedOperations++;
-      if (this.progressEvent(EventType.SUCCESS, `Published ${asset.id}`)) { return false; }
+      if (this.progressEvent(EventType.SUCCESS, `Published ${asset.id}`)) {
+        return false;
+      }
     } catch (e: any) {
       this.failures.push({ asset, error: e });
       this.completedOperations++;
-      if (this.progressEvent(EventType.FAIL, e.message)) { return false; }
+      if (this.progressEvent(EventType.FAIL, e.message)) {
+        return false;
+      }
     }
 
     return true;
   }
 
   public get percentComplete() {
-    if (this.totalOperations === 0) { return 100; }
+    if (this.totalOperations === 0) {
+      return 100;
+    }
     return Math.floor((this.completedOperations / this.totalOperations) * 100);
   }
 
@@ -238,7 +265,9 @@ export class AssetPublishing implements IPublishProgress {
    */
   private progressEvent(event: EventType, message: string): boolean {
     this.message = message;
-    if (this.options.progressListener) { this.options.progressListener.onPublishEvent(event, this); }
+    if (this.options.progressListener) {
+      this.options.progressListener.onPublishEvent(event, this);
+    }
     return this.aborted;
   }
 

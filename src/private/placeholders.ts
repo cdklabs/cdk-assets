@@ -7,7 +7,10 @@ import { IAws } from '../aws';
  * Duplicated between cdk-assets and aws-cdk CLI because we don't have a good single place to put it
  * (they're nominally independent tools).
  */
-export async function replaceAwsPlaceholders<A extends { region?: string }>(object: A, aws: IAws): Promise<A> {
+export async function replaceAwsPlaceholders<A extends { region?: string }>(
+  object: A,
+  aws: IAws
+): Promise<A> {
   let partition = async () => {
     const p = await aws.discoverPartition();
     partition = () => Promise.resolve(p);

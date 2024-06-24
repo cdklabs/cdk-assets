@@ -1,18 +1,19 @@
 import { Docker } from '../../lib/private/docker';
 import { ShellOptions, ProcessFailedError } from '../../lib/private/shell';
 
-type ShellExecuteMock = jest.SpyInstance<ReturnType<Docker['execute']>, Parameters<Docker['execute']>>;
+type ShellExecuteMock = jest.SpyInstance<
+  ReturnType<Docker['execute']>,
+  Parameters<Docker['execute']>
+>;
 
 describe('Docker', () => {
   describe('exists', () => {
     let docker: Docker;
 
-    const makeShellExecuteMock = (
-      fn: (params: string[]) => void,
-    ): ShellExecuteMock =>
-      jest.spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute').mockImplementation(
-        async (params: string[], _options?: ShellOptions) => fn(params),
-      );
+    const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
+      jest
+        .spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute')
+        .mockImplementation(async (params: string[], _options?: ShellOptions) => fn(params));
 
     afterEach(() => {
       jest.restoreAllMocks();
@@ -42,14 +43,14 @@ describe('Docker', () => {
     test('throws when the error is a shell failure but the exit code is unrecognized', async () => {
       makeShellExecuteMock(() => {
         throw new (class extends Error implements ProcessFailedError {
-          public readonly code = 'PROCESS_FAILED'
-          public readonly exitCode = 47
-          public readonly signal = null
+          public readonly code = 'PROCESS_FAILED';
+          public readonly exitCode = 47;
+          public readonly signal = null;
 
           constructor() {
             super('foo');
           }
-        });
+        })();
       });
 
       await expect(docker.exists('foo')).rejects.toThrow();
@@ -58,14 +59,14 @@ describe('Docker', () => {
     test('returns false when the error is a shell failure and the exit code is 1 (Docker)', async () => {
       makeShellExecuteMock(() => {
         throw new (class extends Error implements ProcessFailedError {
-          public readonly code = 'PROCESS_FAILED'
-          public readonly exitCode = 1
-          public readonly signal = null
+          public readonly code = 'PROCESS_FAILED';
+          public readonly exitCode = 1;
+          public readonly signal = null;
 
           constructor() {
             super('foo');
           }
-        });
+        })();
       });
 
       const imageExists = await docker.exists('foo');
@@ -76,14 +77,14 @@ describe('Docker', () => {
     test('returns false when the error is a shell failure and the exit code is 125 (Podman)', async () => {
       makeShellExecuteMock(() => {
         throw new (class extends Error implements ProcessFailedError {
-          public readonly code = 'PROCESS_FAILED'
-          public readonly exitCode = 125
-          public readonly signal = null
+          public readonly code = 'PROCESS_FAILED';
+          public readonly exitCode = 125;
+          public readonly signal = null;
 
           constructor() {
             super('foo');
           }
-        });
+        })();
       });
 
       const imageExists = await docker.exists('foo');

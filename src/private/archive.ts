@@ -8,7 +8,11 @@ const archiver = require('archiver');
 
 type Logger = (x: string) => void;
 
-export async function zipDirectory(directory: string, outputFile: string, logger: Logger): Promise<void> {
+export async function zipDirectory(
+  directory: string,
+  outputFile: string,
+  logger: Logger
+): Promise<void> {
   // We write to a temporary file and rename at the last moment. This is so that if we are
   // interrupted during this process, we don't leave a half-finished file in the target location.
   const temporaryOutputFile = `${outputFile}.${randomString()}._tmp`;
@@ -84,9 +88,11 @@ async function moveIntoPlace(source: string, target: string, logger: Logger) {
 }
 
 function sleep(ms: number) {
-  return new Promise(ok => setTimeout(ok, ms));
+  return new Promise((ok) => setTimeout(ok, ms));
 }
 
 function randomString() {
-  return Math.random().toString(36).replace(/[^a-z0-9]+/g, '');
+  return Math.random()
+    .toString(36)
+    .replace(/[^a-z0-9]+/g, '');
 }

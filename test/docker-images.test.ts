@@ -12,7 +12,7 @@ let aws: ReturnType<typeof mockAws>;
 const absoluteDockerPath = '/simple/cdk.out/dockerdir';
 beforeEach(() => {
   jest.resetAllMocks();
-  delete(process.env.CDK_DOCKER);
+  delete process.env.CDK_DOCKER;
 
   // By default, assume no externally-configured credentials.
   jest.spyOn(dockercreds, 'cdkCredentialsConfig').mockReturnValue(undefined);
@@ -192,7 +192,10 @@ beforeEach(() => {
         theAsset: {
           source: {
             directory: 'dockerdir',
-            cacheTo: { type: 'registry', params: { ref: 'cache:main', mode: 'max', compression: 'zstd' } },
+            cacheTo: {
+              type: 'registry',
+              params: { ref: 'cache:main', mode: 'max', compression: 'zstd' },
+            },
           },
           destinations: {
             theDestination: {
@@ -235,14 +238,19 @@ afterEach(() => {
 });
 
 test('pass destination properties to AWS client', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, throwOnError: false });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
 
   await pub.publish();
 
-  expect(aws.ecrClient).toHaveBeenCalledWith(expect.objectContaining({
-    region: 'us-north-50',
-    assumeRoleArn: 'arn:aws:role',
-  }));
+  expect(aws.ecrClient).toHaveBeenCalledWith(
+    expect.objectContaining({
+      region: 'us-north-50',
+      assumeRoleArn: 'arn:aws:role',
+    })
+  );
 });
 
 describe('with a complete manifest', () => {
@@ -252,24 +260,33 @@ describe('with a complete manifest', () => {
   });
 
   test('Do nothing if docker image already exists', async () => {
-    aws.mockEcr.describeImages = mockedApiResult({ /* No error == image exists */ });
+    aws.mockEcr.describeImages = mockedApiResult({
+      /* No error == image exists */
+    });
 
     await pub.publish();
 
-    expect(aws.mockEcr.describeImages).toHaveBeenCalledWith(expect.objectContaining({
-      imageIds: [{ imageTag: 'abcdef' }],
-      repositoryName: 'repo',
-    }));
+    expect(aws.mockEcr.describeImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        imageIds: [{ imageTag: 'abcdef' }],
+        repositoryName: 'repo',
+      })
+    );
   });
 
   test('Displays an error if the ECR repository cannot be found', async () => {
-    aws.mockEcr.describeImages = mockedApiFailure('RepositoryNotFoundException', 'Repository not Found');
+    aws.mockEcr.describeImages = mockedApiFailure(
+      'RepositoryNotFoundException',
+      'Repository not Found'
+    );
 
     await expect(pub.publish()).rejects.toThrow('Error publishing: Repository not Found');
   });
 
   test('successful run does not need to query account ID', async () => {
-    aws.mockEcr.describeImages = mockedApiResult({ /* No error == image exists */ });
+    aws.mockEcr.describeImages = mockedApiResult({
+      /* No error == image exists */
+    });
     await pub.publish();
     expect(aws.discoverCurrentAccount).not.toHaveBeenCalled();
   });
@@ -283,10 +300,19 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'] },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:abcdef'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] }
     );
 
     await pub.publish();
@@ -304,11 +330,23 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '.'], cwd: absoluteDockerPath },
+      {
+        commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '.'],
+        cwd: absoluteDockerPath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:abcdef'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] }
     );
 
     await pub.publish();
@@ -328,11 +366,23 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--network', 'default', '.'], cwd: defaultNetworkDockerpath },
+      {
+        commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--network', 'default', '.'],
+        cwd: defaultNetworkDockerpath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -352,11 +402,31 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--platform', 'linux/arm64', '.'], cwd: defaultNetworkDockerpath },
+      {
+        commandLine: [
+          'docker',
+          'build',
+          '--tag',
+          'cdkasset-theasset',
+          '--platform',
+          'linux/arm64',
+          '.',
+        ],
+        cwd: defaultNetworkDockerpath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -376,11 +446,33 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--cache-from', 'type=registry,ref=abcdef', '--cache-to', 'type=inline', '.'], cwd: defaultNetworkDockerpath },
+      {
+        commandLine: [
+          'docker',
+          'build',
+          '--tag',
+          'cdkasset-theasset',
+          '--cache-from',
+          'type=registry,ref=abcdef',
+          '--cache-to',
+          'type=inline',
+          '.',
+        ],
+        cwd: defaultNetworkDockerpath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -400,11 +492,23 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--no-cache', '.'], cwd: defaultNetworkDockerpath },
+      {
+        commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--no-cache', '.'],
+        cwd: defaultNetworkDockerpath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -424,16 +528,35 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
       {
         commandLine: [
-          'docker', 'build', '--tag', 'cdkasset-theasset', '--cache-from', 'type=registry,ref=cache:ref', '--cache-from', 'type=registry,ref=cache:main', '--cache-from', 'type=gha', '.',
+          'docker',
+          'build',
+          '--tag',
+          'cdkasset-theasset',
+          '--cache-from',
+          'type=registry,ref=cache:ref',
+          '--cache-from',
+          'type=registry,ref=cache:main',
+          '--cache-from',
+          'type=gha',
+          '.',
         ],
         cwd: defaultNetworkDockerpath,
       },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -453,11 +576,31 @@ describe('with a complete manifest', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['docker', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-      { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '--cache-to', 'type=registry,ref=cache:main,mode=max,compression=zstd', '.'], cwd: defaultNetworkDockerpath },
+      {
+        commandLine: [
+          'docker',
+          'build',
+          '--tag',
+          'cdkasset-theasset',
+          '--cache-to',
+          'type=registry,ref=cache:main,mode=max,compression=zstd',
+          '.',
+        ],
+        cwd: defaultNetworkDockerpath,
+      },
       { commandLine: ['docker', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:nopqr'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:nopqr'] }
     );
 
     await pub.publish();
@@ -483,18 +626,29 @@ describe('external assets', () => {
     });
 
     const expectAllSpawns = mockSpawn(
-      { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+      {
+        commandLine: [
+          'docker',
+          'login',
+          '--username',
+          'user',
+          '--password-stdin',
+          'https://proxy.com/',
+        ],
+      },
       { commandLine: ['sometool'], stdout: externalTag, cwd: '/external/cdk.out' },
       { commandLine: ['docker', 'tag', externalTag, '12345.amazonaws.com/repo:ghijkl'] },
-      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:ghijkl'] },
+      { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:ghijkl'] }
     );
 
     await pub.publish();
 
-    expect(aws.ecrClient).toHaveBeenCalledWith(expect.objectContaining({
-      region: 'us-north-50',
-      assumeRoleArn: 'arn:aws:role',
-    }));
+    expect(aws.ecrClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'us-north-50',
+        assumeRoleArn: 'arn:aws:role',
+      })
+    );
     expectAllSpawns();
   });
 });
@@ -513,9 +667,12 @@ test('correctly identify Docker directory if path is absolute', async () => {
     // Only care about the 'build' command line
     { commandLine: ['docker', 'login'], prefix: true },
     { commandLine: ['docker', 'inspect'], exitCode: 1, prefix: true },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '.'], cwd: absoluteDockerPath },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset', '.'],
+      cwd: absoluteDockerPath,
+    },
     { commandLine: ['docker', 'tag'], prefix: true },
-    { commandLine: ['docker', 'push'], prefix: true },
+    { commandLine: ['docker', 'push'], prefix: true }
   );
 
   await pub.publish();
@@ -526,7 +683,9 @@ test('correctly identify Docker directory if path is absolute', async () => {
 
 test('when external credentials are present, explicit Docker config directories are used', async () => {
   // Setup -- Mock that we have CDK credentials, and mock fs operations.
-  jest.spyOn(dockercreds, 'cdkCredentialsConfig').mockReturnValue({ version: '0.1', domainCredentials: {} });
+  jest
+    .spyOn(dockercreds, 'cdkCredentialsConfig')
+    .mockReturnValue({ version: '0.1', domainCredentials: {} });
   jest.spyOn(fs, 'mkdtempSync').mockImplementationOnce(() => '/tmp/mockedTempDir');
   jest.spyOn(fs, 'writeFileSync').mockImplementation(jest.fn());
 
@@ -540,12 +699,35 @@ test('when external credentials are present, explicit Docker config directories 
 
   const expectAllSpawns = mockSpawn(
     // Initally use the first created directory with the CDK credentials
-    { commandLine: ['docker', '--config', '/tmp/mockedTempDir', 'inspect', 'cdkasset-theasset'], exitCode: 1 },
-    { commandLine: ['docker', '--config', '/tmp/mockedTempDir', 'build', '--tag', 'cdkasset-theasset', '.'], cwd: absoluteDockerPath },
-    { commandLine: ['docker', '--config', '/tmp/mockedTempDir', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:abcdef'] },
+    {
+      commandLine: ['docker', '--config', '/tmp/mockedTempDir', 'inspect', 'cdkasset-theasset'],
+      exitCode: 1,
+    },
+    {
+      commandLine: [
+        'docker',
+        '--config',
+        '/tmp/mockedTempDir',
+        'build',
+        '--tag',
+        'cdkasset-theasset',
+        '.',
+      ],
+      cwd: absoluteDockerPath,
+    },
+    {
+      commandLine: [
+        'docker',
+        '--config',
+        '/tmp/mockedTempDir',
+        'tag',
+        'cdkasset-theasset',
+        '12345.amazonaws.com/repo:abcdef',
+      ],
+    },
     // Prior to push, revert to the default config directory
     { commandLine: ['docker', 'login'], prefix: true },
-    { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] },
+    { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:abcdef'] }
   );
 
   await pub.publish();
@@ -554,7 +736,10 @@ test('when external credentials are present, explicit Docker config directories 
 });
 
 test('logging in only once for two assets', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/multi/cdk.out'), { aws, throwOnError: false });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/multi/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
   aws.mockEcr.describeImages = mockedApiFailure('ImageNotFoundException', 'File does not exist');
   aws.mockEcr.getAuthorizationToken = mockedApiResult({
     authorizationData: [
@@ -563,15 +748,30 @@ test('logging in only once for two assets', async () => {
   });
 
   const expectAllSpawns = mockSpawn(
-    { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+    {
+      commandLine: [
+        'docker',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://proxy.com/',
+      ],
+    },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset1'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'], cwd: '/multi/cdk.out/dockerdir' },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
     { commandLine: ['docker', 'tag', 'cdkasset-theasset1', '12345.amazonaws.com/repo:theAsset1'] },
     { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:theAsset1'] },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset2'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'], cwd: '/multi/cdk.out/dockerdir' },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
     { commandLine: ['docker', 'tag', 'cdkasset-theasset2', '12345.amazonaws.com/repo:theAsset2'] },
-    { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:theAsset2'] },
+    { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:theAsset2'] }
   );
 
   await pub.publish();
@@ -581,39 +781,84 @@ test('logging in only once for two assets', async () => {
 });
 
 test('logging in twice for two repository domains (containing account id & region)', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/multi/cdk.out'), { aws, throwOnError: false });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/multi/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
   aws.mockEcr.describeImages = mockedApiFailure('ImageNotFoundException', 'File does not exist');
 
   let repoIdx = 12345;
   aws.mockEcr.describeRepositories = jest.fn().mockReturnValue({
-    promise: jest.fn().mockImplementation(() => Promise.resolve({
-      repositories: [
-        // Usually looks like: 012345678910.dkr.ecr.us-west-2.amazonaws.com/aws-cdk/assets
-        { repositoryUri: `${repoIdx++}.amazonaws.com/aws-cdk/assets` },
-      ],
-    })),
+    promise: jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        repositories: [
+          // Usually looks like: 012345678910.dkr.ecr.us-west-2.amazonaws.com/aws-cdk/assets
+          { repositoryUri: `${repoIdx++}.amazonaws.com/aws-cdk/assets` },
+        ],
+      })
+    ),
   });
 
   let proxyIdx = 12345;
   aws.mockEcr.getAuthorizationToken = jest.fn().mockReturnValue({
-    promise: jest.fn().mockImplementation(() => Promise.resolve({
-      authorizationData: [
-        { authorizationToken: 'dXNlcjpwYXNz', proxyEndpoint: `https://${proxyIdx++}.proxy.com/` },
-      ],
-    })),
+    promise: jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        authorizationData: [
+          { authorizationToken: 'dXNlcjpwYXNz', proxyEndpoint: `https://${proxyIdx++}.proxy.com/` },
+        ],
+      })
+    ),
   });
 
   const expectAllSpawns = mockSpawn(
-    { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://12345.proxy.com/'] },
+    {
+      commandLine: [
+        'docker',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://12345.proxy.com/',
+      ],
+    },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset1'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'], cwd: '/multi/cdk.out/dockerdir' },
-    { commandLine: ['docker', 'tag', 'cdkasset-theasset1', '12345.amazonaws.com/aws-cdk/assets:theAsset1'] },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
+    {
+      commandLine: [
+        'docker',
+        'tag',
+        'cdkasset-theasset1',
+        '12345.amazonaws.com/aws-cdk/assets:theAsset1',
+      ],
+    },
     { commandLine: ['docker', 'push', '12345.amazonaws.com/aws-cdk/assets:theAsset1'] },
-    { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://12346.proxy.com/'] },
+    {
+      commandLine: [
+        'docker',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://12346.proxy.com/',
+      ],
+    },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset2'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'], cwd: '/multi/cdk.out/dockerdir' },
-    { commandLine: ['docker', 'tag', 'cdkasset-theasset2', '12346.amazonaws.com/aws-cdk/assets:theAsset2'] },
-    { commandLine: ['docker', 'push', '12346.amazonaws.com/aws-cdk/assets:theAsset2'] },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
+    {
+      commandLine: [
+        'docker',
+        'tag',
+        'cdkasset-theasset2',
+        '12346.amazonaws.com/aws-cdk/assets:theAsset2',
+      ],
+    },
+    { commandLine: ['docker', 'push', '12346.amazonaws.com/aws-cdk/assets:theAsset2'] }
   );
 
   await pub.publish();
@@ -638,13 +883,28 @@ test('building only', async () => {
   });
 
   const expectAllSpawns = mockSpawn(
-    { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+    {
+      commandLine: [
+        'docker',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://proxy.com/',
+      ],
+    },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset1'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'], cwd: '/multi/cdk.out/dockerdir' },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
     { commandLine: ['docker', 'tag', 'cdkasset-theasset1', '12345.amazonaws.com/repo:theAsset1'] },
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset2'], exitCode: 1 },
-    { commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'], cwd: '/multi/cdk.out/dockerdir' },
-    { commandLine: ['docker', 'tag', 'cdkasset-theasset2', '12345.amazonaws.com/repo:theAsset2'] },
+    {
+      commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'],
+      cwd: '/multi/cdk.out/dockerdir',
+    },
+    { commandLine: ['docker', 'tag', 'cdkasset-theasset2', '12345.amazonaws.com/repo:theAsset2'] }
   );
 
   await pub.publish();
@@ -669,9 +929,18 @@ test('publishing only', async () => {
   });
 
   const expectAllSpawns = mockSpawn(
-    { commandLine: ['docker', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+    {
+      commandLine: [
+        'docker',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://proxy.com/',
+      ],
+    },
     { commandLine: ['docker', 'push', '12345.amazonaws.com/aws-cdk/assets:theAsset1'] },
-    { commandLine: ['docker', 'push', '12345.amazonaws.com/aws-cdk/assets:theAsset2'] },
+    { commandLine: ['docker', 'push', '12345.amazonaws.com/aws-cdk/assets:theAsset2'] }
   );
 
   await pub.publish();
@@ -683,7 +952,10 @@ test('publishing only', async () => {
 test('overriding the docker command', async () => {
   process.env.CDK_DOCKER = 'custom';
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, throwOnError: false });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
 
   aws.mockEcr.describeImages = mockedApiFailure('ImageNotFoundException', 'File does not exist');
   aws.mockEcr.getAuthorizationToken = mockedApiResult({
@@ -693,10 +965,19 @@ test('overriding the docker command', async () => {
   });
 
   const expectAllSpawns = mockSpawn(
-    { commandLine: ['custom', 'login', '--username', 'user', '--password-stdin', 'https://proxy.com/'] },
+    {
+      commandLine: [
+        'custom',
+        'login',
+        '--username',
+        'user',
+        '--password-stdin',
+        'https://proxy.com/',
+      ],
+    },
     { commandLine: ['custom', 'inspect', 'cdkasset-theasset'] },
     { commandLine: ['custom', 'tag', 'cdkasset-theasset', '12345.amazonaws.com/repo:abcdef'] },
-    { commandLine: ['custom', 'push', '12345.amazonaws.com/repo:abcdef'] },
+    { commandLine: ['custom', 'push', '12345.amazonaws.com/repo:abcdef'] }
   );
 
   await pub.publish();

@@ -18,36 +18,40 @@ export interface Invocation {
 }
 
 export function mockSpawn(...invocations: Invocation[]): () => void {
-  let mock = (child_process.spawn as any);
+  let mock = child_process.spawn as any;
   for (const _invocation of invocations) {
     const invocation = _invocation; // Mirror into variable for closure
-    mock = mock.mockImplementationOnce((binary: string, args: string[], options: child_process.SpawnOptions) => {
-      if (invocation.prefix) {
-        // Match command line prefix
-        expect([binary, ...args].slice(0, invocation.commandLine.length)).toEqual(invocation.commandLine);
-      } else {
-        // Match full command line
-        expect([binary, ...args]).toEqual(invocation.commandLine);
+    mock = mock.mockImplementationOnce(
+      (binary: string, args: string[], options: child_process.SpawnOptions) => {
+        if (invocation.prefix) {
+          // Match command line prefix
+          expect([binary, ...args].slice(0, invocation.commandLine.length)).toEqual(
+            invocation.commandLine
+          );
+        } else {
+          // Match full command line
+          expect([binary, ...args]).toEqual(invocation.commandLine);
+        }
+
+        if (invocation.cwd != null) {
+          expect(options.cwd).toBe(invocation.cwd);
+        }
+
+        const child: any = new events.EventEmitter();
+        child.stdin = new events.EventEmitter();
+        child.stdin.write = jest.fn();
+        child.stdin.end = jest.fn();
+        child.stdout = new events.EventEmitter();
+        child.stderr = new events.EventEmitter();
+
+        if (invocation.stdout) {
+          mockEmit(child.stdout, 'data', Buffer.from(invocation.stdout));
+        }
+        mockEmit(child, 'close', invocation.exitCode ?? 0);
+
+        return child;
       }
-
-      if (invocation.cwd != null) {
-        expect(options.cwd).toBe(invocation.cwd);
-      }
-
-      const child: any = new events.EventEmitter();
-      child.stdin = new events.EventEmitter();
-      child.stdin.write = jest.fn();
-      child.stdin.end = jest.fn();
-      child.stdout = new events.EventEmitter();
-      child.stderr = new events.EventEmitter();
-
-      if (invocation.stdout) {
-        mockEmit(child.stdout, 'data', Buffer.from(invocation.stdout));
-      }
-      mockEmit(child, 'close', invocation.exitCode ?? 0);
-
-      return child;
-    });
+    );
   }
 
   mock.mockImplementation((binary: string, args: string[], _options: any) => {

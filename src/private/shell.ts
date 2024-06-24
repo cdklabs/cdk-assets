@@ -33,14 +33,14 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     const stderr = new Array<any>();
 
     // Both write to stdout and collect
-    child.stdout!.on('data', chunk => {
+    child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
         process.stdout.write(chunk);
       }
       stdout.push(chunk);
     });
 
-    child.stderr!.on('data', chunk => {
+    child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
         process.stderr.write(chunk);
       }
@@ -55,18 +55,28 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
         resolve(Buffer.concat(stdout).toString('utf-8'));
       } else {
         const out = Buffer.concat(stderr).toString('utf-8').trim();
-        reject(new ProcessFailed(code, signal, `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${out}`));
+        reject(
+          new ProcessFailed(
+            code,
+            signal,
+            `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${out}`
+          )
+        );
       }
     });
   });
 }
 
-export type ProcessFailedError = ProcessFailed
+export type ProcessFailedError = ProcessFailed;
 
 class ProcessFailed extends Error {
   public readonly code = 'PROCESS_FAILED';
 
-  constructor(public readonly exitCode: number | null, public readonly signal: NodeJS.Signals | null, message: string) {
+  constructor(
+    public readonly exitCode: number | null,
+    public readonly signal: NodeJS.Signals | null,
+    message: string
+  ) {
     super(message);
   }
 }
@@ -87,8 +97,12 @@ function renderCommandLine(cmd: string[]) {
 /**
  * Render a UNIX command line
  */
-function doRender(cmd: string[], needsEscaping: (x: string) => boolean, doEscape: (x: string) => string): string {
-  return cmd.map(x => needsEscaping(x) ? doEscape(x) : x).join(' ');
+function doRender(
+  cmd: string[],
+  needsEscaping: (x: string) => boolean,
+  doEscape: (x: string) => string
+): string {
+  return cmd.map((x) => (needsEscaping(x) ? doEscape(x) : x)).join(' ');
 }
 
 /**
@@ -96,7 +110,7 @@ function doRender(cmd: string[], needsEscaping: (x: string) => boolean, doEscape
  */
 function hasAnyChars(...chars: string[]): (x: string) => boolean {
   return (str: string) => {
-    return chars.some(c => str.indexOf(c) !== -1);
+    return chars.some((c) => str.indexOf(c) !== -1);
   };
 }
 
@@ -123,5 +137,8 @@ function windowsEscape(x: string): string {
   x = `"${x}"`;
   // Now escape all special characters
   const shellMeta = new Set<string>(['"', '&', '^', '%']);
-  return x.split('').map(c => shellMeta.has(x) ? '^' + c : c).join('');
+  return x
+    .split('')
+    .map((c) => (shellMeta.has(x) ? '^' + c : c))
+    .join('');
 }

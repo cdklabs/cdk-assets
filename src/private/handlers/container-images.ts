@@ -22,14 +22,18 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
     private readonly host: IHandlerHost,
-    private readonly options: IHandlerOptions) {
-  }
+    private readonly options: IHandlerOptions
+  ) {}
 
   public async build(): Promise<void> {
     const initOnce = await this.initOnce();
 
-    if (initOnce.destinationAlreadyExists) { return; }
-    if (this.host.aborted) { return; }
+    if (initOnce.destinationAlreadyExists) {
+      return;
+    }
+    if (this.host.aborted) {
+      return;
+    }
 
     const dockerForBuilding = await this.host.dockerFactory.forBuild({
       repoUri: initOnce.repoUri,
@@ -37,13 +41,23 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       ecr: initOnce.ecr,
     });
 
-    const builder = new ContainerImageBuilder(dockerForBuilding, this.workDir, this.asset, this.host, {
-      quiet: this.options.quiet,
-    });
+    const builder = new ContainerImageBuilder(
+      dockerForBuilding,
+      this.workDir,
+      this.asset,
+      this.host,
+      {
+        quiet: this.options.quiet,
+      }
+    );
     const localTagName = await builder.build();
 
-    if (localTagName === undefined || this.host.aborted) { return; }
-    if (this.host.aborted) { return; }
+    if (localTagName === undefined || this.host.aborted) {
+      return;
+    }
+    if (this.host.aborted) {
+      return;
+    }
 
     await dockerForBuilding.tag(localTagName, initOnce.imageUri);
   }
@@ -61,8 +75,12 @@ export class ContainerImageAssetHandler implements IAssetHandler {
   public async publish(): Promise<void> {
     const initOnce = await this.initOnce();
 
-    if (initOnce.destinationAlreadyExists) { return; }
-    if (this.host.aborted) { return; }
+    if (initOnce.destinationAlreadyExists) {
+      return;
+    }
+    if (this.host.aborted) {
+      return;
+    }
 
     const dockerForPushing = await this.host.dockerFactory.forEcrPush({
       repoUri: initOnce.repoUri,
@@ -70,13 +88,17 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       ecr: initOnce.ecr,
     });
 
-    if (this.host.aborted) { return; }
+    if (this.host.aborted) {
+      return;
+    }
 
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
     await dockerForPushing.push({ tag: initOnce.imageUri, quiet: this.options.quiet });
   }
 
-  private async initOnce(options: { quiet?: boolean } = {}): Promise<ContainerImageAssetHandlerInit> {
+  private async initOnce(
+    options: { quiet?: boolean } = {}
+  ): Promise<ContainerImageAssetHandlerInit> {
     if (this.init) {
       return this.init;
     }
@@ -90,7 +112,9 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const repoUri = await repositoryUri(ecr, destination.repositoryName);
     if (!repoUri) {
-      throw new Error(`No ECR repository named '${destination.repositoryName}' in account ${await account()}. Is this account bootstrapped?`);
+      throw new Error(
+        `No ECR repository named '${destination.repositoryName}' in account ${await account()}. Is this account bootstrapped?`
+      );
     }
 
     const imageUri = `${repoUri}:${destination.imageTag}`;
@@ -112,7 +136,11 @@ export class ContainerImageAssetHandler implements IAssetHandler {
    * should correspond to that, but is only used to print Docker image location
    * for user benefit (the format is slightly different).
    */
-  private async destinationAlreadyExists(ecr: AWS.ECR, destination: DockerImageDestination, imageUri: string): Promise<boolean> {
+  private async destinationAlreadyExists(
+    ecr: AWS.ECR,
+    destination: DockerImageDestination,
+    imageUri: string
+  ): Promise<boolean> {
     this.host.emitMessage(EventType.CHECK, `Check ${imageUri}`);
     if (await imageExists(ecr, destination.repositoryName, destination.imageTag)) {
       this.host.emitMessage(EventType.FOUND, `Found ${imageUri}`);
@@ -133,8 +161,8 @@ class ContainerImageBuilder {
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
     private readonly host: IHandlerHost,
-    private readonly options: ContainerImageBuilderOptions) {
-  }
+    private readonly options: ContainerImageBuilderOptions
+  ) {}
 
   async build(): Promise<string | undefined> {
     return this.asset.source.executable
@@ -152,7 +180,9 @@ class ContainerImageBuilder {
     const localTagName = `cdkasset-${this.asset.id.assetId.toLowerCase()}`;
 
     if (!(await this.isImageCached(localTagName))) {
-      if (this.host.aborted) { return undefined; }
+      if (this.host.aborted) {
+        return undefined;
+      }
 
       await this.buildImage(localTagName);
     }
@@ -166,11 +196,16 @@ class ContainerImageBuilder {
    * External command is responsible for deduplicating the build if possible,
    * and is expected to return the generated image identifier on stdout.
    */
-  private async buildExternalAsset(executable: string[], cwd?: string): Promise<string | undefined> {
+  private async buildExternalAsset(
+    executable: string[],
+    cwd?: string
+  ): Promise<string | undefined> {
     const assetPath = cwd ?? this.workDir;
 
     this.host.emitMessage(EventType.BUILD, `Building Docker image using command '${executable}'`);
-    if (this.host.aborted) { return undefined; }
+    if (this.host.aborted) {
+      return undefined;
+    }
 
     return (await shell(executable, { cwd: assetPath, quiet: true })).trim();
   }
@@ -178,7 +213,9 @@ class ContainerImageBuilder {
   private async buildImage(localTagName: string): Promise<void> {
     const source = this.asset.source;
     if (!source.directory) {
-      throw new Error(`'directory' is expected in the DockerImage asset source, got: ${JSON.stringify(source)}`);
+      throw new Error(
+        `'directory' is expected in the DockerImage asset source, got: ${JSON.stringify(source)}`
+      );
     }
 
     const fullPath = path.resolve(this.workDir, source.directory);
@@ -217,7 +254,9 @@ async function imageExists(ecr: AWS.ECR, repositoryName: string, imageTag: strin
     await ecr.describeImages({ repositoryName, imageIds: [{ imageTag }] }).promise();
     return true;
   } catch (e: any) {
-    if (e.code !== 'ImageNotFoundException') { throw e; }
+    if (e.code !== 'ImageNotFoundException') {
+      throw e;
+    }
     return false;
   }
 }
@@ -229,10 +268,14 @@ async function imageExists(ecr: AWS.ECR, repositoryName: string, imageTag: strin
  */
 async function repositoryUri(ecr: AWS.ECR, repositoryName: string): Promise<string | undefined> {
   try {
-    const response = await ecr.describeRepositories({ repositoryNames: [repositoryName] }).promise();
+    const response = await ecr
+      .describeRepositories({ repositoryNames: [repositoryName] })
+      .promise();
     return (response.repositories || [])[0]?.repositoryUri;
   } catch (e: any) {
-    if (e.code !== 'RepositoryNotFoundException') { throw e; }
+    if (e.code !== 'RepositoryNotFoundException') {
+      throw e;
+    }
     return undefined;
   }
 }

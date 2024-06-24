@@ -31,14 +31,17 @@ test('zipDirectory can take a directory and produce a zip from it', async () => 
     // inspect the zip file to check that dates are reset
     const zip = await fs.readFile(zipFile);
     const zipData = await jszip.loadAsync(zip);
-    const dates = Object.values(zipData.files).map(file => file.date.toISOString());
+    const dates = Object.values(zipData.files).map((file) => file.date.toISOString());
     expect(dates[0]).toBe('1980-01-01T00:00:00.000Z');
     expect(new Set(dates).size).toBe(1);
 
     // check that mode is preserved
     const stat = await fs.stat(path.join(extractDir, 'executable.txt'));
     // eslint-disable-next-line no-bitwise
-    const isExec = (stat.mode & constants.S_IXUSR) || (stat.mode & constants.S_IXGRP) || (stat.mode & constants.S_IXOTH);
+    const isExec =
+      stat.mode & constants.S_IXUSR ||
+      stat.mode & constants.S_IXGRP ||
+      stat.mode & constants.S_IXOTH;
     expect(isExec).toBeTruthy();
   } finally {
     rmRfSync(stagingDir);
@@ -52,7 +55,7 @@ test('md5 hash of a zip stays consistent across invocations', async () => {
   const zipFile2 = path.join(stagingDir, 'output.zip');
   const originalDir = path.join(__dirname, 'test-archive');
   await zipDirectory(originalDir, zipFile1, logger);
-  await new Promise(ok => setTimeout(ok, 2000)); // wait 2s
+  await new Promise((ok) => setTimeout(ok, 2000)); // wait 2s
   await zipDirectory(originalDir, zipFile2, logger);
 
   const hash1 = contentHash(await fs.readFile(zipFile1));

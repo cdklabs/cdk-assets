@@ -45,9 +45,11 @@ test('Take a zipped upload', async () => {
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/zip',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/zip',
+    })
+  );
 });

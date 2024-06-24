@@ -49,7 +49,10 @@ afterEach(() => {
 test('test listener', async () => {
   const progressListener = new FakeListener();
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, progressListener });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    progressListener,
+  });
   await pub.publish();
 
   const allMessages = progressListener.messages.join('\n');
@@ -62,7 +65,11 @@ test('test listener', async () => {
 test('test publishing in parallel', async () => {
   const progressListener = new FakeListener();
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, progressListener, publishInParallel: true });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    progressListener,
+    publishInParallel: true,
+  });
   await pub.publish();
 
   const allMessages = progressListener.messages.join('\n');
@@ -75,7 +82,10 @@ test('test publishing in parallel', async () => {
 test('test abort', async () => {
   const progressListener = new FakeListener(true);
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, progressListener });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    progressListener,
+  });
   await pub.publish();
 
   const allMessages = progressListener.messages.join('\n');

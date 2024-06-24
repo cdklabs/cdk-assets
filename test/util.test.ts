@@ -7,7 +7,7 @@ test('critical section', async () => {
   // WHEN
   const arr = new Array<string>();
   void criticalSection(async () => {
-    await new Promise(res => setTimeout(res, 500));
+    await new Promise((res) => setTimeout(res, 500));
     arr.push('first');
   });
   await criticalSection(async () => {
@@ -15,10 +15,7 @@ test('critical section', async () => {
   });
 
   // THEN
-  expect(arr).toEqual([
-    'first',
-    'second',
-  ]);
+  expect(arr).toEqual(['first', 'second']);
 });
 
 test('exceptions in critical sections', async () => {
@@ -26,7 +23,9 @@ test('exceptions in critical sections', async () => {
   const criticalSection = createCriticalSection();
 
   // WHEN/THEN
-  await expect(() => criticalSection(async () => {
-    throw new Error('Thrown');
-  })).rejects.toThrow('Thrown');
+  await expect(() =>
+    criticalSection(async () => {
+      throw new Error('Thrown');
+    })
+  ).rejects.toThrow('Thrown');
 });

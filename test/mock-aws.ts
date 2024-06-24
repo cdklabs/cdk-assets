@@ -16,16 +16,23 @@ export function mockAws() {
       },
     ],
   });
-  mockSecretsManager.getSecretValue = mockedApiFailure('NotImplemented', 'You need to supply an implementation for getSecretValue');
+  mockSecretsManager.getSecretValue = mockedApiFailure(
+    'NotImplemented',
+    'You need to supply an implementation for getSecretValue'
+  );
 
   return {
     mockEcr,
     mockS3,
     mockSecretsManager,
     discoverPartition: jest.fn(() => Promise.resolve('swa')),
-    discoverCurrentAccount: jest.fn(() => Promise.resolve({ accountId: 'current_account', partition: 'swa' })),
+    discoverCurrentAccount: jest.fn(() =>
+      Promise.resolve({ accountId: 'current_account', partition: 'swa' })
+    ),
     discoverDefaultRegion: jest.fn(() => Promise.resolve('current_region')),
-    discoverTargetAccount: jest.fn(() => Promise.resolve({ accountId: 'target_account', partition: 'swa' })),
+    discoverTargetAccount: jest.fn(() =>
+      Promise.resolve({ accountId: 'target_account', partition: 'swa' })
+    ),
     ecrClient: jest.fn(() => Promise.resolve(mockEcr)),
     s3Client: jest.fn(() => Promise.resolve(mockS3)),
     secretsManagerClient: jest.fn(() => Promise.resolve(mockSecretsManager)),
@@ -55,20 +62,23 @@ export function mockedApiFailure(code: string, message: string) {
  * so no race conditions happen with the uninstallation of mock-fs.
  */
 export function mockUpload(expectContent?: string) {
-  return jest.fn().mockImplementation(request => ({
-    promise: () => new Promise<void>((ok, ko) => {
-      const didRead = new Array<string>();
+  return jest.fn().mockImplementation((request) => ({
+    promise: () =>
+      new Promise<void>((ok, ko) => {
+        const didRead = new Array<string>();
 
-      const bodyStream: NodeJS.ReadableStream = request.Body;
-      bodyStream.on('data', (chunk) => { didRead.push(chunk.toString()); }); // This listener must exist
-      bodyStream.on('error', ko);
-      bodyStream.on('close', () => {
-        const actualContent = didRead.join('');
-        if (expectContent !== undefined && expectContent !== actualContent) {
-          throw new Error(`Expected to read '${expectContent}' but read: '${actualContent}'`);
-        }
-        ok();
-      });
-    }),
+        const bodyStream: NodeJS.ReadableStream = request.Body;
+        bodyStream.on('data', (chunk) => {
+          didRead.push(chunk.toString());
+        }); // This listener must exist
+        bodyStream.on('error', ko);
+        bodyStream.on('close', () => {
+          const actualContent = didRead.join('');
+          if (expectContent !== undefined && expectContent !== actualContent) {
+            throw new Error(`Expected to read '${expectContent}' but read: '${actualContent}'`);
+          }
+          ok();
+        });
+      }),
   }));
 }

@@ -41,7 +41,9 @@ beforeEach(() => {
           source: {
             path: '/simple/cdk.out/some_file',
           },
-          destinations: { theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_other_bucket' } },
+          destinations: {
+            theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_other_bucket' },
+          },
         },
       },
     }),
@@ -52,7 +54,9 @@ beforeEach(() => {
           source: {
             executable: ['sometool'],
           },
-          destinations: { theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_external_bucket' } },
+          destinations: {
+            theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_external_bucket' },
+          },
         },
       },
     }),
@@ -87,7 +91,7 @@ beforeEach(() => {
         },
       },
     }),
-    '/emptyzip/cdk.out/empty_dir': { }, // Empty directory
+    '/emptyzip/cdk.out/empty_dir': {}, // Empty directory
   });
 
   aws = mockAws();
@@ -98,15 +102,20 @@ afterEach(() => {
 });
 
 test('pass destination properties to AWS client', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, throwOnError: false });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
   aws.mockS3.listObjectsV2 = mockedApiResult({});
 
   await pub.publish();
 
-  expect(aws.s3Client).toHaveBeenCalledWith(expect.objectContaining({
-    region: 'us-north-50',
-    assumeRoleArn: 'arn:aws:role',
-  }));
+  expect(aws.s3Client).toHaveBeenCalledWith(
+    expect.objectContaining({
+      region: 'us-north-50',
+      assumeRoleArn: 'arn:aws:role',
+    })
+  );
 });
 
 test('Do nothing if file already exists', async () => {
@@ -116,11 +125,13 @@ test('Do nothing if file already exists', async () => {
   aws.mockS3.upload = mockUpload();
   await pub.publish();
 
-  expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Prefix: 'some_key',
-    MaxKeys: 1,
-  }));
+  expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Prefix: 'some_key',
+      MaxKeys: 1,
+    })
+  );
   expect(aws.mockS3.upload).not.toHaveBeenCalled();
 });
 
@@ -143,11 +154,13 @@ test('upload file if new (list returns other key)', async () => {
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+    })
+  );
 
   // We'll just have to assume the contents are correct
 });
@@ -172,12 +185,14 @@ test('upload with server side encryption AES256 header', async () => {
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    ServerSideEncryption: 'AES256',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+      ServerSideEncryption: 'AES256',
+    })
+  );
 
   // We'll just have to assume the contents are correct
 });
@@ -204,13 +219,15 @@ test('upload with server side encryption aws:kms header and key id', async () =>
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    ServerSideEncryption: 'aws:kms',
-    SSEKMSKeyId: 'the-key-id',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+      ServerSideEncryption: 'aws:kms',
+      SSEKMSKeyId: 'the-key-id',
+    })
+  );
 
   // We'll just have to assume the contents are correct
 });
@@ -229,7 +246,10 @@ test('will only read bucketEncryption once even for multiple assets', async () =
 
 test('no server side encryption header if access denied for bucket encryption', async () => {
   const progressListener = new FakeListener();
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws, progressListener });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    progressListener,
+  });
 
   aws.mockS3.getBucketEncryption = mockedApiFailure('AccessDenied', 'Access Denied');
 
@@ -238,13 +258,17 @@ test('no server side encryption header if access denied for bucket encryption', 
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.not.objectContaining({
-    ServerSideEncryption: 'aws:kms',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.not.objectContaining({
+      ServerSideEncryption: 'aws:kms',
+    })
+  );
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.not.objectContaining({
-    ServerSideEncryption: 'AES256',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.not.objectContaining({
+      ServerSideEncryption: 'AES256',
+    })
+  );
 });
 
 test('correctly looks up content type', async () => {
@@ -255,17 +279,21 @@ test('correctly looks up content type', async () => {
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key.txt',
-    ContentType: 'text/plain',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key.txt',
+      ContentType: 'text/plain',
+    })
+  );
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key.png',
-    ContentType: 'image/png',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key.png',
+      ContentType: 'image/png',
+    })
+  );
 
   // We'll just have to assume the contents are correct
 });
@@ -278,10 +306,12 @@ test('upload file if new (list returns no key)', async () => {
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(expect.objectContaining({
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-  }));
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+    })
+  );
 
   // We'll just have to assume the contents are correct
 });
@@ -320,11 +350,13 @@ describe('external assets', () => {
 
     await pub.publish();
 
-    expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(expect.objectContaining({
-      Bucket: 'some_external_bucket',
-      Prefix: 'some_key',
-      MaxKeys: 1,
-    }));
+    expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Bucket: 'some_external_bucket',
+        Prefix: 'some_key',
+        MaxKeys: 1,
+      })
+    );
   });
 
   test('upload external asset correctly', async () => {
@@ -334,10 +366,12 @@ describe('external assets', () => {
 
     await pub.publish();
 
-    expect(aws.s3Client).toHaveBeenCalledWith(expect.objectContaining({
-      region: 'us-north-50',
-      assumeRoleArn: 'arn:aws:role',
-    }));
+    expect(aws.s3Client).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'us-north-50',
+        assumeRoleArn: 'arn:aws:role',
+      })
+    );
 
     expectAllSpawns();
   });

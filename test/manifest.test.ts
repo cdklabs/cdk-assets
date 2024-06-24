@@ -1,6 +1,12 @@
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
 import * as mockfs from 'mock-fs';
-import { AssetManifest, DestinationIdentifier, DestinationPattern, DockerImageManifestEntry, FileManifestEntry } from '../lib';
+import {
+  AssetManifest,
+  DestinationIdentifier,
+  DestinationPattern,
+  DockerImageManifestEntry,
+  FileManifestEntry,
+} from '../lib';
 
 beforeEach(() => {
   mockfs({
@@ -36,24 +42,42 @@ afterEach(() => {
 
 test('Can list manifest', () => {
   const manifest = AssetManifest.fromPath('/simple/cdk.out');
-  expect(manifest.list().join('\n')).toEqual(`
+  expect(manifest.list().join('\n')).toEqual(
+    `
 asset1 file {\"path\":\"S1\"}
   ├ asset1:dest1 {\"bucketName\":\"D1\",\"objectKey\":\"X\"}
   └ asset1:dest2 {\"bucketName\":\"D2\",\"objectKey\":\"X\"}
 asset2 docker-image {\"directory\":\"S2\"}
   ├ asset2:dest1 {\"repositoryName\":\"D3\",\"imageTag\":\"X\"}
   └ asset2:dest2 {\"repositoryName\":\"D4\",\"imageTag\":\"X\"}
-`.trim());
+`.trim()
+  );
 });
 
 test('.entries() iterates over all destinations', () => {
   const manifest = AssetManifest.fromPath('/simple/cdk.out');
 
   expect(manifest.entries).toEqual([
-    new FileManifestEntry(new DestinationIdentifier('asset1', 'dest1'), { path: 'S1' }, { bucketName: 'D1', objectKey: 'X' }),
-    new FileManifestEntry(new DestinationIdentifier('asset1', 'dest2'), { path: 'S1' }, { bucketName: 'D2', objectKey: 'X' }),
-    new DockerImageManifestEntry(new DestinationIdentifier('asset2', 'dest1'), { directory: 'S2' }, { repositoryName: 'D3', imageTag: 'X' }),
-    new DockerImageManifestEntry(new DestinationIdentifier('asset2', 'dest2'), { directory: 'S2' }, { repositoryName: 'D4', imageTag: 'X' }),
+    new FileManifestEntry(
+      new DestinationIdentifier('asset1', 'dest1'),
+      { path: 'S1' },
+      { bucketName: 'D1', objectKey: 'X' }
+    ),
+    new FileManifestEntry(
+      new DestinationIdentifier('asset1', 'dest2'),
+      { path: 'S1' },
+      { bucketName: 'D2', objectKey: 'X' }
+    ),
+    new DockerImageManifestEntry(
+      new DestinationIdentifier('asset2', 'dest1'),
+      { directory: 'S2' },
+      { repositoryName: 'D3', imageTag: 'X' }
+    ),
+    new DockerImageManifestEntry(
+      new DestinationIdentifier('asset2', 'dest2'),
+      { directory: 'S2' },
+      { repositoryName: 'D4', imageTag: 'X' }
+    ),
   ]);
 });
 
@@ -62,7 +86,10 @@ test('can select by asset ID', () => {
 
   const subset = manifest.select([DestinationPattern.parse('asset2')]);
 
-  expect(subset.entries.map(e => f(e.genericDestination, 'repositoryName'))).toEqual(['D3', 'D4']);
+  expect(subset.entries.map((e) => f(e.genericDestination, 'repositoryName'))).toEqual([
+    'D3',
+    'D4',
+  ]);
 });
 
 test('can select by asset ID + destination ID', () => {
@@ -73,17 +100,19 @@ test('can select by asset ID + destination ID', () => {
     DestinationPattern.parse('asset2:dest2'),
   ]);
 
-  expect(subset.entries.map(e => f(e.genericDestination, 'repositoryName', 'bucketName'))).toEqual(['D1', 'D4']);
+  expect(
+    subset.entries.map((e) => f(e.genericDestination, 'repositoryName', 'bucketName'))
+  ).toEqual(['D1', 'D4']);
 });
 
 test('can select by destination ID', () => {
   const manifest = AssetManifest.fromPath('/simple/cdk.out');
 
-  const subset = manifest.select([
-    DestinationPattern.parse(':dest1'),
-  ]);
+  const subset = manifest.select([DestinationPattern.parse(':dest1')]);
 
-  expect(subset.entries.map(e => f(e.genericDestination, 'repositoryName', 'bucketName'))).toEqual(['D1', 'D3']);
+  expect(
+    subset.entries.map((e) => f(e.genericDestination, 'repositoryName', 'bucketName'))
+  ).toEqual(['D1', 'D3']);
 });
 
 test('empty string is not a valid pattern', () => {

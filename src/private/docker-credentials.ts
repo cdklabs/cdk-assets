@@ -24,7 +24,14 @@ export interface DockerDomainCredentialSource {
 
 /** Returns the presumed location of the CDK Docker credentials config file */
 export function cdkCredentialsConfigFile(): string {
-  return process.env.CDK_DOCKER_CREDS_FILE ?? path.join((os.userInfo().homedir ?? os.homedir()).trim() || '/', '.cdk', 'cdk-docker-creds.json');
+  return (
+    process.env.CDK_DOCKER_CREDS_FILE ??
+    path.join(
+      (os.userInfo().homedir ?? os.homedir()).trim() || '/',
+      '.cdk',
+      'cdk-docker-creds.json'
+    )
+  );
 }
 
 let _cdkCredentials: DockerCredentialsConfig | undefined;
@@ -32,20 +39,29 @@ let _cdkCredentials: DockerCredentialsConfig | undefined;
 export function cdkCredentialsConfig(): DockerCredentialsConfig | undefined {
   if (!_cdkCredentials) {
     try {
-      _cdkCredentials = JSON.parse(fs.readFileSync(cdkCredentialsConfigFile(), { encoding: 'utf-8' })) as DockerCredentialsConfig;
-    } catch { }
+      _cdkCredentials = JSON.parse(
+        fs.readFileSync(cdkCredentialsConfigFile(), { encoding: 'utf-8' })
+      ) as DockerCredentialsConfig;
+    } catch {}
   }
   return _cdkCredentials;
 }
 
 /** Fetches login credentials from the configured source (e.g., SecretsManager, ECR) */
-export async function fetchDockerLoginCredentials(aws: IAws, config: DockerCredentialsConfig, endpoint: string) {
+export async function fetchDockerLoginCredentials(
+  aws: IAws,
+  config: DockerCredentialsConfig,
+  endpoint: string
+) {
   // Paranoid handling to ensure new URL() doesn't throw if the schema is missing
   // For official docker registry, docker will pass https://index.docker.io/v1/
   endpoint = endpoint.includes('://') ? endpoint : `https://${endpoint}`;
   const domain = new URL(endpoint).hostname;
 
-  if (!Object.keys(config.domainCredentials).includes(domain) && !Object.keys(config.domainCredentials).includes(endpoint)) {
+  if (
+    !Object.keys(config.domainCredentials).includes(domain) &&
+    !Object.keys(config.domainCredentials).includes(endpoint)
+  ) {
     throw new Error(`unknown domain ${domain}`);
   }
 
@@ -53,15 +69,23 @@ export async function fetchDockerLoginCredentials(aws: IAws, config: DockerCrede
 
   if (domainConfig.secretsManagerSecretId) {
     const sm = await aws.secretsManagerClient({ assumeRoleArn: domainConfig.assumeRoleArn });
-    const secretValue = await sm.getSecretValue({ SecretId: domainConfig.secretsManagerSecretId }).promise();
-    if (!secretValue.SecretString) { throw new Error(`unable to fetch SecretString from secret: ${domainConfig.secretsManagerSecretId}`); };
+    const secretValue = await sm
+      .getSecretValue({ SecretId: domainConfig.secretsManagerSecretId })
+      .promise();
+    if (!secretValue.SecretString) {
+      throw new Error(
+        `unable to fetch SecretString from secret: ${domainConfig.secretsManagerSecretId}`
+      );
+    }
 
     const secret = JSON.parse(secretValue.SecretString);
 
     const usernameField = domainConfig.secretsUsernameField ?? 'username';
     const secretField = domainConfig.secretsPasswordField ?? 'secret';
     if (!secret[usernameField] || !secret[secretField]) {
-      throw new Error(`malformed secret string ("${usernameField}" or "${secretField}" field missing)`);
+      throw new Error(
+        `malformed secret string ("${usernameField}" or "${secretField}" field missing)`
+      );
     }
 
     return { Username: secret[usernameField], Secret: secret[secretField] };
@@ -76,14 +100,18 @@ export async function fetchDockerLoginCredentials(aws: IAws, config: DockerCrede
 }
 
 export async function obtainEcrCredentials(ecr: AWS.ECR, logger?: Logger) {
-  if (logger) { logger('Fetching ECR authorization token'); }
-  const authData = (await ecr.getAuthorizationToken({ }).promise()).authorizationData || [];
+  if (logger) {
+    logger('Fetching ECR authorization token');
+  }
+  const authData = (await ecr.getAuthorizationToken({}).promise()).authorizationData || [];
   if (authData.length === 0) {
     throw new Error('No authorization data received from ECR');
   }
   const token = Buffer.from(authData[0].authorizationToken!, 'base64').toString('ascii');
   const [username, password] = token.split(':');
-  if (!username || !password) { throw new Error('unexpected ECR authData format'); }
+  if (!username || !password) {
+    throw new Error('unexpected ECR authData format');
+  }
 
   return {
     username,
