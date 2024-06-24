@@ -1,20 +1,20 @@
 import { log, LogLevel } from './logging';
 import {
-  AssetManifest, AssetPublishing, DefaultAwsClient, DestinationPattern, EventType,
-  IPublishProgress, IPublishProgressListener,
-} from '../src';
+  AssetManifest,
+  AssetPublishing,
+  DefaultAwsClient,
+  DestinationPattern,
+  EventType,
+  IPublishProgress,
+  IPublishProgressListener,
+} from '../lib';
 
-export async function publish(args: {
-  path: string;
-  assets?: string[];
-  profile?: string;
-}) {
-
+export async function publish(args: { path: string; assets?: string[]; profile?: string }) {
   let manifest = AssetManifest.fromPath(args.path);
   log('verbose', `Loaded manifest from ${args.path}: ${manifest.entries.length} assets found`);
 
   if (args.assets && args.assets.length > 0) {
-    const selection = args.assets.map(a => DestinationPattern.parse(a));
+    const selection = args.assets.map((a) => DestinationPattern.parse(a));
     manifest = manifest.select(selection);
     log('verbose', `Applied selection: ${manifest.entries.length} assets selected.`);
   }

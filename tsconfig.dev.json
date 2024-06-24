@@ -28,8 +28,9 @@
     "incremental": true
   },
   "include": [
-    "src/**/*.ts",
+    "lib/**/*.ts",
     "test/**/*.ts",
+    "bin/**/*.ts",
     ".projenrc.ts",
     "projenrc/**/*.ts"
   ],

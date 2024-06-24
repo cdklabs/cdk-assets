@@ -12,9 +12,13 @@
  */
 
 import * as fs from 'fs';
-import { DefaultAwsClient } from '../src';
+import { DefaultAwsClient } from '../lib';
 
-import { cdkCredentialsConfig, cdkCredentialsConfigFile, fetchDockerLoginCredentials } from '../src/private/docker-credentials';
+import {
+  cdkCredentialsConfig,
+  cdkCredentialsConfigFile,
+  fetchDockerLoginCredentials,
+} from '../lib/private/docker-credentials';
 
 async function main() {
   // Expected invocation is [node, docker-credential-cdk-assets, get] with input fed via STDIN
@@ -35,7 +39,7 @@ async function main() {
   fs.writeFileSync(1, JSON.stringify(credentials));
 }
 
-main().catch(e => {
+main().catch((e) => {
   // eslint-disable-next-line no-console
   console.error(e.stack);
   process.exitCode = 1;

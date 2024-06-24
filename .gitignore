@@ -30,6 +30,8 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
+**/*.d.ts
+**/*.js
 /test-reports/
 junit.xml
 !/jest.config.json
@@ -41,8 +43,10 @@ junit.xml
 !/test/
 !/tsconfig.json
 !/tsconfig.dev.json
-!/src/
-/lib
+!/lib/
+/lib/**/*.js
+/lib/**/*.d.ts
+/lib/**/*.d.ts.map
 /dist/
 !/.eslintrc.json
 !/.projenrc.ts

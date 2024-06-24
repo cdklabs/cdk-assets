@@ -56,6 +56,7 @@ const project = new typescript.TypeScriptProject({
       incremental: true,
       esModuleInterop: false,
     },
+    include: ['bin/**/*.ts'],
   },
   tsconfig: {
     compilerOptions: {
@@ -64,8 +65,13 @@ const project = new typescript.TypeScriptProject({
       lib: ['es2020', 'dom'],
       incremental: true,
       esModuleInterop: false,
+      rootDir: undefined,
+      outDir: undefined,
     },
+    include: ['bin/**/*.ts'],
   },
+  srcdir: 'lib',
+  gitignore: ['**/*.d.ts', '**/*.js'],
 });
 
 project.eslint?.addRules({
