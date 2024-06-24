@@ -1,12 +1,12 @@
 // Separate test file since the archiving module doesn't work well with 'mock-fs'
-import { bockfs } from '@aws-cdk/cdk-build-tools';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
 import { mockAws, mockedApiResult, mockUpload } from './mock-aws';
+import mockfs from './mock-fs';
 import { AssetManifest, AssetPublishing } from '../lib';
 
 let aws: ReturnType<typeof mockAws>;
 beforeEach(() => {
-  bockfs({
+  mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
       version: Manifest.version(),
       files: {
@@ -37,11 +37,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  bockfs.restore();
+  mockfs.restore();
 });
 
 test('Take a zipped upload', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath(bockfs.path('/simple/cdk.out')), { aws });
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
 
   await pub.publish();
 
