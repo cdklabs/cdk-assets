@@ -74,6 +74,9 @@ const project = new typescript.TypeScriptProject({
   gitignore: ['**/*.d.ts', '**/*.js'],
 });
 
+project.addPackageIgnore('*.ts');
+project.addPackageIgnore('!*.d.ts');
+
 project.eslint?.addRules({
   'prettier/prettier': [
     'error',

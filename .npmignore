@@ -19,6 +19,8 @@ dist
 /.projenrc.js
 tsconfig.tsbuildinfo
 /.eslintrc.json
+*.ts
+!*.d.ts
 /.gitattributes
 /.projenrc.ts
 /projenrc
