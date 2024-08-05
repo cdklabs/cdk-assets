@@ -1,9 +1,16 @@
 import { typescript } from 'projen';
 const project = new typescript.TypeScriptProject({
-  defaultReleaseBranch: 'main',
   name: 'cdk-assets',
   projenrcTs: true,
   publishDryRun: true,
+  defaultReleaseBranch: 'main',
+  majorVersion: 3,
+  prerelease: 'rc',
+  releaseBranches: {
+    'v2-main': {
+      majorVersion: 2,
+    },
+  },
   autoApproveUpgrades: true,
   autoApproveOptions: {
     allowedUsernames: ['aws-cdk-automation'],
