@@ -4,6 +4,7 @@
 !/.projen/deps.json
 !/.projen/files.json
 !/.github/workflows/pull-request-lint.yml
+!/.github/workflows/auto-approve.yml
 !/package.json
 !/LICENSE
 !/.npmignore
@@ -32,6 +33,7 @@ jspm_packages/
 .cache
 **/*.d.ts
 **/*.js
+**/.DS_Store
 /test-reports/
 junit.xml
 !/jest.config.json

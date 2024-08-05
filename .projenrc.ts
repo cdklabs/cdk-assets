@@ -4,6 +4,11 @@ const project = new typescript.TypeScriptProject({
   name: 'cdk-assets',
   projenrcTs: true,
   release: false,
+  autoApproveUpgrades: true,
+  autoApproveOptions: {
+    allowedUsernames: ['aws-cdk-automation'],
+    secret: 'GITHUB_TOKEN',
+  },
   repository: 'https://github.com/cdklabs/cdk-assets.git',
   keywords: ['aws', 'cdk'],
   homepage: 'https://github.com/aws/aws-cdk',
@@ -71,7 +76,7 @@ const project = new typescript.TypeScriptProject({
     include: ['bin/**/*.ts'],
   },
   srcdir: 'lib',
-  gitignore: ['**/*.d.ts', '**/*.js'],
+  gitignore: ['**/*.d.ts', '**/*.js', '**/.DS_Store'],
 });
 
 project.addPackageIgnore('*.ts');
