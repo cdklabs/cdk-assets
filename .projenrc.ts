@@ -3,7 +3,7 @@ const project = new typescript.TypeScriptProject({
   defaultReleaseBranch: 'main',
   name: 'cdk-assets',
   projenrcTs: true,
-  release: false,
+  publishDryRun: true,
   autoApproveUpgrades: true,
   autoApproveOptions: {
     allowedUsernames: ['aws-cdk-automation'],
