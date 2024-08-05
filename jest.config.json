@@ -3,8 +3,10 @@
   "verbose": true,
   "maxWorkers": "50%",
   "testMatch": [
-    "<rootDir>/lib/**/__tests__/**/*.ts?(x)",
-    "<rootDir>/@(test|lib)/**/*(*.)@(spec|test).ts?(x)"
+    "<rootDir>/@(lib|test)/**/*(*.)@(spec|test).ts?(x)",
+    "<rootDir>/@(lib|test)/**/__tests__/**/*.ts?(x)",
+    "<rootDir>/@(projenrc)/**/*(*.)@(spec|test).ts?(x)",
+    "<rootDir>/@(projenrc)/**/__tests__/**/*.ts?(x)"
   ],
   "clearMocks": true,
   "collectCoverage": true,
