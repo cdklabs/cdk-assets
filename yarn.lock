@@ -10,7 +10,7 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@aws-cdk/cloud-assembly-schema@^2.147.0":
+"@aws-cdk/cloud-assembly-schema@^2.151.0":
   version "2.151.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-2.151.0.tgz#87b3ae5dd486b47b735abae8b62b0601ca7794a4"
   integrity sha512-JGAqB+wzgSQAyN+mxpfOEDS/aW88wwDU2R5Xbe0hIT4ObfSjzAqdeWFG5IEWgwNxCARTyCO0S5FqIShR7aZqSg==
