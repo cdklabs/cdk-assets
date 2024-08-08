@@ -4,6 +4,7 @@ const project = new typescript.TypeScriptProject({
   projenrcTs: true,
   defaultReleaseBranch: 'v2-main',
   majorVersion: 2,
+  releaseToNpm: true,
   autoApproveUpgrades: true,
   autoApproveOptions: {
     allowedUsernames: ['aws-cdk-automation'],
