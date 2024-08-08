@@ -2,15 +2,8 @@ import { typescript } from 'projen';
 const project = new typescript.TypeScriptProject({
   name: 'cdk-assets',
   projenrcTs: true,
-  publishDryRun: true,
-  defaultReleaseBranch: 'main',
-  majorVersion: 3,
-  prerelease: 'rc',
-  releaseBranches: {
-    'v2-main': {
-      majorVersion: 2,
-    },
-  },
+  defaultReleaseBranch: 'v2-main',
+  majorVersion: 2,
   autoApproveUpgrades: true,
   autoApproveOptions: {
     allowedUsernames: ['aws-cdk-automation'],
@@ -83,7 +76,13 @@ const project = new typescript.TypeScriptProject({
     include: ['bin/**/*.ts'],
   },
   srcdir: 'lib',
-  gitignore: ['**/*.d.ts', '**/*.js', '**/.DS_Store'],
+  gitignore: ['**/*.d.ts', '**/*.js', '**/.DS_Store', 'npm-shrinkwrap.json'],
+  releaseWorkflowSetupSteps: [
+    {
+      name: 'Shrinkwrap',
+      run: 'npx projen shrinkwrap',
+    },
+  ],
 });
 
 project.addPackageIgnore('*.ts');
@@ -93,6 +92,23 @@ project.eslint?.addRules({
   'prettier/prettier': [
     'error',
     { singleQuote: true, semi: true, trailingComma: 'es5', printWidth: 100 },
+  ],
+});
+
+project.addTask('shrinkwrap', {
+  steps: [
+    {
+      spawn: 'bump',
+    },
+    {
+      exec: 'npm shrinkwrap',
+    },
+    {
+      spawn: 'unbump',
+    },
+    {
+      exec: 'git checkout HEAD -- yarn.lock',
+    },
   ],
 });
 
