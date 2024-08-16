@@ -10,18 +10,18 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@aws-cdk/cloud-assembly-schema@^2.151.0":
-  version "2.151.1"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-2.151.1.tgz#0147543e8b6f3cf647f06159c7c3e43cdaab1597"
-  integrity sha512-iGvr1sTuTTedNnNivJRKW6r889KSLJRrJBXciWDIAEWn7FS3Zcn6Z8yl/gx9L25kZ/6gKlH6YRipZ7chyysFmw==
+"@aws-cdk/cloud-assembly-schema@^2.151.1":
+  version "2.152.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-2.152.0.tgz#c3d6c7b0ed2020371f064788e983456b99479d81"
+  integrity sha512-G+MmjKDCcQJkwc/4V+QzYH3K+tK3NeZu7SzSbPOHtMDmcf2kcqqWwKORyUVP5Jhb5vvIwfeXOV2xXboOxVToRg==
   dependencies:
     jsonschema "^1.4.1"
     semver "^7.6.2"
 
-"@aws-cdk/cx-api@^2.151.1":
-  version "2.151.1"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.151.1.tgz#77e7eccf784d6c369241859dcef69e593bf16fe0"
-  integrity sha512-pkDgjncFjtw/Y2kaW5Y5msU/TcUPyohx+FDNGw/lHrW74t7NKf+ydxRPAxN/FbAweX2aWlpEqpHU5iatZflBUg==
+"@aws-cdk/cx-api@^2.152.0":
+  version "2.152.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.152.0.tgz#f30044fd286c204e61f07f419946d140b35c454b"
+  integrity sha512-csGzSD5Fa7Sh9F7EYSLvWeNmFTfatE78pFFlxxGEGKGsiz+Wb4yY94QlicUGo0N2iFJSW8u9sS5IeenQ+HPKQg==
   dependencies:
     semver "^7.6.2"
 
@@ -1198,10 +1198,10 @@ available-typed-arrays@^1.0.7:
   dependencies:
     possible-typed-array-names "^1.0.0"
 
-aws-sdk@^2.1675.0:
-  version "2.1675.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1675.0.tgz#8cde066706a99b3645fa0671e30cbb2bfcefa196"
-  integrity sha512-gkqNAP0m3gDpnZCKL2OLdwAG+SjYT9MURGfTkixAWHIPDYD4OQf3sCcZNBTTTeOvOXus/tJIpgafKHD9DCIOCQ==
+aws-sdk@^2.1676.0:
+  version "2.1676.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1676.0.tgz#90f792112cd7ca85cce068ea08c04e933576f959"
+  integrity sha512-Kzg9931GroRG6uLoUEF5Pcp005D1xilgQ8ntH0fKFxiYKGkQqkU/3JkV6k7jNRzouxTypaozzXYVNXsHRgH6JA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1921,9 +1921,9 @@ ejs@^3.1.10:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.4:
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.7.tgz#425d2a7f76ecfa564fdca1040d11fb1979851f3c"
-  integrity sha512-6FTNWIWMxMy/ZY6799nBlPtF1DFDQ6VQJ7yyDP27SJNt5lwtQ5ufqVvHylb3fdQefvRcgA3fKcFMJi9OLwBRNw==
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.8.tgz#0a3225b305212f347be48f159a3c0a117d5e9801"
+  integrity sha512-4Nx0gP2tPNBLTrFxBMHpkQbtn2hidPVr/+/FTtcCiBYTucqc70zRyVZiOLj17Ui3wTO7SQ1/N+hkHYzJjBzt6A==
 
 emittery@^0.13.1:
   version "0.13.1"
