@@ -11,9 +11,9 @@
     "@jridgewell/trace-mapping" "^0.3.24"
 
 "@aws-cdk/cloud-assembly-schema@^36.0.0":
-  version "36.0.8"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-36.0.8.tgz#6f2ba6d144f759e6c6c63ca3925a729e9acae2e0"
-  integrity sha512-MXLJ+o4w4UtsGvx0xKPT999bCv06a85YJdWGJrGo6317Ga0FEkDU19wNa44I+p5R03XxJ/HLOmjsRbUqvxpuug==
+  version "36.0.9"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-36.0.9.tgz#4f0fb46c595b647501edf7f0123430f5e2f3ddc5"
+  integrity sha512-J2qsck7sDDgKqGTBRQjCzyTgsaNKWwe4aPj0QibMVHpXryMJaGe1hbvN6tD24qv48OXKqN8D+LaOSQ24VLvkYQ==
   dependencies:
     jsonschema "^1.4.1"
     semver "^7.6.3"
@@ -1921,9 +1921,9 @@ ejs@^3.1.10:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.4:
-  version "1.5.10"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.10.tgz#2791f966880389f96078d5e784b0d500f71abd14"
-  integrity sha512-C3RDERDjrNW262GCRvpoer3a0Ksd66CtgDLxMHhzShQ8fhL4kwnpVXsJPAKg9xJjIROXUbLBrvtOzVAjALMIWA==
+  version "1.5.11"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.11.tgz#258077f1077a1c72f2925cd5b326c470a7f5adef"
+  integrity sha512-R1CccCDYqndR25CaXFd6hp/u9RaaMcftMkphmvuepXr5b1vfLkRml6aWVeBhXJ7rbevHkKEMJtz8XqPf7ffmew==
 
 emittery@^0.13.1:
   version "0.13.1"
