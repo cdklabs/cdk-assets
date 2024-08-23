@@ -1,9 +1,13 @@
-import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import * as mockfs from 'mock-fs';
-import { mockAws, mockedApiResult } from './mock-aws';
-import { AssetManifest, AssetPublishing } from '../lib';
+import 'aws-sdk-client-mock-jest';
 
-let aws: ReturnType<typeof mockAws>;
+import { Manifest } from '@aws-cdk/cloud-assembly-schema';
+import { DescribeImagesCommand } from '@aws-sdk/client-ecr';
+import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { MockAws, mockEcr, mockS3 } from './mock-aws';
+import mockfs from './mock-fs';
+import { AssetManifest, AssetPublishing, IAws } from '../lib';
+
+let aws: IAws;
 beforeEach(() => {
   mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
@@ -44,51 +48,47 @@ beforeEach(() => {
     }),
     '/simple/cdk.out/some_file': 'FILE_CONTENTS',
   });
-
-  aws = mockAws();
 });
 
 afterEach(() => {
   mockfs.restore();
 });
 
-test('check that placeholders are replaced', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
-  aws.mockS3.getBucketLocation = mockedApiResult({});
-  aws.mockS3.listObjectsV2 = mockedApiResult({
+test('correct calls are made', async () => {
+  aws = new MockAws();
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  mockS3.on(ListObjectsV2Command).resolves({
     Contents: [{ Key: 'some_key-current_account-current_region' }],
   });
-  aws.mockEcr.describeImages = mockedApiResult({
-    /* No error == image exists */
-  });
+  mockEcr.on(DescribeImagesCommand).resolves({});
+
+  const s3Client = jest.spyOn(aws, 's3Client');
+  const ecrClient = jest.spyOn(aws, 'ecrClient');
 
   await pub.publish();
 
-  expect(aws.s3Client).toHaveBeenCalledWith(
-    expect.objectContaining({
-      assumeRoleArn: 'arn:aws:role-current_account',
-    })
-  );
+  expect(s3Client).toHaveBeenCalledWith({
+    assumeRoleArn: 'arn:aws:role-current_account',
+    bucketName: 'some_bucket-current_account-current_region',
+    objectKey: 'some_key-current_account-current_region',
+  });
 
-  expect(aws.ecrClient).toHaveBeenCalledWith(
-    expect.objectContaining({
-      region: 'explicit_region',
-      assumeRoleArn: 'arn:aws:role-current_account',
-    })
-  );
+  expect(mockS3).toHaveReceivedCommandWith(ListObjectsV2Command, {
+    Bucket: 'some_bucket-current_account-current_region',
+    Prefix: 'some_key-current_account-current_region',
+    MaxKeys: 1,
+  });
 
-  expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
-    expect.objectContaining({
-      Bucket: 'some_bucket-current_account-current_region',
-      Prefix: 'some_key-current_account-current_region',
-      MaxKeys: 1,
-    })
-  );
+  expect(ecrClient).toHaveBeenCalledWith({
+    assumeRoleArn: 'arn:aws:role-current_account',
+    imageTag: 'abcdef',
+    quiet: undefined,
+    region: 'explicit_region',
+    repositoryName: 'repo-current_account-explicit_region',
+  });
 
-  expect(aws.mockEcr.describeImages).toHaveBeenCalledWith(
-    expect.objectContaining({
-      imageIds: [{ imageTag: 'abcdef' }],
-      repositoryName: 'repo-current_account-explicit_region',
-    })
-  );
+  expect(mockEcr).toHaveReceivedCommandWith(DescribeImagesCommand, {
+    imageIds: [{ imageTag: 'abcdef' }],
+    repositoryName: 'repo-current_account-explicit_region',
+  });
 });
