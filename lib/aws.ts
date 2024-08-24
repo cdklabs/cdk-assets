@@ -119,7 +119,8 @@ export class DefaultAwsClient implements IAws {
       credentials = await this.assumeRole(
         options.region,
         options.assumeRoleArn,
-        options.assumeRoleExternalId
+        options.assumeRoleExternalId,
+        options.assumeRoleSessionTags
       );
     }
 
@@ -141,13 +142,23 @@ export class DefaultAwsClient implements IAws {
   private async assumeRole(
     region: string | undefined,
     roleArn: string,
-    externalId?: string
+    externalId?: string,
+    sessionTags?: { [key: string]: string }
   ): Promise<AWS.Credentials> {
+    const parsedTags = sessionTags
+      ? Object.entries(sessionTags).map(([key, value]) => ({
+          Key: key,
+          Value: value,
+        }))
+      : [];
+
     return new this.AWS.ChainableTemporaryCredentials({
       params: {
         RoleArn: roleArn,
         ExternalId: externalId,
         RoleSessionName: `cdk-assets-${safeUsername()}`,
+        Tags: parsedTags,
+        TransitiveTagKeys: sessionTags ? Object.keys(sessionTags) : [],
       },
       stsConfig: {
         region,
