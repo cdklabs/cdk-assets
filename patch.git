@@ -1,0 +1,209 @@
+diff --git a/.projen/deps.json b/.projen/deps.json
+index d14251a..06ed68a 100644
+--- a/.projen/deps.json
++++ b/.projen/deps.json
+@@ -16,6 +16,10 @@
+       "name": "@types/mime",
+       "type": "build"
+     },
++    {
++      "name": "@types/mock-fs",
++      "type": "build"
++    },
+     {
+       "name": "@types/node",
+       "version": "^18",
+diff --git a/.projen/tasks.json b/.projen/tasks.json
+index adf8d23..c0b2795 100644
+--- a/.projen/tasks.json
++++ b/.projen/tasks.json
+@@ -252,13 +252,13 @@
+       },
+       "steps": [
+         {
+-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/archiver,@types/glob,@types/jest,@types/mime,@types/yargs,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,mock-fs,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,archiver,aws-sdk,glob,mime,yargs"
++          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/archiver,@types/glob,@types/jest,@types/mime,@types/mock-fs,@types/yargs,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,mock-fs,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,archiver,aws-sdk,glob,mime,yargs"
+         },
+         {
+           "exec": "yarn install --check-files"
+         },
+         {
+-          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen standard-version ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
++          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/mock-fs @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen standard-version ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
+         },
+         {
+           "exec": "npx projen"
+diff --git a/.projenrc.ts b/.projenrc.ts
+index 92fc68c..86a7b2a 100644
+--- a/.projenrc.ts
++++ b/.projenrc.ts
+@@ -38,6 +38,7 @@ const project = new typescript.TypeScriptProject({
+     '@types/glob',
+     '@types/mime',
+     '@types/yargs',
++    '@types/mock-fs',
+     'fs-extra',
+     'graceful-fs',
+     'jszip',
+diff --git a/lib/aws.ts b/lib/aws.ts
+index 567d018..1e3610e 100644
+--- a/lib/aws.ts
++++ b/lib/aws.ts
+@@ -1,4 +1,5 @@
+ import * as os from 'os';
++import type { ClientConfiguration as STSClientConfiguration } from 'aws-sdk/clients/sts';
+ 
+ /**
+  * AWS SDK operations required by Asset Publishing
+@@ -111,7 +112,7 @@ export class DefaultAwsClient implements IAws {
+     };
+   }
+ 
+-  private async awsOptions(options: ClientOptions) {
++  private async awsOptions(options: ClientOptions): Promise<STSClientConfiguration> {
+     let credentials;
+ 
+     if (options.assumeRoleArn) {
+@@ -161,7 +162,7 @@ export class DefaultAwsClient implements IAws {
+  *
+  * @see https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters
+  */
+-function safeUsername() {
++export function safeUsername() {
+   try {
+     return os.userInfo().username.replace(/[^\w+=,.@-]/g, '@');
+   } catch {
+diff --git a/package.json b/package.json
+index 86a98b1..2550ddb 100644
+--- a/package.json
++++ b/package.json
+@@ -35,6 +35,7 @@
+     "@types/glob": "^7.2.0",
+     "@types/jest": "^29.5.12",
+     "@types/mime": "^2.0.3",
++    "@types/mock-fs": "^4.13.4",
+     "@types/node": "^18",
+     "@types/yargs": "^15.0.19",
+     "@typescript-eslint/eslint-plugin": "^7",
+diff --git a/test/aws.test.ts b/test/aws.test.ts
+new file mode 100644
+index 0000000..7e9e7a5
+--- /dev/null
++++ b/test/aws.test.ts
+@@ -0,0 +1,77 @@
++import { DefaultAwsClient, safeUsername } from '../lib';
++
++afterEach(() => {
++  jest.requireActual('aws-sdk');
++});
++
++beforeEach(() => {
++  jest.requireActual('aws-sdk');
++});
++
++describe('discoverTargetAccount', () => {
++  test('assumes role if needed', async () => {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    const AWS = require('aws-sdk');
++
++    jest.mock('aws-sdk', () => {
++      return {
++        STS: jest.fn().mockReturnValue({
++          getCallerIdentity: jest.fn().mockReturnValue({
++            promise: jest.fn().mockResolvedValue({
++              Account: '123456789012',
++              Arn: 'arn:aws:iam::123456789012:role/my-role',
++            }),
++          }),
++        }),
++        ChainableTemporaryCredentials: jest.fn(),
++      };
++    });
++
++    const aws = new DefaultAwsClient();
++
++    await aws.discoverTargetAccount({
++      region: 'us-east-1',
++      assumeRoleArn: 'arn:aws:iam::123456789012:role/my-role',
++      assumeRoleExternalId: 'external-id',
++    });
++
++    expect(AWS.ChainableTemporaryCredentials).toHaveBeenCalledWith({
++      params: {
++        ExternalId: 'external-id',
++        RoleArn: 'arn:aws:iam::123456789012:role/my-role',
++        RoleSessionName: `cdk-assets-${safeUsername()}`,
++      },
++      stsConfig: {
++        customUserAgent: 'cdk-assets',
++        region: 'us-east-1',
++      },
++    });
++  });
++
++  test('returns account information', async () => {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    const AWS = require('aws-sdk');
++
++    jest.mock('aws-sdk', () => {
++      return {
++        STS: jest.fn().mockReturnValue({
++          getCallerIdentity: jest.fn().mockReturnValue({
++            promise: jest.fn().mockResolvedValue({
++              Account: '123456789012',
++              Arn: 'arn:aws:iam::123456789012:role/my-role',
++            }),
++          }),
++        }),
++        ChainableTemporaryCredentials: jest.fn(),
++      };
++    });
++
++    const aws = new DefaultAwsClient();
++
++    const account = await aws.discoverTargetAccount({});
++    expect(account).toEqual({
++      accountId: '123456789012',
++      partition: 'aws',
++    });
++  });
++});
+diff --git a/test/files.test.ts b/test/files.test.ts
+index e36e88a..49b0667 100644
+--- a/test/files.test.ts
++++ b/test/files.test.ts
+@@ -1,6 +1,6 @@
+ jest.mock('child_process');
+ 
+-import { Manifest } from '@aws-cdk/cloud-assembly-schema';
++import { FileDestination, Manifest } from '@aws-cdk/cloud-assembly-schema';
+ import * as mockfs from 'mock-fs';
+ import { FakeListener } from './fake-listener';
+ import { mockAws, mockedApiFailure, mockedApiResult, mockUpload } from './mock-aws';
+@@ -9,7 +9,7 @@ import { AssetPublishing, AssetManifest } from '../lib';
+ 
+ const ABS_PATH = '/simple/cdk.out/some_external_file';
+ 
+-const DEFAULT_DESTINATION = {
++const DEFAULT_DESTINATION: FileDestination = {
+   region: 'us-north-50',
+   assumeRoleArn: 'arn:aws:role',
+   bucketName: 'some_bucket',
+diff --git a/yarn.lock b/yarn.lock
+index 519d4c8..441ed39 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -818,6 +818,13 @@
+   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.5.tgz#ec10755e871497bcd83efe927e43ec46e8c0747e"
+   integrity sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==
+ 
++"@types/mock-fs@^4.13.4":
++  version "4.13.4"
++  resolved "https://registry.yarnpkg.com/@types/mock-fs/-/mock-fs-4.13.4.tgz#e73edb4b4889d44d23f1ea02d6eebe50aa30b09a"
++  integrity sha512-mXmM0o6lULPI8z3XNnQCpL0BGxPwx1Ul1wXYEPBGl4efShyxW2Rln0JOPEWGyZaYZMM6OVXM/15zUuFMY52ljg==
++  dependencies:
++    "@types/node" "*"
++
+ "@types/node@*":
+   version "22.5.0"
+   resolved "https://registry.yarnpkg.com/@types/node/-/node-22.5.0.tgz#10f01fe9465166b4cab72e75f60d8b99d019f958"

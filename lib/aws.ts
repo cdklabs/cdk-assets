@@ -1,4 +1,5 @@
 import * as os from 'os';
+import type { ClientConfiguration as STSClientConfiguration } from 'aws-sdk/clients/sts';
 
 /**
  * AWS SDK operations required by Asset Publishing
@@ -111,7 +112,7 @@ export class DefaultAwsClient implements IAws {
     };
   }
 
-  private async awsOptions(options: ClientOptions) {
+  private async awsOptions(options: ClientOptions): Promise<STSClientConfiguration> {
     let credentials;
 
     if (options.assumeRoleArn) {
@@ -161,7 +162,7 @@ export class DefaultAwsClient implements IAws {
  *
  * @see https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters
  */
-function safeUsername() {
+export function safeUsername() {
   try {
     return os.userInfo().username.replace(/[^\w+=,.@-]/g, '@');
   } catch {

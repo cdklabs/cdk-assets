@@ -38,6 +38,7 @@ const project = new typescript.TypeScriptProject({
     '@types/glob',
     '@types/mime',
     '@types/yargs',
+    '@types/mock-fs',
     'fs-extra',
     'graceful-fs',
     'jszip',
