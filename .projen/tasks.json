@@ -32,7 +32,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "BUMP_PACKAGE": "commit-and-tag-version@^12"
       },
       "steps": [
         {
@@ -236,7 +237,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "BUMP_PACKAGE": "commit-and-tag-version@^12"
       },
       "steps": [
         {
@@ -258,7 +260,7 @@
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/mock-fs @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen standard-version ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
+          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/mock-fs @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser commit-and-tag-version constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
         },
         {
           "exec": "npx projen"
