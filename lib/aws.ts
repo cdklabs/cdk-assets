@@ -162,7 +162,7 @@ export class DefaultAwsClient implements IAws {
  *
  * @see https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html#API_AssumeRole_RequestParameters
  */
-export function safeUsername() {
+function safeUsername() {
   try {
     return os.userInfo().username.replace(/[^\w+=,.@-]/g, '@');
   } catch {
