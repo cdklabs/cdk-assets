@@ -53,16 +53,16 @@
     "jszip": "^3.10.1",
     "mock-fs": "^4.14.0",
     "prettier": "^3.3.3",
-    "projen": "^0.86.4",
+    "projen": "^0.86.5",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@aws-cdk/cloud-assembly-schema": "^36.0.17",
+    "@aws-cdk/cloud-assembly-schema": "^36.0.18",
     "@aws-cdk/cx-api": "^2.154.1",
     "archiver": "^5.3.2",
-    "aws-sdk": "^2.1683.0",
+    "aws-sdk": "^2.1684.0",
     "glob": "^7.2.3",
     "mime": "^2.6.0",
     "yargs": "^16.2.0"
