@@ -1,5 +1,19 @@
 # cdk-assets
 
+<!--BEGIN STABILITY BANNER-->
+
+---
+
+> V3 of cdk-assets is still under active development and is subject to non-backward compatible changes while
+> being released with the `rc` suffix. 
+> 
+> These changes are not subject to the [Semantic Versioning](https://semver.org/) model and breaking changes 
+> will be announced in the release notes.
+
+---
+
+<!--END STABILITY BANNER-->
+
 A tool for publishing CDK assets to AWS environments.
 
 ## Overview
@@ -39,7 +53,8 @@ asset, or the name of the local Docker image.
 
 The `cdk-asset` tool can be used programmatically and via the CLI. Use
 programmatic access if you need more control over authentication than the
-default [`aws-sdk`](https://github.com/aws/aws-sdk-js) implementation allows.
+default [AWS SDK for JavaScript v3](https://github.com/aws/aws-sdk-js-v3) 
+implementation allows.
 
 Command-line use looks like this:
 
