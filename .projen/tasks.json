@@ -207,6 +207,23 @@
         }
       ]
     },
+    "shrinkwrap": {
+      "name": "shrinkwrap",
+      "steps": [
+        {
+          "spawn": "bump"
+        },
+        {
+          "exec": "npm shrinkwrap"
+        },
+        {
+          "spawn": "unbump"
+        },
+        {
+          "exec": "git checkout HEAD -- yarn.lock"
+        }
+      ]
+    },
     "test": {
       "name": "test",
       "description": "Run tests",

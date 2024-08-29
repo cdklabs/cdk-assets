@@ -23,6 +23,7 @@
     "pre-compile": "npx projen pre-compile",
     "release": "npx projen release",
     "release:v2-main": "npx projen release:v2-main",
+    "shrinkwrap": "npx projen shrinkwrap",
     "test": "npx projen test",
     "test:watch": "npx projen test:watch",
     "unbump": "npx projen unbump",
