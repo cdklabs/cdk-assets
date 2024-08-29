@@ -155,7 +155,7 @@ export class DefaultAwsClient implements IAws {
         });
       }
     }
-    return this.config;
+    return config;
   }
 }
 
