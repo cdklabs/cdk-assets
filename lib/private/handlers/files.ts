@@ -131,7 +131,7 @@ export class FileAssetHandler implements IAssetHandler {
       paramsEncryption
     );
 
-    await this.host.aws.upload(params, {});
+    await this.host.aws.upload(params);
   }
 
   private async packageFile(source: FileSource): Promise<PackagedFileAsset> {

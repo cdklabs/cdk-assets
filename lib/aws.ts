@@ -21,7 +21,7 @@ export interface IAws {
   s3Client(options: ClientOptions): Promise<S3Client>;
   ecrClient(options: ClientOptions): Promise<ECRClient>;
   secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient>;
-  upload(params: PutObjectCommandInput, options: ClientOptions): Promise<CompleteMultipartUploadCommandOutput>
+  upload(params: PutObjectCommandInput, options?: ClientOptions): Promise<CompleteMultipartUploadCommandOutput>;
 }
 
 export interface ClientOptions {
@@ -82,7 +82,7 @@ export class DefaultAwsClient implements IAws {
     return new S3Client(await this.awsOptions(options));
   }
 
-  public async upload(params: PutObjectCommandInput, options: ClientOptions): Promise<CompleteMultipartUploadCommandOutput> {
+  public async upload(params: PutObjectCommandInput, options: ClientOptions = {}): Promise<CompleteMultipartUploadCommandOutput> {
     try {
       const upload = new Upload({
         client: await this.s3Client(options),

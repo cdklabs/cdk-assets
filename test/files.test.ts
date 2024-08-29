@@ -177,8 +177,7 @@ test('upload with server side encryption AES256 header', async () => {
       Key: 'some_key',
       ContentType: 'application/octet-stream',
       ServerSideEncryption: 'AES256',
-    }),
-    {}
+    })
   );
 
   // We'll just have to assume the contents are correct
@@ -211,8 +210,7 @@ test('upload with server side encryption aws:kms header and key id', async () =>
       ContentType: 'application/octet-stream',
       ServerSideEncryption: 'aws:kms',
       SSEKMSKeyId: 'the-key-id',
-    }),
-    {}
+    })
   );
 
   // We'll just have to assume the contents are correct
@@ -235,15 +233,13 @@ test('no server side encryption header if access denied for bucket encryption', 
   expect(upload).toHaveBeenCalledWith(
     expect.not.objectContaining({
       ServerSideEncryption: 'aws:kms',
-    }),
-    {}
+    })
   );
 
   expect(upload).toHaveBeenCalledWith(
     expect.not.objectContaining({
       ServerSideEncryption: 'AES256',
-    }),
-    {}
+    })
   );
 });
 
@@ -260,8 +256,7 @@ test('correctly looks up content type', async () => {
       Bucket: 'some_bucket',
       Key: 'some_key.txt',
       ContentType: 'text/plain',
-    }),
-    {}
+    })
   );
 
   expect(upload).toHaveBeenCalledWith(
@@ -269,8 +264,7 @@ test('correctly looks up content type', async () => {
       Bucket: 'some_bucket',
       Key: 'some_key.png',
       ContentType: 'image/png',
-    }),
-    {}
+    })
   );
 
   // We'll just have to assume the contents are correct
@@ -287,8 +281,7 @@ test('upload file if new (list returns no key)', async () => {
     expect.objectContaining({
       Bucket: 'some_bucket',
       Key: 'some_key',
-    }),
-    {}
+    })
   );
 
   // We'll just have to assume the contents are correct
