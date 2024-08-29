@@ -37,7 +37,7 @@ export class FileAssetHandler implements IAssetHandler {
       const s3 = await this.host.aws.s3Client({
         assumeRoleArn: destination.assumeRoleArn,
         assumeRoleExternalId: destination.assumeRoleExternalId,
-        assumeRoleSessionTags: {},
+        assumeRoleSessionTags: destination.assumeRoleSessionTags,
         region: destination.region,
         quiet: true,
       });
@@ -59,7 +59,7 @@ export class FileAssetHandler implements IAssetHandler {
     const s3 = await this.host.aws.s3Client({
       assumeRoleArn: destination.assumeRoleArn,
       assumeRoleExternalId: destination.assumeRoleExternalId,
-      assumeRoleSessionTags: {},
+      assumeRoleSessionTags: destination.assumeRoleSessionTags,
       region: destination.region,
     });
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
@@ -73,7 +73,7 @@ export class FileAssetHandler implements IAssetHandler {
         await this.host.aws.discoverTargetAccount({
           assumeRoleArn: destination.assumeRoleArn,
           assumeRoleExternalId: destination.assumeRoleExternalId,
-          assumeRoleSessionTags: {},
+          assumeRoleSessionTags: destination.assumeRoleSessionTags,
           region: destination.region,
         })
       )?.accountId;
