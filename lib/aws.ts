@@ -1,4 +1,13 @@
 import * as os from 'os';
+import { ECRClient } from '@aws-sdk/client-ecr';
+import { CompleteMultipartUploadCommandOutput, PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { GetCallerIdentityCommand, STSClient, STSClientConfig } from '@aws-sdk/client-sts';
+import { fromNodeProviderChain, fromTemporaryCredentials } from '@aws-sdk/credential-providers';
+import { Upload } from '@aws-sdk/lib-storage';
+import { NODE_REGION_CONFIG_FILE_OPTIONS, NODE_REGION_CONFIG_OPTIONS } from '@smithy/config-resolver';
+import { loadConfig } from '@smithy/node-config-provider';
+import { AwsCredentialIdentityProvider } from '@smithy/types';
 
 /**
  * AWS SDK operations required by Asset Publishing
@@ -9,9 +18,10 @@ export interface IAws {
   discoverCurrentAccount(): Promise<Account>;
 
   discoverTargetAccount(options: ClientOptions): Promise<Account>;
-  s3Client(options: ClientOptions): Promise<AWS.S3>;
-  ecrClient(options: ClientOptions): Promise<AWS.ECR>;
-  secretsManagerClient(options: ClientOptions): Promise<AWS.SecretsManager>;
+  s3Client(options: ClientOptions): Promise<S3Client>;
+  ecrClient(options: ClientOptions): Promise<ECRClient>;
+  secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient>;
+  upload(params: PutObjectCommandInput, options?: ClientOptions): Promise<CompleteMultipartUploadCommandOutput>;
 }
 
 export interface ClientOptions {
@@ -19,6 +29,14 @@ export interface ClientOptions {
   assumeRoleArn?: string;
   assumeRoleExternalId?: string;
   quiet?: boolean;
+}
+
+const USER_AGENT = 'cdk-assets';
+
+interface Configuration {
+  clientConfig: STSClientConfig;
+  region?: string;
+  credentials: AwsCredentialIdentityProvider;
 }
 
 /**
@@ -43,36 +61,48 @@ export interface Account {
  * AWS client using the AWS SDK for JS with no special configuration
  */
 export class DefaultAwsClient implements IAws {
-  private readonly AWS: typeof import('aws-sdk');
   private account?: Account;
+  private config: Configuration;
 
-  constructor(profile?: string) {
-    // Force AWS SDK to look in ~/.aws/credentials and potentially use the configured profile.
-    process.env.AWS_SDK_LOAD_CONFIG = '1';
-    process.env.AWS_STS_REGIONAL_ENDPOINTS = 'regional';
-    process.env.AWS_NODEJS_CONNECTION_REUSE_ENABLED = '1';
-    if (profile) {
-      process.env.AWS_PROFILE = profile;
+  constructor(private readonly profile?: string) {
+    process.env.AWS_PROFILE = profile;
+    const clientConfig: STSClientConfig = {
+      customUserAgent: USER_AGENT,
     }
-    // Stop SDKv2 from displaying a warning for now. We are aware and will migrate at some point,
-    // our customer don't need to be bothered with this.
-    process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = '1';
-
-    // We need to set the environment before we load this library for the first time.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.AWS = require('aws-sdk');
+    this.config = {
+      clientConfig,
+      credentials: fromNodeProviderChain({
+        profile: this.profile,
+        clientConfig,
+      }),
+    };
   }
 
-  public async s3Client(options: ClientOptions) {
-    return new this.AWS.S3(await this.awsOptions(options));
+  public async s3Client(options: ClientOptions): Promise<S3Client> {
+    return new S3Client(await this.awsOptions(options));
   }
 
-  public async ecrClient(options: ClientOptions) {
-    return new this.AWS.ECR(await this.awsOptions(options));
+  public async upload(params: PutObjectCommandInput, options: ClientOptions = {}): Promise<CompleteMultipartUploadCommandOutput> {
+    try {
+      const upload = new Upload({
+        client: await this.s3Client(options),
+        params,
+      });
+
+      return upload.done();
+    } catch (e) {
+      // TODO: add something more useful here
+      console.log(e);
+      throw e;
+    } 
   }
 
-  public async secretsManagerClient(options: ClientOptions) {
-    return new this.AWS.SecretsManager(await this.awsOptions(options));
+  public async ecrClient(options: ClientOptions): Promise<ECRClient> {
+    return new ECRClient(await this.awsOptions(options));
+  }
+
+  public async secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient> {
+    return new SecretsManagerClient(await this.awsOptions(options));
   }
 
   public async discoverPartition(): Promise<string> {
@@ -80,28 +110,26 @@ export class DefaultAwsClient implements IAws {
   }
 
   public async discoverDefaultRegion(): Promise<string> {
-    return this.AWS.config.region || 'us-east-1';
+    return loadConfig(NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS)() || 'us-east-1';
   }
 
   public async discoverCurrentAccount(): Promise<Account> {
     if (this.account === undefined) {
-      const sts = new this.AWS.STS();
-      const response = await sts.getCallerIdentity().promise();
-      if (!response.Account || !response.Arn) {
-        throw new Error(`Unrecognized response from STS: '${JSON.stringify(response)}'`);
-      }
-      this.account = {
-        accountId: response.Account!,
-        partition: response.Arn!.split(':')[1],
-      };
+      this.account = await this.getAccount();
     }
-
     return this.account;
   }
 
   public async discoverTargetAccount(options: ClientOptions): Promise<Account> {
-    const sts = new this.AWS.STS(await this.awsOptions(options));
-    const response = await sts.getCallerIdentity().promise();
+    return this.getAccount(await this.awsOptions(options));
+  }
+
+  private async getAccount(options?: ClientOptions): Promise<Account> {
+    this.config.clientConfig = options ?? this.config.clientConfig;
+    const stsClient = new STSClient(await this.awsOptions(options));
+
+    const command = new GetCallerIdentityCommand();
+    const response = await stsClient.send(command);
     if (!response.Account || !response.Arn) {
       throw new Error(`Unrecognized response from STS: '${JSON.stringify(response)}'`);
     }
@@ -111,48 +139,23 @@ export class DefaultAwsClient implements IAws {
     };
   }
 
-  private async awsOptions(options: ClientOptions) {
-    let credentials;
-
-    if (options.assumeRoleArn) {
-      credentials = await this.assumeRole(
-        options.region,
-        options.assumeRoleArn,
-        options.assumeRoleExternalId
-      );
+  private async awsOptions(options?: ClientOptions) {
+    const config = this.config;
+    config.region = options?.region;
+    if (options) {
+      config.region = options.region;
+      if (options.assumeRoleArn) {
+        config.credentials = fromTemporaryCredentials({
+          params: {
+            RoleArn: options.assumeRoleArn,
+            ExternalId: options.assumeRoleExternalId,
+            RoleSessionName: `${USER_AGENT}-${safeUsername()}`,
+          },
+          clientConfig: this.config.clientConfig,
+        });
+      }
     }
-
-    return {
-      region: options.region,
-      customUserAgent: 'cdk-assets',
-      credentials,
-    };
-  }
-
-  /**
-   * Explicit manual AssumeRole call
-   *
-   * Necessary since I can't seem to get the built-in support for ChainableTemporaryCredentials to work.
-   *
-   * It needs an explicit configuration of `masterCredentials`, we need to put
-   * a `DefaultCredentialProverChain()` in there but that is not possible.
-   */
-  private async assumeRole(
-    region: string | undefined,
-    roleArn: string,
-    externalId?: string
-  ): Promise<AWS.Credentials> {
-    return new this.AWS.ChainableTemporaryCredentials({
-      params: {
-        RoleArn: roleArn,
-        ExternalId: externalId,
-        RoleSessionName: `cdk-assets-${safeUsername()}`,
-      },
-      stsConfig: {
-        region,
-        customUserAgent: 'cdk-assets',
-      },
-    });
+    return config;
   }
 }
 

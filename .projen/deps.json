@@ -1,6 +1,18 @@
 {
   "dependencies": [
     {
+      "name": "@smithy/config-resolver",
+      "type": "build"
+    },
+    {
+      "name": "@smithy/node-config-provider",
+      "type": "build"
+    },
+    {
+      "name": "@smithy/types",
+      "type": "build"
+    },
+    {
       "name": "@types/archiver",
       "type": "build"
     },
@@ -33,6 +45,14 @@
     {
       "name": "@typescript-eslint/parser",
       "version": "^7",
+      "type": "build"
+    },
+    {
+      "name": "aws-sdk-client-mock",
+      "type": "build"
+    },
+    {
+      "name": "aws-sdk-client-mock-jest",
       "type": "build"
     },
     {
@@ -88,10 +108,6 @@
       "type": "build"
     },
     {
-      "name": "mock-fs",
-      "type": "build"
-    },
-    {
       "name": "prettier",
       "type": "build"
     },
@@ -120,11 +136,31 @@
       "type": "runtime"
     },
     {
-      "name": "archiver",
+      "name": "@aws-sdk/client-ecr",
       "type": "runtime"
     },
     {
-      "name": "aws-sdk",
+      "name": "@aws-sdk/client-s3",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/client-secrets-manager",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/client-sts",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/credential-providers",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/lib-storage",
+      "type": "runtime"
+    },
+    {
+      "name": "archiver",
       "type": "runtime"
     },
     {

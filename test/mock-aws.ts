@@ -1,84 +1,78 @@
-jest.mock('aws-sdk');
-import * as AWS from 'aws-sdk';
+import { ReadStream } from 'fs';
+import { DescribeImagesCommand, DescribeRepositoriesCommand, ECRClient } from '@aws-sdk/client-ecr';
+import {
+  CompleteMultipartUploadCommandOutput,
+  PutObjectCommand,
+  PutObjectCommandInput,
+  S3Client,
+  UploadPartCommand,
+} from '@aws-sdk/client-s3';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { Upload } from '@aws-sdk/lib-storage';
+import { mockClient } from 'aws-sdk-client-mock';
+import { Account, ClientOptions, IAws } from '../lib/aws';
 
-export function mockAws() {
-  const mockEcr = new AWS.ECR();
-  const mockS3 = new AWS.S3();
-  const mockSecretsManager = new AWS.SecretsManager();
+export const mockEcr = mockClient(ECRClient);
+mockEcr.on(DescribeRepositoriesCommand).resolves({
+  repositories: [
+    {
+      repositoryName: 'repo',
+      repositoryUri: '12345.amazonaws.com/repo',
+    },
+  ],
+});
+mockEcr.on(DescribeImagesCommand).resolves({});
 
-  // Sane defaults which can be overridden
-  mockS3.getBucketLocation = mockedApiResult({});
-  mockS3.getBucketEncryption = mockedApiResult({});
-  mockEcr.describeRepositories = mockedApiResult({
-    repositories: [
-      {
-        repositoryUri: '12345.amazonaws.com/repo',
-      },
-    ],
-  });
-  mockSecretsManager.getSecretValue = mockedApiFailure(
-    'NotImplemented',
-    'You need to supply an implementation for getSecretValue'
-  );
+export const mockS3 = mockClient(S3Client);
+mockS3.on(UploadPartCommand).resolves({ ETag: '1' });
+mockS3.on(PutObjectCommand).callsFake(async (input: PutObjectCommandInput) => {
+  const stream = input.Body as ReadStream;
+  await new Promise<void>((resolve) => stream.close(() => resolve()));
+});
 
-  return {
-    mockEcr,
-    mockS3,
-    mockSecretsManager,
-    discoverPartition: jest.fn(() => Promise.resolve('swa')),
-    discoverCurrentAccount: jest.fn(() =>
-      Promise.resolve({ accountId: 'current_account', partition: 'swa' })
-    ),
-    discoverDefaultRegion: jest.fn(() => Promise.resolve('current_region')),
-    discoverTargetAccount: jest.fn(() =>
-      Promise.resolve({ accountId: 'target_account', partition: 'swa' })
-    ),
-    ecrClient: jest.fn(() => Promise.resolve(mockEcr)),
-    s3Client: jest.fn(() => Promise.resolve(mockS3)),
-    secretsManagerClient: jest.fn(() => Promise.resolve(mockSecretsManager)),
-  };
-}
+export const mockSecretsManager = mockClient(SecretsManagerClient);
 
-export function errorWithCode(code: string, message: string) {
-  const ret = new Error(message);
-  (ret as any).code = code;
-  return ret;
-}
+export class MockAws implements IAws {
+  discoverPartition(): Promise<string> {
+    return Promise.resolve('swa');
+  }
 
-export function mockedApiResult(returnValue: any) {
-  return jest.fn().mockReturnValue({
-    promise: jest.fn().mockResolvedValue(returnValue),
-  });
-}
+  discoverCurrentAccount(): Promise<Account> {
+    return Promise.resolve({ accountId: 'current_account', partition: 'swa' });
+  }
 
-export function mockedApiFailure(code: string, message: string) {
-  return jest.fn().mockReturnValue({
-    promise: jest.fn().mockRejectedValue(errorWithCode(code, message)),
-  });
-}
+  discoverDefaultRegion(): Promise<string> {
+    return Promise.resolve('current_region');
+  }
 
-/**
- * Mock upload, draining the stream that we get before returning
- * so no race conditions happen with the uninstallation of mock-fs.
- */
-export function mockUpload(expectContent?: string) {
-  return jest.fn().mockImplementation((request) => ({
-    promise: () =>
-      new Promise<void>((ok, ko) => {
-        const didRead = new Array<string>();
+  discoverTargetAccount(_options: ClientOptions): Promise<Account> {
+    return Promise.resolve({ accountId: 'target_account', partition: 'swa' });
+  }
 
-        const bodyStream: NodeJS.ReadableStream = request.Body;
-        bodyStream.on('data', (chunk) => {
-          didRead.push(chunk.toString());
-        }); // This listener must exist
-        bodyStream.on('error', ko);
-        bodyStream.on('close', () => {
-          const actualContent = didRead.join('');
-          if (expectContent !== undefined && expectContent !== actualContent) {
-            throw new Error(`Expected to read '${expectContent}' but read: '${actualContent}'`);
-          }
-          ok();
-        });
-      }),
-  }));
+  ecrClient(_options: ClientOptions): Promise<ECRClient> {
+    return Promise.resolve(mockEcr as unknown as ECRClient);
+  }
+
+  s3Client(_options: ClientOptions): Promise<S3Client> {
+    return Promise.resolve(mockS3 as unknown as S3Client);
+  }
+
+  secretsManagerClient(_options: ClientOptions): Promise<SecretsManagerClient> {
+    return Promise.resolve(mockSecretsManager as unknown as SecretsManagerClient);
+  }
+
+  upload(
+    params: PutObjectCommandInput,
+    options: ClientOptions
+  ): Promise<CompleteMultipartUploadCommandOutput> {
+    return new Promise<CompleteMultipartUploadCommandOutput>((resolve, reject) => {
+      const stream = params.Body as ReadStream;
+
+      stream.on('data', () => {});
+      stream.on('error', reject);
+      stream.on('close', () => {
+        resolve({ $metadata: {} });
+      });
+    });
+  }
 }

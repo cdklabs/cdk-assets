@@ -1,10 +1,11 @@
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import * as mockfs from 'mock-fs';
+import { GetBucketLocationCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { FakeListener } from './fake-listener';
-import { mockAws, mockedApiResult, mockUpload } from './mock-aws';
-import { AssetManifest, AssetPublishing } from '../lib';
+import { MockAws, mockS3 } from './mock-aws';
+import mockfs from './mock-fs';
+import { AssetManifest, AssetPublishing, IAws } from '../lib';
 
-let aws: ReturnType<typeof mockAws>;
+let aws: IAws;
 beforeEach(() => {
   mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
@@ -34,12 +35,10 @@ beforeEach(() => {
     '/simple/cdk.out/some_file': 'FILE_CONTENTS',
   });
 
-  aws = mockAws();
+  aws = new MockAws();
 
-  // Accept all S3 uploads as new
-  aws.mockS3.getBucketLocation = mockedApiResult({});
-  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
-  aws.mockS3.upload = mockUpload();
+  mockS3.on(GetBucketLocationCommand).resolves({});
+  mockS3.on(ListObjectsV2Command).resolves({ Contents: undefined });
 });
 
 afterEach(() => {
@@ -49,7 +48,7 @@ afterEach(() => {
 test('test listener', async () => {
   const progressListener = new FakeListener();
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
     aws,
     progressListener,
   });
@@ -65,7 +64,7 @@ test('test listener', async () => {
 test('test publishing in parallel', async () => {
   const progressListener = new FakeListener();
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
     aws,
     progressListener,
     publishInParallel: true,
@@ -82,7 +81,7 @@ test('test publishing in parallel', async () => {
 test('test abort', async () => {
   const progressListener = new FakeListener(true);
 
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
     aws,
     progressListener,
   });

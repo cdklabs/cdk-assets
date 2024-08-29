@@ -1,5 +1,5 @@
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import * as mockfs from 'mock-fs';
+import mockfs from './mock-fs';
 import {
   AssetManifest,
   DestinationIdentifier,
@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 test('Can list manifest', () => {
-  const manifest = AssetManifest.fromPath('/simple/cdk.out');
+  const manifest = AssetManifest.fromPath(mockfs.path('/simple/cdk.out'));
   expect(manifest.list().join('\n')).toEqual(
     `
 asset1 file {\"path\":\"S1\"}
@@ -55,7 +55,7 @@ asset2 docker-image {\"directory\":\"S2\"}
 });
 
 test('.entries() iterates over all destinations', () => {
-  const manifest = AssetManifest.fromPath('/simple/cdk.out');
+  const manifest = AssetManifest.fromPath(mockfs.path('/simple/cdk.out'));
 
   expect(manifest.entries).toEqual([
     new FileManifestEntry(
@@ -82,7 +82,7 @@ test('.entries() iterates over all destinations', () => {
 });
 
 test('can select by asset ID', () => {
-  const manifest = AssetManifest.fromPath('/simple/cdk.out');
+  const manifest = AssetManifest.fromPath(mockfs.path('/simple/cdk.out'));
 
   const subset = manifest.select([DestinationPattern.parse('asset2')]);
 
@@ -93,7 +93,7 @@ test('can select by asset ID', () => {
 });
 
 test('can select by asset ID + destination ID', () => {
-  const manifest = AssetManifest.fromPath('/simple/cdk.out');
+  const manifest = AssetManifest.fromPath(mockfs.path('/simple/cdk.out'));
 
   const subset = manifest.select([
     DestinationPattern.parse('asset1:dest1'),
@@ -106,7 +106,7 @@ test('can select by asset ID + destination ID', () => {
 });
 
 test('can select by destination ID', () => {
-  const manifest = AssetManifest.fromPath('/simple/cdk.out');
+  const manifest = AssetManifest.fromPath(mockfs.path('/simple/cdk.out'));
 
   const subset = manifest.select([DestinationPattern.parse(':dest1')]);
 

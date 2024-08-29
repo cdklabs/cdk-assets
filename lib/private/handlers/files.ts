@@ -9,6 +9,7 @@ import { IAssetHandler, IHandlerHost } from '../asset-handler';
 import { pathExists } from '../fs-extra';
 import { replaceAwsPlaceholders } from '../placeholders';
 import { shell } from '../shell';
+import { GetBucketEncryptionCommand, GetBucketLocationCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 
 /**
  * The size of an empty zip file is 22 bytes
@@ -130,7 +131,7 @@ export class FileAssetHandler implements IAssetHandler {
       paramsEncryption
     );
 
-    await s3.upload(params).promise();
+    await this.host.aws.upload(params);
   }
 
   private async packageFile(source: FileSource): Promise<PackagedFileAsset> {
@@ -185,7 +186,7 @@ type BucketEncryption =
   | { readonly type: 'access_denied' }
   | { readonly type: 'does_not_exist' };
 
-async function objectExists(s3: AWS.S3, bucket: string, key: string) {
+async function objectExists(s3: S3Client, bucket: string, key: string) {
   /*
    * The object existence check here refrains from using the `headObject` operation because this
    * would create a negative cache entry, making GET-after-PUT eventually consistent. This has been
@@ -202,7 +203,12 @@ async function objectExists(s3: AWS.S3, bucket: string, key: string) {
    * never retry building those assets without users having to manually clear
    * their bucket, which is a bad experience.
    */
-  const response = await s3.listObjectsV2({ Bucket: bucket, Prefix: key, MaxKeys: 1 }).promise();
+  const command = new ListObjectsV2Command({ 
+    Bucket: bucket,
+    Prefix: key,
+    MaxKeys: 1,
+  });
+  const response = await s3.send(command);
   return (
     response.Contents != null &&
     response.Contents.some(
@@ -254,36 +260,40 @@ class BucketInformation {
 
   private constructor() {}
 
-  public async bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
+  public async bucketOwnership(s3: S3Client, bucket: string): Promise<BucketOwnership> {
     return cached(this.ownerships, bucket, () => this._bucketOwnership(s3, bucket));
   }
 
-  public async bucketEncryption(s3: AWS.S3, bucket: string): Promise<BucketEncryption> {
+  public async bucketEncryption(s3: S3Client, bucket: string): Promise<BucketEncryption> {
     return cached(this.encryptions, bucket, () => this._bucketEncryption(s3, bucket));
   }
 
-  private async _bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
+  private async _bucketOwnership(s3: S3Client, bucket: string): Promise<BucketOwnership> {
     try {
-      await s3.getBucketLocation({ Bucket: bucket }).promise();
+      const command = new GetBucketLocationCommand({ 
+        Bucket: bucket,
+      });
+      await s3.send(command);
       return BucketOwnership.MINE;
     } catch (e: any) {
-      if (e.code === 'NoSuchBucket') {
+      if (e.name === 'NoSuchBucket') {
         return BucketOwnership.DOES_NOT_EXIST;
       }
-      if (['AccessDenied', 'AllAccessDisabled'].includes(e.code)) {
+      if (['AccessDenied', 'AllAccessDisabled'].includes(e.name)) {
         return BucketOwnership.SOMEONE_ELSES_OR_NO_ACCESS;
       }
       throw e;
     }
   }
 
-  private async _bucketEncryption(s3: AWS.S3, bucket: string): Promise<BucketEncryption> {
+  private async _bucketEncryption(s3: S3Client, bucket: string): Promise<BucketEncryption> {
     try {
-      const encryption = await s3.getBucketEncryption({ Bucket: bucket }).promise();
+      const command = new GetBucketEncryptionCommand({ Bucket: bucket });
+      const encryption = await s3.send(command);
       const l = encryption?.ServerSideEncryptionConfiguration?.Rules?.length ?? 0;
       if (l > 0) {
         const apply =
-          encryption?.ServerSideEncryptionConfiguration?.Rules[0]
+          encryption?.ServerSideEncryptionConfiguration?.Rules?.at(0)
             ?.ApplyServerSideEncryptionByDefault;
         let ssealgo = apply?.SSEAlgorithm;
         if (ssealgo === 'AES256') return { type: 'aes256' };
@@ -291,14 +301,14 @@ class BucketInformation {
       }
       return { type: 'no_encryption' };
     } catch (e: any) {
-      if (e.code === 'NoSuchBucket') {
+      if (e.name === 'NoSuchBucket') {
         return { type: 'does_not_exist' };
       }
-      if (e.code === 'ServerSideEncryptionConfigurationNotFoundError') {
+      if (e.name === 'ServerSideEncryptionConfigurationNotFoundError') {
         return { type: 'no_encryption' };
       }
 
-      if (['AccessDenied', 'AllAccessDisabled'].includes(e.code)) {
+      if (['AccessDenied', 'AllAccessDisabled'].includes(e.name)) {
         return { type: 'access_denied' };
       }
       return { type: 'no_encryption' };

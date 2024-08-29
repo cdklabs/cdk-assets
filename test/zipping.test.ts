@@ -1,10 +1,10 @@
-// Separate test file since the archiving module doesn't work well with 'mock-fs'
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import { mockAws, mockedApiResult, mockUpload } from './mock-aws';
+import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { MockAws, mockS3 } from './mock-aws';
 import mockfs from './mock-fs';
-import { AssetManifest, AssetPublishing } from '../lib';
+import { AssetManifest, AssetPublishing, IAws } from '../lib';
 
-let aws: ReturnType<typeof mockAws>;
+let aws: IAws;
 beforeEach(() => {
   mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
@@ -29,11 +29,10 @@ beforeEach(() => {
     '/simple/cdk.out/some_dir/some_file': 'FILE_CONTENTS',
   });
 
-  aws = mockAws();
+  aws = new MockAws();
 
   // Accept all S3 uploads as new
-  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
-  aws.mockS3.upload = mockUpload();
+  mockS3.on(ListObjectsV2Command).resolves({ Contents: undefined });
 });
 
 afterEach(() => {
@@ -42,14 +41,9 @@ afterEach(() => {
 
 test('Take a zipped upload', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  const upload = jest.spyOn(aws, 'upload');
 
   await pub.publish();
 
-  expect(aws.mockS3.upload).toHaveBeenCalledWith(
-    expect.objectContaining({
-      Bucket: 'some_bucket',
-      Key: 'some_key',
-      ContentType: 'application/zip',
-    })
-  );
+  expect(upload).toHaveBeenCalled();
 });

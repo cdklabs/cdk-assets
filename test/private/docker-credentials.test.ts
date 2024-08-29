@@ -1,22 +1,25 @@
 import * as os from 'os';
 import * as path from 'path';
-import * as mockfs from 'mock-fs';
+import { GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
+import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+import { IAws } from '../../lib/aws';
 import {
   cdkCredentialsConfig,
   cdkCredentialsConfigFile,
   DockerCredentialsConfig,
   fetchDockerLoginCredentials,
 } from '../../lib/private/docker-credentials';
-import { mockAws, mockedApiFailure, mockedApiResult } from '../mock-aws';
+import { MockAws, mockEcr, mockSecretsManager } from '../mock-aws';
+import mockfs from '../mock-fs';
 
 const _ENV = process.env;
 
-let aws: ReturnType<typeof mockAws>;
+let aws: IAws;
 beforeEach(() => {
   jest.resetModules();
   jest.resetAllMocks();
 
-  aws = mockAws();
+  aws = new MockAws();
 
   process.env = { ..._ENV };
 });
@@ -44,7 +47,7 @@ describe('cdkCredentialsConfigFile', () => {
 describe('cdkCredentialsConfig', () => {
   const credsFile = '/tmp/foo/bar/does/not/exist/config.json';
   beforeEach(() => {
-    process.env.CDK_DOCKER_CREDS_FILE = credsFile;
+    process.env.CDK_DOCKER_CREDS_FILE = mockfs.path(credsFile);
   });
 
   test('returns undefined if no config exists', () => {
@@ -124,40 +127,25 @@ describe('fetchDockerLoginCredentials', () => {
 
   describe('SecretsManager', () => {
     test('returns the credentials successfully if configured correctly - domain', async () => {
-      mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
-
       const creds = await fetchDockerLoginCredentials(aws, config, 'secret.example.com');
 
       expect(creds).toEqual({ Username: 'secretUser', Secret: 'secretPass' });
     });
 
     test('returns the credentials successfully if configured correctly - raw domain', async () => {
-      mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
-
       const creds = await fetchDockerLoginCredentials(aws, config, 'https://secret.example.com');
 
       expect(creds).toEqual({ Username: 'secretUser', Secret: 'secretPass' });
     });
 
-    test('throws when SecretsManager returns an error', async () => {
-      const errMessage = "Secrets Manager can't find the specified secret.";
-      aws.mockSecretsManager.getSecretValue = mockedApiFailure(
-        'ResourceNotFoundException',
-        errMessage
-      );
-
-      await expect(fetchDockerLoginCredentials(aws, config, 'secret.example.com')).rejects.toThrow(
-        errMessage
-      );
-    });
-
     test('supports assuming a role', async () => {
       mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
+      const secretsManagerClient = jest.spyOn(aws, 'secretsManagerClient');
 
       const creds = await fetchDockerLoginCredentials(aws, config, 'secretwithrole.example.com');
-
       expect(creds).toEqual({ Username: 'secretUser', Secret: 'secretPass' });
-      expect(aws.secretsManagerClient).toHaveBeenCalledWith({
+
+      expect(secretsManagerClient).toHaveBeenCalledWith({
         assumeRoleArn: 'arn:aws:iam::0123456789012:role/my-role',
       });
     });
@@ -172,6 +160,17 @@ describe('fetchDockerLoginCredentials', () => {
       );
 
       expect(creds).toEqual({ Username: 'secretUser', Secret: '01234567' });
+    });
+
+    test('throws when SecretsManager returns an error', async () => {
+      const errMessage = "Secrets Manager can't find the specified secret.";
+      const err = new Error(errMessage);
+      err.name = 'ResourceNotFoundException';
+      mockSecretsManager.on(GetSecretValueCommand).rejects(err);
+
+      await expect(fetchDockerLoginCredentials(aws, config, 'secret.example.com')).rejects.toThrow(
+        errMessage
+      );
     });
 
     test('throws when secret does not have the correct fields - key/value', async () => {
@@ -201,7 +200,9 @@ describe('fetchDockerLoginCredentials', () => {
     });
 
     test('throws if ECR errors', async () => {
-      aws.mockEcr.getAuthorizationToken = mockedApiFailure('ServerException', 'uhoh');
+      const err = new Error('uhoh');
+      err.name = 'ServerException';
+      mockEcr.on(GetAuthorizationTokenCommand).rejects(err);
 
       await expect(fetchDockerLoginCredentials(aws, config, 'ecr.example.com')).rejects.toThrow(
         /uhoh/
@@ -210,17 +211,18 @@ describe('fetchDockerLoginCredentials', () => {
 
     test('supports assuming a role', async () => {
       mockEcrAuthorizationData(Buffer.from('myFoo:myBar', 'utf-8').toString('base64'));
+      const ecrClient = jest.spyOn(aws, 'ecrClient');
 
       const creds = await fetchDockerLoginCredentials(aws, config, 'ecrwithrole.example.com');
-
       expect(creds).toEqual({ Username: 'myFoo', Secret: 'myBar' });
-      expect(aws.ecrClient).toHaveBeenCalledWith({
+
+      expect(ecrClient).toHaveBeenCalledWith({
         assumeRoleArn: 'arn:aws:iam::0123456789012:role/my-role',
       });
     });
 
     test('throws if ECR returns no authData', async () => {
-      aws.mockEcr.getAuthorizationToken = mockedApiResult({ authorizationData: [] });
+      mockEcr.on(GetAuthorizationTokenCommand).resolves({ authorizationData: [] });
 
       await expect(fetchDockerLoginCredentials(aws, config, 'ecr.example.com')).rejects.toThrow(
         /No authorization data received from ECR/
@@ -238,7 +240,7 @@ describe('fetchDockerLoginCredentials', () => {
 });
 
 function mockSecretWithSecretString(secretString: any) {
-  aws.mockSecretsManager.getSecretValue = mockedApiResult({
+  mockSecretsManager.on(GetSecretValueCommand).resolves({
     ARN: 'arn:aws:secretsmanager:eu-west-1:0123456789012:secret:mySecret',
     Name: 'mySecret',
     VersionId: 'fa81fe61-c167-4aca-969e-4d8df74d4814',
@@ -248,7 +250,7 @@ function mockSecretWithSecretString(secretString: any) {
 }
 
 function mockEcrAuthorizationData(authorizationToken: string) {
-  aws.mockEcr.getAuthorizationToken = mockedApiResult({
+  mockEcr.on(GetAuthorizationTokenCommand).resolves({
     authorizationData: [
       {
         authorizationToken,
