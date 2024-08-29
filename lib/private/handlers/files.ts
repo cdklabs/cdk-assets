@@ -35,7 +35,10 @@ export class FileAssetHandler implements IAssetHandler {
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
     try {
       const s3 = await this.host.aws.s3Client({
-        ...destination,
+        assumeRoleArn: destination.assumeRoleArn,
+        assumeRoleExternalId: destination.assumeRoleExternalId,
+        assumeRoleSessionTags: {},
+        region: destination.region,
         quiet: true,
       });
       this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
@@ -53,14 +56,27 @@ export class FileAssetHandler implements IAssetHandler {
   public async publish(): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
-    const s3 = await this.host.aws.s3Client(destination);
+    const s3 = await this.host.aws.s3Client({
+      assumeRoleArn: destination.assumeRoleArn,
+      assumeRoleExternalId: destination.assumeRoleExternalId,
+      assumeRoleSessionTags: {},
+      region: destination.region,
+    });
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
     const bucketInfo = BucketInformation.for(this.host);
 
     // A thunk for describing the current account. Used when we need to format an error
     // message, not in the success case.
-    const account = async () => (await this.host.aws.discoverTargetAccount(destination))?.accountId;
+    const account = async () =>
+      (
+        await this.host.aws.discoverTargetAccount({
+          assumeRoleArn: destination.assumeRoleArn,
+          assumeRoleExternalId: destination.assumeRoleExternalId,
+          assumeRoleSessionTags: {},
+          region: destination.region,
+        })
+      )?.accountId;
     switch (await bucketInfo.bucketOwnership(s3, destination.bucketName)) {
       case BucketOwnership.MINE:
         break;

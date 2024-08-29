@@ -105,7 +105,10 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const ecr = await this.host.aws.ecrClient({
-      ...destination,
+      assumeRoleArn: destination.assumeRoleArn,
+      assumeRoleExternalId: destination.assumeRoleExternalId,
+      assumeRoleSessionTags: {},
+      region: destination.region,
       quiet: options.quiet,
     });
     const account = async () => (await this.host.aws.discoverCurrentAccount())?.accountId;
