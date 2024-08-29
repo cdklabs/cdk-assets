@@ -40,7 +40,7 @@ const project = new typescript.TypeScriptProject({
   packageName: 'cdk-assets',
   eslintOptions: {
     prettier: true,
-    dirs: ['src', 'test', 'bin'],
+    dirs: ['test', 'bin', 'lib'],
   },
   jestOptions: {
     jestConfig: {

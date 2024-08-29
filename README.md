@@ -2,6 +2,34 @@
 
 A tool for publishing CDK assets to AWS environments.
 
+<!--BEGIN STABILITY BANNER-->
+
+---
+
+> The AWS SDK for JavaScript v2 will enter maintenance mode on September 8, 2024
+> and will reach end-of-support on September 8, 2025. 
+>
+> The implementation of DefaultAwsClient in cdk-assets is tightly coupled to v2 of the AWS JavaScript SDK and, 
+> as such, will follow the same end-of-life schedule. 
+> Existing applications that use cdk-assets v2 will continue to function as 
+> intended, unless there is a fundamental change to any of the AWS services with client wrappers. 
+>
+> cdk-assets v2 will not be updated to support any new AWS services, new features,
+> or any changes to existing services.
+> 
+> cdk-assets v3 now has an available release candidate that uses AWS SDK for JavaScript v3 and will be stabilized prior to v2 being put into maintenance mode.
+>
+> The following table outlines the future level of support for v2:
+> 
+| Lifecycle Phase | Start Date | End Date | Support Level |
+| :---------------: |:------: | :------: | :------: | 
+| Maintenance Mode | September 8, 2024 | September 7, 2025 | cdk-assets v2 will limit releases to address critical bug fixes, security issues, and dependency upgrades. No new features or non-critical bug fixes will be addressed. |
+| End-Of-Support | September 8, 2025 | N/A | cdk-assets v2 will no longer receive updates or releases. Previously published releases will continue to be available via npm and the code will remain on GitHub. |
+
+---
+
+<!--END STABILITY BANNER-->
+
 ## Overview
 
 `cdk-assets` requires an asset manifest file called `assets.json`, in a CDK
