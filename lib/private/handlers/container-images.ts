@@ -130,7 +130,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       destinationAlreadyExists: await this.destinationAlreadyExists(ecr, destination, imageUri),
     };
 
-    return this.init!;
+    return this.init;
   }
 
   /**
