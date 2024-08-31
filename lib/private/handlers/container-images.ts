@@ -107,7 +107,8 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     const ecr = await this.host.aws.ecrClient({
       assumeRoleArn: destination.assumeRoleArn,
       assumeRoleExternalId: destination.assumeRoleExternalId,
-      assumeRoleSessionTags: destination.assumeRoleSessionTags,
+      assumeRoleAdditionalOptions:
+        destination.assumeRoleAdditionalOptions as AWS.STS.Types.AssumeRoleRequest,
       region: destination.region,
       quiet: options.quiet,
     });
@@ -129,7 +130,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       destinationAlreadyExists: await this.destinationAlreadyExists(ecr, destination, imageUri),
     };
 
-    return this.init;
+    return this.init!;
   }
 
   /**
