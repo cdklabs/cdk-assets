@@ -163,7 +163,7 @@ export class DefaultAwsClient implements IAws {
         RoleArn: roleArn,
         ExternalId: externalId,
         RoleSessionName: `cdk-assets-${safeUsername()}`,
-        // ...(additionalOptions ?? {}),
+        ...(additionalOptions ?? {}),
       },
       stsConfig: {
         region,
