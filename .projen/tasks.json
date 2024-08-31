@@ -32,7 +32,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "BUMP_PACKAGE": "commit-and-tag-version@^12"
       },
       "steps": [
         {
@@ -108,7 +109,7 @@
       "description": "Runs eslint against the codebase",
       "steps": [
         {
-          "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ src test bin build-tools projenrc .projenrc.ts",
+          "exec": "eslint --ext .ts,.tsx --fix --no-error-on-unmatched-pattern $@ test bin lib build-tools projenrc .projenrc.ts",
           "receiveArgs": true
         }
       ]
@@ -155,32 +156,6 @@
       "name": "pre-compile",
       "description": "Prepare the project for compilation"
     },
-    "release": {
-      "name": "release",
-      "description": "Prepare a release from \"main\" branch",
-      "env": {
-        "RELEASE": "true",
-        "MAJOR": "3",
-        "PRERELEASE": "rc"
-      },
-      "steps": [
-        {
-          "exec": "rm -fr dist"
-        },
-        {
-          "spawn": "bump"
-        },
-        {
-          "spawn": "build"
-        },
-        {
-          "spawn": "unbump"
-        },
-        {
-          "exec": "git diff --ignore-space-at-eol --exit-code"
-        }
-      ]
-    },
     "release:v2-main": {
       "name": "release:v2-main",
       "description": "Prepare a release from \"v2-main\" branch",
@@ -203,6 +178,23 @@
         },
         {
           "exec": "git diff --ignore-space-at-eol --exit-code"
+        }
+      ]
+    },
+    "shrinkwrap": {
+      "name": "shrinkwrap",
+      "steps": [
+        {
+          "spawn": "bump"
+        },
+        {
+          "exec": "npm shrinkwrap"
+        },
+        {
+          "spawn": "unbump"
+        },
+        {
+          "exec": "git checkout HEAD -- yarn.lock"
         }
       ]
     },
@@ -236,7 +228,8 @@
         "CHANGELOG": "dist/changelog.md",
         "BUMPFILE": "dist/version.txt",
         "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": ""
+        "RELEASE_TAG_PREFIX": "",
+        "BUMP_PACKAGE": "commit-and-tag-version@^12"
       },
       "steps": [
         {
@@ -258,7 +251,7 @@
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen standard-version ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
+          "exec": "yarn upgrade @types/archiver @types/glob @types/jest @types/mime @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser commit-and-tag-version constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip mock-fs prettier projen ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api archiver aws-sdk glob mime yargs"
         },
         {
           "exec": "npx projen"
