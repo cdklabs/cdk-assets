@@ -2,7 +2,7 @@ jest.mock('child_process');
 
 import 'aws-sdk-client-mock-jest';
 
-import { Manifest } from '@aws-cdk/cloud-assembly-schema';
+import { FileDestination, Manifest } from '@aws-cdk/cloud-assembly-schema';
 import { GetBucketEncryptionCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { FakeListener } from './fake-listener';
 import { MockAws, mockS3 } from './mock-aws';
@@ -12,7 +12,7 @@ import { AssetPublishing, AssetManifest, IAws } from '../lib';
 
 const ABS_PATH = '/simple/cdk.out/some_external_file';
 
-const DEFAULT_DESTINATION = {
+const DEFAULT_DESTINATION: FileDestination = {
   region: 'us-north-50',
   assumeRoleArn: 'arn:aws:role',
   bucketName: 'some_bucket',

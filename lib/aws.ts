@@ -6,7 +6,12 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import { GetCallerIdentityCommand, STSClient, STSClientConfig } from '@aws-sdk/client-sts';
+import {
+  GetCallerIdentityCommand,
+  STSClient,
+  STSClientConfig,
+  AssumeRoleRequest,
+} from '@aws-sdk/client-sts';
 import { fromNodeProviderChain, fromTemporaryCredentials } from '@aws-sdk/credential-providers';
 import { Upload } from '@aws-sdk/lib-storage';
 import {
@@ -15,6 +20,12 @@ import {
 } from '@smithy/config-resolver';
 import { loadConfig } from '@smithy/node-config-provider';
 import type { AwsCredentialIdentityProvider } from '@smithy/types';
+
+// Partial because `RoleSessionName` is required in STS, but we have a default value for it.
+export type AssumeRoleAdditionalOptions = Partial<
+  // cloud-assembly-schema validates that `ExternalId` and `RoleArn` are not configured
+  Omit<AssumeRoleRequest, 'ExternalId' | 'RoleArn'>
+>;
 
 /**
  * AWS SDK operations required by Asset Publishing
@@ -38,6 +49,7 @@ export interface ClientOptions {
   region?: string;
   assumeRoleArn?: string;
   assumeRoleExternalId?: string;
+  assumeRoleAdditionalOptions?: AssumeRoleAdditionalOptions;
   quiet?: boolean;
 }
 
@@ -134,7 +146,7 @@ export class DefaultAwsClient implements IAws {
   }
 
   public async discoverTargetAccount(options: ClientOptions): Promise<Account> {
-    return this.getAccount(await this.awsOptions(options));
+    return this.getAccount(options);
   }
 
   private async getAccount(options?: ClientOptions): Promise<Account> {
@@ -158,11 +170,22 @@ export class DefaultAwsClient implements IAws {
     if (options) {
       config.region = options.region;
       if (options.assumeRoleArn) {
+        if (
+          options.assumeRoleAdditionalOptions?.Tags &&
+          options.assumeRoleAdditionalOptions.Tags.length > 0 &&
+          !options.assumeRoleAdditionalOptions.TransitiveTagKeys
+        ) {
+          options.assumeRoleAdditionalOptions.TransitiveTagKeys =
+            // for some reason t.Key is marked as optional in the SDK .d.ts
+            // so we have to "!".
+            options.assumeRoleAdditionalOptions.Tags.map((t) => t.Key!);
+        }
         config.credentials = fromTemporaryCredentials({
           params: {
             RoleArn: options.assumeRoleArn,
             ExternalId: options.assumeRoleExternalId,
             RoleSessionName: `${USER_AGENT}-${safeUsername()}`,
+            ...(options.assumeRoleAdditionalOptions ?? {}),
           },
           clientConfig: this.config.clientConfig,
         });

@@ -1,6 +1,12 @@
 import { createReadStream, promises as fs } from 'fs';
 import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
+import {
+  GetBucketEncryptionCommand,
+  GetBucketLocationCommand,
+  ListObjectsV2Command,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import * as mime from 'mime';
 import { FileManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
@@ -9,7 +15,6 @@ import { IAssetHandler, IHandlerHost } from '../asset-handler';
 import { pathExists } from '../fs-extra';
 import { replaceAwsPlaceholders } from '../placeholders';
 import { shell } from '../shell';
-import { GetBucketEncryptionCommand, GetBucketLocationCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 
 /**
  * The size of an empty zip file is 22 bytes
@@ -36,7 +41,10 @@ export class FileAssetHandler implements IAssetHandler {
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
     try {
       const s3 = await this.host.aws.s3Client({
-        ...destination,
+        region: destination.region,
+        assumeRoleArn: destination.assumeRoleArn,
+        assumeRoleExternalId: destination.assumeRoleExternalId,
+        assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
         quiet: true,
       });
       this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
@@ -54,14 +62,27 @@ export class FileAssetHandler implements IAssetHandler {
   public async publish(): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
-    const s3 = await this.host.aws.s3Client(destination);
+    const s3 = await this.host.aws.s3Client({
+      region: destination.region,
+      assumeRoleArn: destination.assumeRoleArn,
+      assumeRoleExternalId: destination.assumeRoleExternalId,
+      assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
+    });
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
     const bucketInfo = BucketInformation.for(this.host);
 
     // A thunk for describing the current account. Used when we need to format an error
     // message, not in the success case.
-    const account = async () => (await this.host.aws.discoverTargetAccount(destination))?.accountId;
+    const account = async () =>
+      (
+        await this.host.aws.discoverTargetAccount({
+          region: destination.region,
+          assumeRoleArn: destination.assumeRoleArn,
+          assumeRoleExternalId: destination.assumeRoleExternalId,
+          assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
+        })
+      )?.accountId;
     switch (await bucketInfo.bucketOwnership(s3, destination.bucketName)) {
       case BucketOwnership.MINE:
         break;
@@ -203,7 +224,7 @@ async function objectExists(s3: S3Client, bucket: string, key: string) {
    * never retry building those assets without users having to manually clear
    * their bucket, which is a bad experience.
    */
-  const command = new ListObjectsV2Command({ 
+  const command = new ListObjectsV2Command({
     Bucket: bucket,
     Prefix: key,
     MaxKeys: 1,
@@ -270,7 +291,7 @@ class BucketInformation {
 
   private async _bucketOwnership(s3: S3Client, bucket: string): Promise<BucketOwnership> {
     try {
-      const command = new GetBucketLocationCommand({ 
+      const command = new GetBucketLocationCommand({
         Bucket: bucket,
       });
       await s3.send(command);
@@ -293,8 +314,9 @@ class BucketInformation {
       const l = encryption?.ServerSideEncryptionConfiguration?.Rules?.length ?? 0;
       if (l > 0) {
         const apply =
-          encryption?.ServerSideEncryptionConfiguration?.Rules?.at(0)
-            ?.ApplyServerSideEncryptionByDefault;
+          encryption?.ServerSideEncryptionConfiguration?.Rules?.at(
+            0
+          )?.ApplyServerSideEncryptionByDefault;
         let ssealgo = apply?.SSEAlgorithm;
         if (ssealgo === 'AES256') return { type: 'aes256' };
         if (ssealgo === 'aws:kms') return { type: 'kms', kmsKeyId: apply?.KMSMasterKeyID };

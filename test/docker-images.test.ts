@@ -40,6 +40,10 @@ beforeEach(() => {
             theDestination: {
               region: 'us-north-50',
               assumeRoleArn: 'arn:aws:role',
+              assumeRoleExternalId: 'external-id',
+              assumeRoleAdditionalOptions: {
+                Tags: [{ Key: 'Departement', Value: 'Engineering' }],
+              },
               repositoryName: 'repo',
               imageTag: 'abcdef',
             },
@@ -362,6 +366,10 @@ test('pass destination properties to AWS client', async () => {
     imageTag: 'abcdef',
     region: 'us-north-50',
     assumeRoleArn: 'arn:aws:role',
+    assumeRoleExternalId: 'external-id',
+    assumeRoleAdditionalOptions: {
+      Tags: [{ Key: 'Departement', Value: 'Engineering' }],
+    },
     repositoryName: 'repo',
   });
 });
