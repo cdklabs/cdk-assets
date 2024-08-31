@@ -363,14 +363,13 @@ test('pass destination properties to AWS client', async () => {
   await pub.publish();
 
   expect(ecrClient).toHaveBeenCalledWith({
-    imageTag: 'abcdef',
     region: 'us-north-50',
     assumeRoleArn: 'arn:aws:role',
     assumeRoleExternalId: 'external-id',
     assumeRoleAdditionalOptions: {
       Tags: [{ Key: 'Departement', Value: 'Engineering' }],
     },
-    repositoryName: 'repo',
+    quiet: undefined,
   });
 });
 
@@ -706,10 +705,11 @@ describe('external assets', () => {
     await pub.publish();
 
     expect(ecrClient).toHaveBeenCalledWith({
-      imageTag: 'ghijkl',
       region: 'us-north-50',
       assumeRoleArn: 'arn:aws:role',
-      repositoryName: 'repo',
+      assumeRoleAdditionalOptions: undefined,
+      assumeRoleExternalId: undefined,
+      quiet: undefined,
     });
 
     expectAllSpawns();
