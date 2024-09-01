@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
+import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { Logger } from './shell';
 import { IAws } from '../aws';
-import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
-import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 
 export interface DockerCredentials {
   readonly Username: string;
@@ -107,7 +107,7 @@ export async function obtainEcrCredentials(ecr: ECRClient, logger?: Logger) {
   if (logger) {
     logger('Fetching ECR authorization token');
   }
-  
+
   const authData = (await ecr.send(new GetAuthorizationTokenCommand({}))).authorizationData || [];
   if (authData.length === 0) {
     throw new Error('No authorization data received from ECR');
