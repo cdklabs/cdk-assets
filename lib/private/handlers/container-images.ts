@@ -107,8 +107,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     const ecr = await this.host.aws.ecrClient({
       assumeRoleArn: destination.assumeRoleArn,
       assumeRoleExternalId: destination.assumeRoleExternalId,
-      assumeRoleAdditionalOptions:
-        destination.assumeRoleAdditionalOptions as AWS.STS.Types.AssumeRoleRequest,
+      assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
       region: destination.region,
       quiet: options.quiet,
     });
