@@ -17,6 +17,10 @@
       "type": "build"
     },
     {
+      "name": "@types/mock-fs",
+      "type": "build"
+    },
+    {
       "name": "@types/node",
       "version": "^18",
       "type": "build"
