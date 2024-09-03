@@ -151,18 +151,14 @@ export class DefaultAwsClient implements IAws {
     externalId?: string,
     additionalOptions?: AssumeRoleAdditionalOptions
   ): Promise<AWS.Credentials> {
-    if (
-      additionalOptions?.Tags &&
-      additionalOptions.Tags.length > 0 &&
-      !additionalOptions.TransitiveTagKeys
-    ) {
-      additionalOptions.TransitiveTagKeys = additionalOptions.Tags?.map((t) => t.Key);
-    }
     return new this.AWS.ChainableTemporaryCredentials({
       params: {
         RoleArn: roleArn,
         ExternalId: externalId,
         RoleSessionName: `cdk-assets-${safeUsername()}`,
+        TransitiveTagKeys: additionalOptions?.Tags
+          ? additionalOptions.Tags.map((t) => t.Key)
+          : undefined,
         ...(additionalOptions ?? {}),
       },
       stsConfig: {
