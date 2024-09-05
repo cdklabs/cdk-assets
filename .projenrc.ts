@@ -35,14 +35,14 @@ const project = new typescript.TypeScriptProject({
     '@aws-sdk/client-sts',
     '@aws-sdk/credential-providers',
     '@aws-sdk/lib-storage',
+    '@smithy/config-resolver',
+    '@smithy/node-config-provider',
     'glob',
     'mime',
     'yargs',
   ],
   description: 'CDK Asset Publishing Tool',
   devDeps: [
-    '@smithy/config-resolver',
-    '@smithy/node-config-provider',
     '@smithy/types',
     '@types/archiver',
     '@types/glob',
@@ -57,7 +57,7 @@ const project = new typescript.TypeScriptProject({
   packageName: 'cdk-assets',
   eslintOptions: {
     prettier: true,
-    dirs: ['src', 'test', 'bin'],
+    dirs: ['lib', 'test', 'bin'],
   },
   jestOptions: {
     jestConfig: {

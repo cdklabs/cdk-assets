@@ -1,13 +1,20 @@
 import * as os from 'os';
 import { ECRClient } from '@aws-sdk/client-ecr';
-import { CompleteMultipartUploadCommandOutput, PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3';
+import {
+  CompleteMultipartUploadCommandOutput,
+  PutObjectCommandInput,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { GetCallerIdentityCommand, STSClient, STSClientConfig } from '@aws-sdk/client-sts';
 import { fromNodeProviderChain, fromTemporaryCredentials } from '@aws-sdk/credential-providers';
 import { Upload } from '@aws-sdk/lib-storage';
-import { NODE_REGION_CONFIG_FILE_OPTIONS, NODE_REGION_CONFIG_OPTIONS } from '@smithy/config-resolver';
+import {
+  NODE_REGION_CONFIG_FILE_OPTIONS,
+  NODE_REGION_CONFIG_OPTIONS,
+} from '@smithy/config-resolver';
 import { loadConfig } from '@smithy/node-config-provider';
-import { AwsCredentialIdentityProvider } from '@smithy/types';
+import type { AwsCredentialIdentityProvider } from '@smithy/types';
 
 /**
  * AWS SDK operations required by Asset Publishing
@@ -21,7 +28,10 @@ export interface IAws {
   s3Client(options: ClientOptions): Promise<S3Client>;
   ecrClient(options: ClientOptions): Promise<ECRClient>;
   secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient>;
-  upload(params: PutObjectCommandInput, options?: ClientOptions): Promise<CompleteMultipartUploadCommandOutput>;
+  upload(
+    params: PutObjectCommandInput,
+    options?: ClientOptions
+  ): Promise<CompleteMultipartUploadCommandOutput>;
 }
 
 export interface ClientOptions {
@@ -68,7 +78,7 @@ export class DefaultAwsClient implements IAws {
     process.env.AWS_PROFILE = profile;
     const clientConfig: STSClientConfig = {
       customUserAgent: USER_AGENT,
-    }
+    };
     this.config = {
       clientConfig,
       credentials: fromNodeProviderChain({
@@ -82,19 +92,22 @@ export class DefaultAwsClient implements IAws {
     return new S3Client(await this.awsOptions(options));
   }
 
-  public async upload(params: PutObjectCommandInput, options: ClientOptions = {}): Promise<CompleteMultipartUploadCommandOutput> {
+  public async upload(
+    params: PutObjectCommandInput,
+    options: ClientOptions = {}
+  ): Promise<CompleteMultipartUploadCommandOutput> {
     try {
       const upload = new Upload({
         client: await this.s3Client(options),
         params,
       });
 
-      return upload.done();
+      return await upload.done();
     } catch (e) {
       // TODO: add something more useful here
       console.log(e);
       throw e;
-    } 
+    }
   }
 
   public async ecrClient(options: ClientOptions): Promise<ECRClient> {

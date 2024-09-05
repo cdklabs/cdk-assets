@@ -1,14 +1,6 @@
 {
   "dependencies": [
     {
-      "name": "@smithy/config-resolver",
-      "type": "build"
-    },
-    {
-      "name": "@smithy/node-config-provider",
-      "type": "build"
-    },
-    {
       "name": "@smithy/types",
       "type": "build"
     },
@@ -157,6 +149,14 @@
     },
     {
       "name": "@aws-sdk/lib-storage",
+      "type": "runtime"
+    },
+    {
+      "name": "@smithy/config-resolver",
+      "type": "runtime"
+    },
+    {
+      "name": "@smithy/node-config-provider",
       "type": "runtime"
     },
     {

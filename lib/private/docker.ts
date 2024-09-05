@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { ECRClient } from '@aws-sdk/client-ecr';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
 import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
-import { ECRClient } from '@aws-sdk/client-ecr';
 
 interface BuildOptions {
   readonly directory: string;
