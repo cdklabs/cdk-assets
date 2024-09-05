@@ -1,6 +1,10 @@
 import * as path from 'path';
 import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
-import { DescribeImagesCommand, DescribeRepositoriesCommand, type ECRClient } from '@aws-sdk/client-ecr';
+import {
+  DescribeImagesCommand,
+  DescribeRepositoriesCommand,
+  type ECRClient,
+} from '@aws-sdk/client-ecr';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
 import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
@@ -274,7 +278,7 @@ async function imageExists(ecr: ECRClient, repositoryName: string, imageTag: str
 async function repositoryUri(ecr: ECRClient, repositoryName: string): Promise<string | undefined> {
   try {
     const command = new DescribeRepositoriesCommand({
-      repositoryNames: [ repositoryName ],
+      repositoryNames: [repositoryName],
     });
 
     const response = await ecr.send(command);
