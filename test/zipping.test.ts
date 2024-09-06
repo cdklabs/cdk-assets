@@ -1,8 +1,9 @@
+import 'aws-sdk-client-mock-jest';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { MockAws, mockS3 } from './mock-aws';
+import { ListObjectsV2Command, PutObjectCommand } from '@aws-sdk/client-s3';
+import { mockS3 } from './mock-aws';
 import mockfs from './mock-fs';
-import { AssetManifest, AssetPublishing, IAws } from '../lib';
+import { AssetManifest, AssetPublishing, DefaultAwsClient, IAws } from '../lib';
 
 let aws: IAws;
 beforeEach(() => {
@@ -29,7 +30,7 @@ beforeEach(() => {
     '/simple/cdk.out/some_dir/some_file': 'FILE_CONTENTS',
   });
 
-  aws = new MockAws();
+  aws = new DefaultAwsClient();
 
   // Accept all S3 uploads as new
   mockS3.on(ListObjectsV2Command).resolves({ Contents: undefined });
@@ -41,9 +42,14 @@ afterEach(() => {
 
 test('Take a zipped upload', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-  const upload = jest.spyOn(aws, 'upload');
 
   await pub.publish();
 
-  expect(upload).toHaveBeenCalled();
+  // Upload calls PutObjectCommand under the hood
+  expect(mockS3).toHaveReceivedCommandWith(PutObjectCommand, {
+    Bucket: 'some_bucket',
+    Key: 'some_key',
+    Body: expect.anything(),
+    ContentType: 'application/zip',
+  });
 });

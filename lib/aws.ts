@@ -1,11 +1,36 @@
 import * as os from 'os';
-import { ECRClient } from '@aws-sdk/client-ecr';
 import {
-  CompleteMultipartUploadCommandOutput,
-  PutObjectCommandInput,
+  DescribeImagesCommand,
+  DescribeImagesCommandInput,
+  DescribeImagesCommandOutput,
+  DescribeRepositoriesCommand,
+  DescribeRepositoriesCommandInput,
+  DescribeRepositoriesCommandOutput,
+  ECRClient,
+  GetAuthorizationTokenCommand,
+  GetAuthorizationTokenCommandInput,
+  GetAuthorizationTokenCommandOutput,
+} from '@aws-sdk/client-ecr';
+import {
+  type CompleteMultipartUploadCommandOutput,
+  GetBucketEncryptionCommand,
+  type GetBucketEncryptionCommandInput,
+  type GetBucketEncryptionCommandOutput,
+  GetBucketLocationCommand,
+  type GetBucketLocationCommandInput,
+  type GetBucketLocationCommandOutput,
+  ListObjectsV2Command,
+  type ListObjectsV2CommandInput,
+  type ListObjectsV2CommandOutput,
+  type PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import {
+  GetSecretValueCommand,
+  GetSecretValueCommandInput,
+  GetSecretValueCommandOutput,
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
 import { GetCallerIdentityCommand, STSClient, STSClientConfig } from '@aws-sdk/client-sts';
 import { fromNodeProviderChain, fromTemporaryCredentials } from '@aws-sdk/credential-providers';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -16,6 +41,29 @@ import {
 import { loadConfig } from '@smithy/node-config-provider';
 import type { AwsCredentialIdentityProvider } from '@smithy/types';
 
+export interface IS3Client {
+  getBucketEncryption(
+    input: GetBucketEncryptionCommandInput
+  ): Promise<GetBucketEncryptionCommandOutput>;
+  getBucketLocation(input: GetBucketLocationCommandInput): Promise<GetBucketLocationCommandOutput>;
+  listObjectsV2(input: ListObjectsV2CommandInput): Promise<ListObjectsV2CommandOutput>;
+  upload(input: PutObjectCommandInput): Promise<CompleteMultipartUploadCommandOutput>;
+}
+
+export interface IECRClient {
+  describeImages(input: DescribeImagesCommandInput): Promise<DescribeImagesCommandOutput>;
+  describeRepositories(
+    input: DescribeRepositoriesCommandInput
+  ): Promise<DescribeRepositoriesCommandOutput>;
+  getAuthorizationToken(
+    input?: GetAuthorizationTokenCommandInput
+  ): Promise<GetAuthorizationTokenCommandOutput>;
+}
+
+export interface ISecretsManagerClient {
+  getSecretValue(input: GetSecretValueCommandInput): Promise<GetSecretValueCommandOutput>;
+}
+
 /**
  * AWS SDK operations required by Asset Publishing
  */
@@ -25,13 +73,9 @@ export interface IAws {
   discoverCurrentAccount(): Promise<Account>;
 
   discoverTargetAccount(options: ClientOptions): Promise<Account>;
-  s3Client(options: ClientOptions): Promise<S3Client>;
-  ecrClient(options: ClientOptions): Promise<ECRClient>;
-  secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient>;
-  upload(
-    params: PutObjectCommandInput,
-    options?: ClientOptions
-  ): Promise<CompleteMultipartUploadCommandOutput>;
+  s3Client(options: ClientOptions): Promise<IS3Client>;
+  ecrClient(options: ClientOptions): Promise<IECRClient>;
+  secretsManagerClient(options: ClientOptions): Promise<ISecretsManagerClient>;
 }
 
 export interface ClientOptions {
@@ -75,7 +119,6 @@ export class DefaultAwsClient implements IAws {
   private config: Configuration;
 
   constructor(private readonly profile?: string) {
-    process.env.AWS_PROFILE = profile;
     const clientConfig: STSClientConfig = {
       customUserAgent: USER_AGENT,
     };
@@ -88,34 +131,56 @@ export class DefaultAwsClient implements IAws {
     };
   }
 
-  public async s3Client(options: ClientOptions): Promise<S3Client> {
-    return new S3Client(await this.awsOptions(options));
+  public async s3Client(options: ClientOptions): Promise<IS3Client> {
+    const client = new S3Client(await this.awsOptions(options));
+    return {
+      getBucketEncryption: (
+        input: GetBucketEncryptionCommandInput
+      ): Promise<GetBucketEncryptionCommandOutput> =>
+        client.send(new GetBucketEncryptionCommand(input)),
+      getBucketLocation: (
+        input: GetBucketLocationCommandInput
+      ): Promise<GetBucketLocationCommandOutput> =>
+        client.send(new GetBucketLocationCommand(input)),
+      listObjectsV2: (input: ListObjectsV2CommandInput): Promise<ListObjectsV2CommandOutput> =>
+        client.send(new ListObjectsV2Command(input)),
+      upload: (input: PutObjectCommandInput): Promise<CompleteMultipartUploadCommandOutput> => {
+        try {
+          const upload = new Upload({
+            client,
+            params: input,
+          });
+          return upload.done();
+        } catch (e: any) {
+          console.log(`Asset upload failed: '${e.message}'`);
+          throw e;
+        }
+      },
+    };
   }
 
-  public async upload(
-    params: PutObjectCommandInput,
-    options: ClientOptions = {}
-  ): Promise<CompleteMultipartUploadCommandOutput> {
-    try {
-      const upload = new Upload({
-        client: await this.s3Client(options),
-        params,
-      });
-
-      return await upload.done();
-    } catch (e) {
-      // TODO: add something more useful here
-      console.log(e);
-      throw e;
-    }
+  public async ecrClient(options: ClientOptions): Promise<IECRClient> {
+    const client = new ECRClient(await this.awsOptions(options));
+    return {
+      describeImages: (input: DescribeImagesCommandInput): Promise<DescribeImagesCommandOutput> =>
+        client.send(new DescribeImagesCommand(input)),
+      describeRepositories: (
+        input: DescribeRepositoriesCommandInput
+      ): Promise<DescribeRepositoriesCommandOutput> =>
+        client.send(new DescribeRepositoriesCommand(input)),
+      getAuthorizationToken: (
+        input: GetAuthorizationTokenCommandInput
+      ): Promise<GetAuthorizationTokenCommandOutput> =>
+        client.send(new GetAuthorizationTokenCommand(input ?? {})),
+    };
   }
 
-  public async ecrClient(options: ClientOptions): Promise<ECRClient> {
-    return new ECRClient(await this.awsOptions(options));
-  }
-
-  public async secretsManagerClient(options: ClientOptions): Promise<SecretsManagerClient> {
-    return new SecretsManagerClient(await this.awsOptions(options));
+  public async secretsManagerClient(options: ClientOptions): Promise<ISecretsManagerClient> {
+    const client = new SecretsManagerClient(await this.awsOptions(options));
+    return {
+      getSecretValue: (input: GetSecretValueCommandInput): Promise<GetSecretValueCommandOutput> =>
+        client.send(new GetSecretValueCommand(input)),
+    };
   }
 
   public async discoverPartition(): Promise<string> {

@@ -1,11 +1,7 @@
 import * as path from 'path';
 import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
-import {
-  DescribeImagesCommand,
-  DescribeRepositoriesCommand,
-  type ECRClient,
-} from '@aws-sdk/client-ecr';
 import { DockerImageManifestEntry } from '../../asset-manifest';
+import type { IECRClient } from '../../aws';
 import { EventType } from '../../progress';
 import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
 import { Docker } from '../docker';
@@ -13,7 +9,7 @@ import { replaceAwsPlaceholders } from '../placeholders';
 import { shell } from '../shell';
 
 interface ContainerImageAssetHandlerInit {
-  readonly ecr: ECRClient;
+  readonly ecr: IECRClient;
   readonly repoUri: string;
   readonly imageUri: string;
   readonly destinationAlreadyExists: boolean;
@@ -141,7 +137,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
    * for user benefit (the format is slightly different).
    */
   private async destinationAlreadyExists(
-    ecr: ECRClient,
+    ecr: IECRClient,
     destination: DockerImageDestination,
     imageUri: string
   ): Promise<boolean> {
@@ -253,14 +249,12 @@ class ContainerImageBuilder {
   }
 }
 
-async function imageExists(ecr: ECRClient, repositoryName: string, imageTag: string) {
+async function imageExists(ecr: IECRClient, repositoryName: string, imageTag: string) {
   try {
-    const command = new DescribeImagesCommand({
+    await ecr.describeImages({
       repositoryName,
       imageIds: [{ imageTag }],
     });
-
-    await ecr.send(command);
     return true;
   } catch (e: any) {
     if (e.name !== 'ImageNotFoundException') {
@@ -275,13 +269,11 @@ async function imageExists(ecr: ECRClient, repositoryName: string, imageTag: str
  *
  * Returns undefined if the repository does not exist.
  */
-async function repositoryUri(ecr: ECRClient, repositoryName: string): Promise<string | undefined> {
+async function repositoryUri(ecr: IECRClient, repositoryName: string): Promise<string | undefined> {
   try {
-    const command = new DescribeRepositoriesCommand({
+    const response = await ecr.describeRepositories({
       repositoryNames: [repositoryName],
     });
-
-    const response = await ecr.send(command);
     return (response.repositories || [])[0]?.repositoryUri;
   } catch (e: any) {
     if (e.name !== 'RepositoryNotFoundException') {

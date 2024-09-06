@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { ECRClient } from '@aws-sdk/client-ecr';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
 import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
+import { IECRClient } from '../aws';
 
 interface BuildOptions {
   readonly directory: string;
@@ -130,7 +130,7 @@ export class Docker {
   /**
    * Get credentials from ECR and run docker login
    */
-  public async login(ecr: ECRClient) {
+  public async login(ecr: IECRClient) {
     const credentials = await obtainEcrCredentials(ecr);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
@@ -233,7 +233,7 @@ export class Docker {
 
 export interface DockerFactoryOptions {
   readonly repoUri: string;
-  readonly ecr: ECRClient;
+  readonly ecr: IECRClient;
   readonly logger: (m: string) => void;
 }
 
