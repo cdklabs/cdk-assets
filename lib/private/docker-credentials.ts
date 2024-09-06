@@ -1,10 +1,8 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
-import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { Logger } from './shell';
-import { IAws } from '../aws';
+import { IAws, IECRClient } from '../aws';
 
 export interface DockerCredentials {
   readonly Username: string;
@@ -71,11 +69,9 @@ export async function fetchDockerLoginCredentials(
 
   if (domainConfig.secretsManagerSecretId) {
     const sm = await aws.secretsManagerClient({ assumeRoleArn: domainConfig.assumeRoleArn });
-    const command = new GetSecretValueCommand({
+    const secretValue = await sm.getSecretValue({
       SecretId: domainConfig.secretsManagerSecretId,
     });
-
-    const secretValue = await sm.send(command);
     if (!secretValue.SecretString) {
       throw new Error(
         `unable to fetch SecretString from secret: ${domainConfig.secretsManagerSecretId}`
@@ -103,12 +99,12 @@ export async function fetchDockerLoginCredentials(
   }
 }
 
-export async function obtainEcrCredentials(ecr: ECRClient, logger?: Logger) {
+export async function obtainEcrCredentials(ecr: IECRClient, logger?: Logger) {
   if (logger) {
     logger('Fetching ECR authorization token');
   }
 
-  const authData = (await ecr.send(new GetAuthorizationTokenCommand({}))).authorizationData || [];
+  const authData = (await ecr.getAuthorizationToken()).authorizationData || [];
   if (authData.length === 0) {
     throw new Error('No authorization data received from ECR');
   }
