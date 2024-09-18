@@ -2,6 +2,7 @@ import { createReadStream, promises as fs } from 'fs';
 import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
 import * as mime from 'mime';
+import { destinationToClientOptions } from '.';
 import { FileManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
@@ -35,10 +36,7 @@ export class FileAssetHandler implements IAssetHandler {
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
     try {
       const s3 = await this.host.aws.s3Client({
-        assumeRoleArn: destination.assumeRoleArn,
-        assumeRoleExternalId: destination.assumeRoleExternalId,
-        assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
-        region: destination.region,
+        ...destinationToClientOptions(destination),
         quiet: true,
       });
       this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
@@ -56,12 +54,9 @@ export class FileAssetHandler implements IAssetHandler {
   public async publish(): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
-    const s3 = await this.host.aws.s3Client({
-      assumeRoleArn: destination.assumeRoleArn,
-      assumeRoleExternalId: destination.assumeRoleExternalId,
-      assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
-      region: destination.region,
-    });
+
+    const clientOptions = destinationToClientOptions(destination);
+    const s3 = await this.host.aws.s3Client(clientOptions);
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
     const bucketInfo = BucketInformation.for(this.host);
@@ -69,14 +64,7 @@ export class FileAssetHandler implements IAssetHandler {
     // A thunk for describing the current account. Used when we need to format an error
     // message, not in the success case.
     const account = async () =>
-      (
-        await this.host.aws.discoverTargetAccount({
-          assumeRoleArn: destination.assumeRoleArn,
-          assumeRoleExternalId: destination.assumeRoleExternalId,
-          assumeRoleAdditionalOptions: destination.assumeRoleAdditionalOptions,
-          region: destination.region,
-        })
-      )?.accountId;
+      (await this.host.aws.discoverTargetAccount(clientOptions))?.accountId;
     switch (await bucketInfo.bucketOwnership(s3, destination.bucketName)) {
       case BucketOwnership.MINE:
         break;
