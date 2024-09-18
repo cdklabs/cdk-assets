@@ -56,15 +56,15 @@
     "jest-junit": "^15",
     "jszip": "^3.10.1",
     "prettier": "^3.3.3",
-    "projen": "^0.87.3",
+    "projen": "^0.87.4",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@aws-cdk/cloud-assembly-schema": "^36.0.25",
+    "@aws-cdk/cloud-assembly-schema": "^36.1.1",
     "@aws-cdk/cx-api": "^2.158.0",
-    "@aws-sdk/client-ecr": "^3.651.1",
+    "@aws-sdk/client-ecr": "^3.653.0",
     "@aws-sdk/client-s3": "^3.651.1",
     "@aws-sdk/client-secrets-manager": "^3.651.1",
     "@aws-sdk/client-sts": "^3.651.1",
