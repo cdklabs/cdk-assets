@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@aws-cdk/cloud-assembly-schema@^36.1.1":
-  version "36.1.1"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-36.1.1.tgz#3fd870d4f422a34a50054df1c41e74a27e9f7b14"
-  integrity sha512-yCF4uTJ3jMtS3e/KKWYVgK2Y6YgdFE6LBQ/7RAAUBufdu+f0oJWFvTjPJPCms78dE71vmeYPuKprLpIsOOL1HQ==
+"@aws-cdk/cloud-assembly-schema@^37.0.0":
+  version "37.0.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-37.0.0.tgz#a265f00d40135cbd2a65034ee6e0776caecaa232"
+  integrity sha512-iCY/vEBnb7zRUj9LRRz52Ol0gWEJvnbZNouISFi8GtA8YZ7BFuh+fN24qQNn1lGNjPli4E1Nn2JNk1P//gNrOw==
   dependencies:
     jsonschema "^1.4.1"
     semver "^7.6.3"
