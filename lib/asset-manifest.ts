@@ -26,7 +26,7 @@ export class AssetManifest {
       const obj = Manifest.loadAssetManifest(fileName);
       return new AssetManifest(path.dirname(fileName), obj);
     } catch (e: any) {
-      throw new Error(`Canot read asset manifest '${fileName}': ${e.message}`);
+      throw new Error(`Cannot read asset manifest '${fileName}': ${e.message}`);
     }
   }
 
