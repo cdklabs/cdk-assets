@@ -59,7 +59,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@aws-cdk/cloud-assembly-schema": "^36.1.1",
+    "@aws-cdk/cloud-assembly-schema": "^36.3.0",
     "@aws-cdk/cx-api": "^2.158.0",
     "archiver": "^5.3.2",
     "aws-sdk": "^2.1691.0",
