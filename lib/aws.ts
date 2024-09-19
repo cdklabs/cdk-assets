@@ -14,10 +14,17 @@ export interface IAws {
   secretsManagerClient(options: ClientOptions): Promise<AWS.SecretsManager>;
 }
 
+// Partial because `RoleSessionName` is required in STS, but we have a default value for it.
+export type AssumeRoleAdditionalOptions = Partial<
+  // cloud-assembly-schema validates that `ExternalId` and `RoleArn` are not configured
+  Omit<AWS.STS.Types.AssumeRoleRequest, 'ExternalId' | 'RoleArn'>
+>;
+
 export interface ClientOptions {
   region?: string;
   assumeRoleArn?: string;
   assumeRoleExternalId?: string;
+  assumeRoleAdditionalOptions?: AssumeRoleAdditionalOptions;
   quiet?: boolean;
 }
 
@@ -118,7 +125,8 @@ export class DefaultAwsClient implements IAws {
       credentials = await this.assumeRole(
         options.region,
         options.assumeRoleArn,
-        options.assumeRoleExternalId
+        options.assumeRoleExternalId,
+        options.assumeRoleAdditionalOptions
       );
     }
 
@@ -140,13 +148,18 @@ export class DefaultAwsClient implements IAws {
   private async assumeRole(
     region: string | undefined,
     roleArn: string,
-    externalId?: string
+    externalId?: string,
+    additionalOptions?: AssumeRoleAdditionalOptions
   ): Promise<AWS.Credentials> {
     return new this.AWS.ChainableTemporaryCredentials({
       params: {
         RoleArn: roleArn,
         ExternalId: externalId,
         RoleSessionName: `cdk-assets-${safeUsername()}`,
+        TransitiveTagKeys: additionalOptions?.Tags
+          ? additionalOptions.Tags.map((t) => t.Key)
+          : undefined,
+        ...(additionalOptions ?? {}),
       },
       stsConfig: {
         region,
