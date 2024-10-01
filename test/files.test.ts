@@ -358,6 +358,44 @@ test('correctly identify asset path if path is absolute', async () => {
   expect(true).toBeTruthy(); // No exception, satisfy linter
 });
 
+describe('external assets', () => {
+  let pub: AssetPublishing;
+  beforeEach(() => {
+    pub = new AssetPublishing(AssetManifest.fromPath('/external/cdk.out'), { aws });
+  });
+
+  test('do nothing if file exists already', async () => {
+    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key' }] });
+
+    await pub.publish();
+
+    expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Bucket: 'some_external_bucket',
+        Prefix: 'some_key',
+        MaxKeys: 1,
+      })
+    );
+  });
+
+  test('upload external asset correctly', async () => {
+    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+    aws.mockS3.upload = mockUpload('ZIP_FILE_THAT_IS_DEFINITELY_NOT_EMPTY');
+    const expectAllSpawns = mockSpawn({ commandLine: ['sometool'], stdout: ABS_PATH });
+
+    await pub.publish();
+
+    expect(aws.s3Client).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'us-north-50',
+        assumeRoleArn: 'arn:aws:role',
+      })
+    );
+
+    expectAllSpawns();
+  });
+});
+
 test('fails when we dont have access to the bucket', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
@@ -406,42 +444,4 @@ test('succeeds when bucket doesnt belong to us but doesnt contain account id - c
   });
 
   await expect(pub.publish()).resolves.not.toThrow();
-});
-
-describe('external assets', () => {
-  let pub: AssetPublishing;
-  beforeEach(() => {
-    pub = new AssetPublishing(AssetManifest.fromPath('/external/cdk.out'), { aws });
-  });
-
-  test('do nothing if file exists already', async () => {
-    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key' }] });
-
-    await pub.publish();
-
-    expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
-      expect.objectContaining({
-        Bucket: 'some_external_bucket',
-        Prefix: 'some_key',
-        MaxKeys: 1,
-      })
-    );
-  });
-
-  test('upload external asset correctly', async () => {
-    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
-    aws.mockS3.upload = mockUpload('ZIP_FILE_THAT_IS_DEFINITELY_NOT_EMPTY');
-    const expectAllSpawns = mockSpawn({ commandLine: ['sometool'], stdout: ABS_PATH });
-
-    await pub.publish();
-
-    expect(aws.s3Client).toHaveBeenCalledWith(
-      expect.objectContaining({
-        region: 'us-north-50',
-        assumeRoleArn: 'arn:aws:role',
-      })
-    );
-
-    expectAllSpawns();
-  });
 });
