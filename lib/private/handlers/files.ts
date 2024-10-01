@@ -278,8 +278,8 @@ class BucketInformation {
       const anyAccountOwnership = await this._bucketOwnership(s3, bucket);
 
       if (anyAccountOwnership === BucketOwnership.MINE) {
-        const myAccountOwnership = await this._bucketOwnership(s3, bucket, account);
-        if (myAccountOwnership === BucketOwnership.NO_ACCESS) {
+        const targetAccountOwnership = await this._bucketOwnership(s3, bucket, account);
+        if (targetAccountOwnership === BucketOwnership.NO_ACCESS) {
           return BucketOwnership.SOMEONE_ELSES;
         }
       }

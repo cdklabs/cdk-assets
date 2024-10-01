@@ -3,7 +3,14 @@ jest.mock('child_process');
 import { FileDestination, Manifest } from '@aws-cdk/cloud-assembly-schema';
 import * as mockfs from 'mock-fs';
 import { FakeListener } from './fake-listener';
-import { mockAws, mockedApiFailure, mockedApiResult, mockUpload } from './mock-aws';
+import {
+  errorWithCode,
+  mockAws,
+  mockedApiFailure,
+  mockedApiResult,
+  mockUpload,
+  TARGET_ACCOUNT,
+} from './mock-aws';
 import { mockSpawn } from './mock-child_process';
 import { AssetPublishing, AssetManifest } from '../lib';
 
@@ -47,6 +54,22 @@ beforeEach(() => {
           },
           destinations: {
             theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_other_bucket' },
+          },
+        },
+      },
+    }),
+    '/foreign-account/cdk.out/assets.json': JSON.stringify({
+      version: Manifest.version(),
+      files: {
+        theAsset: {
+          source: {
+            path: '/simple/cdk.out/some_file',
+          },
+          destinations: {
+            theDestination: {
+              ...DEFAULT_DESTINATION,
+              bucketName: `cdk-qualifier-assets-${TARGET_ACCOUNT}-us-east-1`,
+            },
           },
         },
       },
@@ -324,18 +347,6 @@ test('upload file if new (list returns no key)', async () => {
   // We'll just have to assume the contents are correct
 });
 
-test('successful run does not need to query account ID', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
-
-  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
-  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
-
-  await pub.publish();
-
-  expect(aws.discoverCurrentAccount).not.toHaveBeenCalled();
-  expect(aws.discoverTargetAccount).not.toHaveBeenCalled();
-});
-
 test('correctly identify asset path if path is absolute', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/abs/cdk.out'), { aws });
 
@@ -347,16 +358,54 @@ test('correctly identify asset path if path is absolute', async () => {
   expect(true).toBeTruthy(); // No exception, satisfy linter
 });
 
-test('fails when bucket contains account id but doesnt belong to us', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath('/abs/cdk.out'), { aws });
+test('fails when we dont have access to the bucket', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  aws.mockS3.getBucketLocation = jest.fn().mockImplementation(() => {
-    throw new Error('asd');
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
+    return {
+      promise: () => {
+        throw errorWithCode('AccessDenied', 'Whatever');
+      },
+    };
   });
 
-  await pub.publish();
+  await expect(pub.publish()).rejects.toThrow('we have no access to it');
+});
 
-  expect(true).toBeTruthy(); // No exception, satisfy linter
+test('fails when bucket contains account id but doesnt belong to us', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/foreign-account/cdk.out'), { aws });
+
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
+    if (req.ExpectedBucketOwner) {
+      return {
+        promise: () => {
+          throw errorWithCode('AccessDenied', 'Whatever');
+        },
+      };
+    }
+    return { promise: () => Promise.resolve() };
+  });
+
+  await expect(pub.publish()).rejects.toThrow('Wrong account?');
+});
+
+test('succeeds when bucket doesnt belong to us but doesnt contain account id - cross account', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
+    if (req.ExpectedBucketOwner) {
+      return {
+        promise: () => {
+          throw errorWithCode('AccessDenied', 'Whatever');
+        },
+      };
+    }
+    return { promise: () => Promise.resolve() };
+  });
+
+  await expect(pub.publish()).resolves.not.toThrow();
 });
 
 describe('external assets', () => {
