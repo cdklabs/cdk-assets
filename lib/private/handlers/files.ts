@@ -3,6 +3,7 @@ import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
 import * as mime from 'mime';
 import { destinationToClientOptions } from '.';
+import { verbose } from '../../../bin/logging';
 import { FileManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
@@ -61,21 +62,30 @@ export class FileAssetHandler implements IAssetHandler {
 
     const bucketInfo = BucketInformation.for(this.host);
 
-    // A thunk for describing the current account. Used when we need to format an error
-    // message, not in the success case.
-    const account = async () =>
-      (await this.host.aws.discoverTargetAccount(clientOptions))?.accountId;
-    switch (await bucketInfo.bucketOwnership(s3, destination.bucketName)) {
+    const account = (await this.host.aws.discoverTargetAccount(clientOptions)).accountId;
+    switch (await bucketInfo.bucketOwnership(s3, destination.bucketName, account)) {
       case BucketOwnership.MINE:
         break;
       case BucketOwnership.DOES_NOT_EXIST:
         throw new Error(
-          `No bucket named '${destination.bucketName}'. Is account ${await account()} bootstrapped?`
+          `No bucket named '${destination.bucketName}'. Is account ${account} bootstrapped?`
         );
-      case BucketOwnership.SOMEONE_ELSES_OR_NO_ACCESS:
+      case BucketOwnership.NO_ACCESS:
         throw new Error(
-          `Bucket named '${destination.bucketName}' exists, but not in account ${await account()}. Wrong account?`
+          `Bucket named '${destination.bucketName}' exists, but we have no access to it.`
         );
+      case BucketOwnership.SOMEONE_ELSES:
+        if (destination.bucketName.includes(`-${account}-`)) {
+          // this is highly irregular. the bucket name suggests the bucket should belong
+          // to the target account, but it actually belongs to a different account.
+          throw new Error(
+            `Bucket named '${destination.bucketName}' exists, but not in account ${account}. Wrong account?`
+          );
+        } else {
+          verbose(
+            `Bucket named ${destination.bucketName} exists, but not in account ${account}. Assuming cross account setup and proceeding.`
+          );
+        }
     }
 
     if (await objectExists(s3, destination.bucketName, destination.objectKey)) {
@@ -103,7 +113,7 @@ export class FileAssetHandler implements IAssetHandler {
       case 'does_not_exist':
         this.host.emitMessage(
           EventType.DEBUG,
-          `No bucket named '${destination.bucketName}'. Is account ${await account()} bootstrapped?`
+          `No bucket named '${destination.bucketName}'. Is account ${account} bootstrapped?`
         );
         break;
       case 'access_denied':
@@ -179,7 +189,8 @@ export class FileAssetHandler implements IAssetHandler {
 enum BucketOwnership {
   DOES_NOT_EXIST,
   MINE,
-  SOMEONE_ELSES_OR_NO_ACCESS,
+  NO_ACCESS,
+  SOMEONE_ELSES,
 }
 
 type BucketEncryption =
@@ -258,24 +269,42 @@ class BucketInformation {
 
   private constructor() {}
 
-  public async bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
-    return cached(this.ownerships, bucket, () => this._bucketOwnership(s3, bucket));
+  public async bucketOwnership(
+    s3: AWS.S3,
+    bucket: string,
+    account: string
+  ): Promise<BucketOwnership> {
+    return cached(this.ownerships, bucket, async () => {
+      const anyAccountOwnership = await this._bucketOwnership(s3, bucket);
+
+      if (anyAccountOwnership === BucketOwnership.MINE) {
+        const myAccountOwnership = await this._bucketOwnership(s3, bucket, account);
+        if (myAccountOwnership === BucketOwnership.NO_ACCESS) {
+          return BucketOwnership.SOMEONE_ELSES;
+        }
+      }
+      return anyAccountOwnership;
+    });
   }
 
   public async bucketEncryption(s3: AWS.S3, bucket: string): Promise<BucketEncryption> {
     return cached(this.encryptions, bucket, () => this._bucketEncryption(s3, bucket));
   }
 
-  private async _bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
+  private async _bucketOwnership(
+    s3: AWS.S3,
+    bucket: string,
+    account?: string
+  ): Promise<BucketOwnership> {
     try {
-      await s3.getBucketLocation({ Bucket: bucket }).promise();
+      await s3.getBucketLocation({ Bucket: bucket, ExpectedBucketOwner: account }).promise();
       return BucketOwnership.MINE;
     } catch (e: any) {
       if (e.code === 'NoSuchBucket') {
         return BucketOwnership.DOES_NOT_EXIST;
       }
       if (['AccessDenied', 'AllAccessDisabled'].includes(e.code)) {
-        return BucketOwnership.SOMEONE_ELSES_OR_NO_ACCESS;
+        return BucketOwnership.NO_ACCESS;
       }
       throw e;
     }

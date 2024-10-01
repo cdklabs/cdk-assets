@@ -24,3 +24,7 @@ export function log(level: LogLevel, message: string) {
     console.error(`${level.padEnd(7, ' ')}: ${message}`);
   }
 }
+
+export function verbose(message: string) {
+  log('verbose', message);
+}

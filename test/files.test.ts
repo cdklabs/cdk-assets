@@ -347,6 +347,18 @@ test('correctly identify asset path if path is absolute', async () => {
   expect(true).toBeTruthy(); // No exception, satisfy linter
 });
 
+test('fails when bucket contains account id but doesnt belong to us', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/abs/cdk.out'), { aws });
+
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation(() => {
+    throw new Error('asd');
+  });
+
+  await pub.publish();
+
+  expect(true).toBeTruthy(); // No exception, satisfy linter
+});
+
 describe('external assets', () => {
   let pub: AssetPublishing;
   beforeEach(() => {
