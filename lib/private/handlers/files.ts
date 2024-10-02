@@ -60,9 +60,14 @@ export class FileAssetHandler implements IAssetHandler {
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
     const bucketInfo = BucketInformation.for(this.host);
+
+    // A thunk for describing the current account. Used when we need to format an error
+    // message, not in the success case.
+    const account = async () =>
+      (await this.host.aws.discoverTargetAccount(clientOptions)).accountId;
+
     const allowCrossAccount = options.allowCrossAccount ?? true;
 
-    const account = async () => (await this.host.aws.discoverTargetAccount(destination)).accountId;
     switch (
       await bucketInfo.bucketOwnership(
         s3,
