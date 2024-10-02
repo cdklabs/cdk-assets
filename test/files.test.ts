@@ -407,7 +407,7 @@ test('fails when we dont have access to the bucket', async () => {
     };
   });
 
-  await expect(pub.publish()).rejects.toThrow('we have no access to it');
+  await expect(pub.publish()).rejects.toThrow('but we dont have access to it');
 });
 
 test('fails when bucket contains account id but doesnt belong to us', async () => {

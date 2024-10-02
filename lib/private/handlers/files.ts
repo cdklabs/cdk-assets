@@ -3,7 +3,7 @@ import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
 import * as mime from 'mime';
 import { destinationToClientOptions } from '.';
-import { verbose } from '../../../bin/logging';
+import { log } from '../../../bin/logging';
 import { FileManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
@@ -72,7 +72,7 @@ export class FileAssetHandler implements IAssetHandler {
         );
       case BucketOwnership.NO_ACCESS:
         throw new Error(
-          `Bucket named '${destination.bucketName}' exists, but we have no access to it.`
+          `Bucket named '${destination.bucketName}' exists, but we dont have access to it.`
         );
       case BucketOwnership.SOMEONE_ELSES:
         if (destination.bucketName.includes(`-${account}-`)) {
@@ -82,7 +82,8 @@ export class FileAssetHandler implements IAssetHandler {
             `Bucket named '${destination.bucketName}' exists, but not in account ${account}. Wrong account?`
           );
         } else {
-          verbose(
+          log(
+            'verbose',
             `Bucket named ${destination.bucketName} exists, but not in account ${account}. Assuming cross account setup and proceeding.`
           );
         }
@@ -275,15 +276,15 @@ class BucketInformation {
     account: string
   ): Promise<BucketOwnership> {
     return cached(this.ownerships, bucket, async () => {
-      const anyAccountOwnership = await this._bucketOwnership(s3, bucket);
+      const anyAccount = await this._bucketOwnership(s3, bucket);
 
-      if (anyAccountOwnership === BucketOwnership.MINE) {
-        const targetAccountOwnership = await this._bucketOwnership(s3, bucket, account);
-        if (targetAccountOwnership === BucketOwnership.NO_ACCESS) {
+      if (anyAccount === BucketOwnership.MINE) {
+        const onlyTargetAccount = await this._bucketOwnership(s3, bucket, account);
+        if (onlyTargetAccount === BucketOwnership.NO_ACCESS) {
           return BucketOwnership.SOMEONE_ELSES;
         }
       }
-      return anyAccountOwnership;
+      return anyAccount;
     });
   }
 
