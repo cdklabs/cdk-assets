@@ -347,6 +347,18 @@ test('upload file if new (list returns no key)', async () => {
   // We'll just have to assume the contents are correct
 });
 
+test('successful run does not need to query account ID', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
+  await pub.publish();
+
+  expect(aws.discoverCurrentAccount).not.toHaveBeenCalled();
+  expect(aws.discoverTargetAccount).not.toHaveBeenCalled();
+});
+
 test('correctly identify asset path if path is absolute', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/abs/cdk.out'), { aws });
 
@@ -410,7 +422,7 @@ test('fails when we dont have access to the bucket', async () => {
   await expect(pub.publish()).rejects.toThrow('but we dont have access to it');
 });
 
-test('fails when bucket contains account id but doesnt belong to us', async () => {
+test('fails when cross account is required but not allowed', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/foreign-account/cdk.out'), { aws });
 
   aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
@@ -424,7 +436,7 @@ test('fails when bucket contains account id but doesnt belong to us', async () =
     return { promise: () => Promise.resolve() };
   });
 
-  await expect(pub.publish()).rejects.toThrow('Wrong account?');
+  await expect(pub.publish({ allowCrossAccount: false })).rejects.toThrow('Wrong account?');
 });
 
 test('succeeds when bucket doesnt belong to us but doesnt contain account id - cross account', async () => {
