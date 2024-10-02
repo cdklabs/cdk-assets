@@ -1,6 +1,8 @@
 jest.mock('aws-sdk');
 import * as AWS from 'aws-sdk';
 
+export const TARGET_ACCOUNT = 'target_account';
+
 export function mockAws() {
   const mockEcr = new AWS.ECR();
   const mockS3 = new AWS.S3();
@@ -31,7 +33,7 @@ export function mockAws() {
     ),
     discoverDefaultRegion: jest.fn(() => Promise.resolve('current_region')),
     discoverTargetAccount: jest.fn(() =>
-      Promise.resolve({ accountId: 'target_account', partition: 'swa' })
+      Promise.resolve({ accountId: TARGET_ACCOUNT, partition: 'swa' })
     ),
     ecrClient: jest.fn(() => Promise.resolve(mockEcr)),
     s3Client: jest.fn(() => Promise.resolve(mockS3)),

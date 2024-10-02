@@ -6,7 +6,7 @@ import { destinationToClientOptions } from '.';
 import { FileManifestEntry } from '../../asset-manifest';
 import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
-import { IAssetHandler, IHandlerHost } from '../asset-handler';
+import { IAssetHandler, IHandlerHost, type PublishOptions } from '../asset-handler';
 import { pathExists } from '../fs-extra';
 import { replaceAwsPlaceholders } from '../placeholders';
 import { shell } from '../shell';
@@ -51,7 +51,7 @@ export class FileAssetHandler implements IAssetHandler {
     return false;
   }
 
-  public async publish(): Promise<void> {
+  public async publish(options: PublishOptions = {}): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
 
@@ -64,18 +64,33 @@ export class FileAssetHandler implements IAssetHandler {
     // A thunk for describing the current account. Used when we need to format an error
     // message, not in the success case.
     const account = async () =>
-      (await this.host.aws.discoverTargetAccount(clientOptions))?.accountId;
-    switch (await bucketInfo.bucketOwnership(s3, destination.bucketName)) {
+      (await this.host.aws.discoverTargetAccount(clientOptions)).accountId;
+
+    const allowCrossAccount = options.allowCrossAccount ?? true;
+    switch (
+      await bucketInfo.bucketOwnership(
+        s3,
+        destination.bucketName,
+        allowCrossAccount ? undefined : await account()
+      )
+    ) {
       case BucketOwnership.MINE:
         break;
       case BucketOwnership.DOES_NOT_EXIST:
         throw new Error(
           `No bucket named '${destination.bucketName}'. Is account ${await account()} bootstrapped?`
         );
-      case BucketOwnership.SOMEONE_ELSES_OR_NO_ACCESS:
+      case BucketOwnership.NO_ACCESS:
         throw new Error(
-          `Bucket named '${destination.bucketName}' exists, but not in account ${await account()}. Wrong account?`
+          `Bucket named '${destination.bucketName}' exists, but we dont have access to it.`
         );
+      case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
+        if (!allowCrossAccount) {
+          throw new Error(
+            `Bucket named '${destination.bucketName}' exists, but not in account ${await account()}. Wrong account?`
+          );
+        }
+        break;
     }
 
     if (await objectExists(s3, destination.bucketName, destination.objectKey)) {
@@ -103,7 +118,7 @@ export class FileAssetHandler implements IAssetHandler {
       case 'does_not_exist':
         this.host.emitMessage(
           EventType.DEBUG,
-          `No bucket named '${destination.bucketName}'. Is account ${await account()} bootstrapped?`
+          `No bucket named '${destination.bucketName}'. Is account ${account} bootstrapped?`
         );
         break;
       case 'access_denied':
@@ -179,7 +194,8 @@ export class FileAssetHandler implements IAssetHandler {
 enum BucketOwnership {
   DOES_NOT_EXIST,
   MINE,
-  SOMEONE_ELSES_OR_NO_ACCESS,
+  NO_ACCESS,
+  SOMEONE_ELSES_AND_HAVE_ACCESS,
 }
 
 type BucketEncryption =
@@ -258,24 +274,49 @@ class BucketInformation {
 
   private constructor() {}
 
-  public async bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
-    return cached(this.ownerships, bucket, () => this._bucketOwnership(s3, bucket));
+  public async bucketOwnership(
+    s3: AWS.S3,
+    bucket: string,
+    expectedAccount?: string
+  ): Promise<BucketOwnership> {
+    return cached(this.ownerships, bucket, async () => {
+      const anyAccount = await this._bucketOwnership(s3, bucket);
+
+      switch (anyAccount) {
+        case BucketOwnership.MINE:
+          if (
+            expectedAccount &&
+            (await this._bucketOwnership(s3, bucket, expectedAccount)) === BucketOwnership.NO_ACCESS
+          ) {
+            // if the only difference between MINE and NO_ACCESS is the expected account,
+            // then its definitely someone else's bucket.
+            return BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS;
+          }
+          return BucketOwnership.MINE;
+        default:
+          return anyAccount;
+      }
+    });
   }
 
   public async bucketEncryption(s3: AWS.S3, bucket: string): Promise<BucketEncryption> {
     return cached(this.encryptions, bucket, () => this._bucketEncryption(s3, bucket));
   }
 
-  private async _bucketOwnership(s3: AWS.S3, bucket: string): Promise<BucketOwnership> {
+  private async _bucketOwnership(
+    s3: AWS.S3,
+    bucket: string,
+    account?: string
+  ): Promise<BucketOwnership.MINE | BucketOwnership.DOES_NOT_EXIST | BucketOwnership.NO_ACCESS> {
     try {
-      await s3.getBucketLocation({ Bucket: bucket }).promise();
+      await s3.getBucketLocation({ Bucket: bucket, ExpectedBucketOwner: account }).promise();
       return BucketOwnership.MINE;
     } catch (e: any) {
       if (e.code === 'NoSuchBucket') {
         return BucketOwnership.DOES_NOT_EXIST;
       }
       if (['AccessDenied', 'AllAccessDisabled'].includes(e.code)) {
-        return BucketOwnership.SOMEONE_ELSES_OR_NO_ACCESS;
+        return BucketOwnership.NO_ACCESS;
       }
       throw e;
     }
