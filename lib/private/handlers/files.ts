@@ -51,7 +51,7 @@ export class FileAssetHandler implements IAssetHandler {
     return false;
   }
 
-  public async publish(options: PublishOptions): Promise<void> {
+  public async publish(options: PublishOptions = {}): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
 
