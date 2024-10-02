@@ -67,7 +67,6 @@ export class FileAssetHandler implements IAssetHandler {
       (await this.host.aws.discoverTargetAccount(clientOptions)).accountId;
 
     const allowCrossAccount = options.allowCrossAccount ?? true;
-
     switch (
       await bucketInfo.bucketOwnership(
         s3,
