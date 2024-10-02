@@ -90,6 +90,7 @@ export class FileAssetHandler implements IAssetHandler {
             `Bucket named '${destination.bucketName}' exists, but not in account ${await account()}. Wrong account?`
           );
         }
+        break;
     }
 
     if (await objectExists(s3, destination.bucketName, destination.objectKey)) {
