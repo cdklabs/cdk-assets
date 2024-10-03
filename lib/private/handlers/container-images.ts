@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
+import { destinationToClientOptions } from '.';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
 import { EventType } from '../../progress';
@@ -105,7 +106,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const ecr = await this.host.aws.ecrClient({
-      ...destination,
+      ...destinationToClientOptions(destination),
       quiet: options.quiet,
     });
     const account = async () => (await this.host.aws.discoverCurrentAccount())?.accountId;

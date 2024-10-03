@@ -69,8 +69,6 @@ test('correct calls are made', async () => {
 
   expect(s3Client).toHaveBeenCalledWith({
     assumeRoleArn: 'arn:aws:role-current_account',
-    bucketName: 'some_bucket-current_account-current_region',
-    objectKey: 'some_key-current_account-current_region',
   });
 
   expect(mockS3).toHaveReceivedCommandWith(ListObjectsV2Command, {
@@ -81,10 +79,8 @@ test('correct calls are made', async () => {
 
   expect(ecrClient).toHaveBeenCalledWith({
     assumeRoleArn: 'arn:aws:role-current_account',
-    imageTag: 'abcdef',
     quiet: undefined,
     region: 'explicit_region',
-    repositoryName: 'repo-current_account-explicit_region',
   });
 
   expect(mockEcr).toHaveReceivedCommandWith(DescribeImagesCommand, {
