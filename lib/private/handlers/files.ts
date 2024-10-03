@@ -2,6 +2,7 @@ import { createReadStream, promises as fs } from 'fs';
 import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
 import * as mime from 'mime';
+import { destinationToClientOptions } from '.';
 import { FileManifestEntry } from '../../asset-manifest';
 import { IS3Client } from '../../aws';
 import { EventType } from '../../progress';
@@ -36,7 +37,7 @@ export class FileAssetHandler implements IAssetHandler {
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
     try {
       const s3 = await this.host.aws.s3Client({
-        ...destination,
+        ...destinationToClientOptions(destination),
         quiet: true,
       });
       this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
@@ -54,7 +55,7 @@ export class FileAssetHandler implements IAssetHandler {
   public async publish(): Promise<void> {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const s3Url = `s3://${destination.bucketName}/${destination.objectKey}`;
-    const s3 = await this.host.aws.s3Client(destination);
+    const s3 = await this.host.aws.s3Client(destinationToClientOptions(destination));
     this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
     const bucketInfo = BucketInformation.for(this.host);

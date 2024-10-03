@@ -31,7 +31,12 @@ import {
   GetSecretValueCommandOutput,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import { GetCallerIdentityCommand, STSClient, STSClientConfig } from '@aws-sdk/client-sts';
+import {
+  AssumeRoleCommandInput,
+  GetCallerIdentityCommand,
+  STSClient,
+  STSClientConfig,
+} from '@aws-sdk/client-sts';
 import { fromNodeProviderChain, fromTemporaryCredentials } from '@aws-sdk/credential-providers';
 import { Upload } from '@aws-sdk/lib-storage';
 import {
@@ -40,6 +45,10 @@ import {
 } from '@smithy/config-resolver';
 import { loadConfig } from '@smithy/node-config-provider';
 import type { AwsCredentialIdentityProvider } from '@smithy/types';
+
+export type AssumeRoleAdditionalOptions = Partial<
+  Omit<AssumeRoleCommandInput, 'ExternalId' | 'RoleArn'>
+>;
 
 export interface IS3Client {
   getBucketEncryption(
@@ -82,6 +91,7 @@ export interface ClientOptions {
   region?: string;
   assumeRoleArn?: string;
   assumeRoleExternalId?: string;
+  assumeRoleAdditionalOptions?: AssumeRoleAdditionalOptions;
   quiet?: boolean;
 }
 
@@ -228,6 +238,10 @@ export class DefaultAwsClient implements IAws {
             RoleArn: options.assumeRoleArn,
             ExternalId: options.assumeRoleExternalId,
             RoleSessionName: `${USER_AGENT}-${safeUsername()}`,
+            TransitiveTagKeys: options.assumeRoleAdditionalOptions?.Tags
+              ? options.assumeRoleAdditionalOptions.Tags.map((t) => t.Key!)
+              : undefined,
+            ...options.assumeRoleAdditionalOptions,
           },
           clientConfig: this.config.clientConfig,
         });
