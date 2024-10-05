@@ -18,10 +18,10 @@
     jsonschema "^1.4.1"
     semver "^7.6.3"
 
-"@aws-cdk/cx-api@^2.160.0":
-  version "2.160.0"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.160.0.tgz#08d4599690a39768bb944c411f1141166e313b59"
-  integrity sha512-ujXT/UoUDquCwxJ14jkRzIFeMabMyLATWP32Jv0WJjWpxrGJCa+Lua+CByOyikC1QeSVxq8pZcrx0jjYyG0qzw==
+"@aws-cdk/cx-api@^2.161.0":
+  version "2.161.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.161.0.tgz#c3f98af1e2b31db2be1bb0407da3b5dfd2621fe3"
+  integrity sha512-Q3rZeJ8Rm2NcjE84uS1JUCMXNSTmHd9tPLtYHK8AoyGnynelvtOtRreC34aZ8LOUbOiPU/E8gBsR7fFxeUmD+A==
   dependencies:
     semver "^7.6.3"
 
@@ -1434,9 +1434,9 @@ camelcase@^6.2.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001663:
-  version "1.0.30001666"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001666.tgz#112d77e80f1762f62a1b71ba92164e0cb3f3dd13"
-  integrity sha512-gD14ICmoV5ZZM1OdzPWmpx+q4GyefaK06zi8hmfHV5xe4/2nOQX3+Dw5o+fSqOws2xVwL9j+anOPFwHzdEdV4g==
+  version "1.0.30001667"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001667.tgz#99fc5ea0d9c6e96897a104a8352604378377f949"
+  integrity sha512-7LTwJjcRkzKFmtqGsibMeuXmvFDfZq/nzIjnmgCGzKKRVzjD72selLDK1oPF/Oxzmt4fNcPvTDvGqSDG4tCALw==
 
 case@^1.6.3:
   version "1.6.3"
