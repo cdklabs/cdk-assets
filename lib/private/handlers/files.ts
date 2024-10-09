@@ -84,10 +84,10 @@ export class FileAssetHandler implements IAssetHandler {
         throw new Error(
           `Bucket named '${destination.bucketName}' exists, but we dont have access to it.`
         );
-        case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
-          if (!allowCrossAccount) {
-            throw new Error(
-              `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗ 
+      case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
+        if (!allowCrossAccount) {
+          throw new Error(
+            `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗ 
         
               We've detected that the S3 bucket cdk-hnb659fds-assets-${await account()}-${destination.region} was 
               originally created in account ${await account()} as part of the CloudFormation stack CDKToolkit, 
@@ -104,9 +104,9 @@ export class FileAssetHandler implements IAssetHandler {
               [1] https://repost.aws/knowledge-center/potential-account-compromise
               
               [2] https://aws.amazon.com/support`
-            );
-          }
-                break;
+          );
+        }
+        break;
     }
 
     if (await objectExists(s3, destination.bucketName, destination.objectKey)) {
