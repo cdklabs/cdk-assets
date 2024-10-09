@@ -89,7 +89,7 @@ export class FileAssetHandler implements IAssetHandler {
           throw new Error(
             `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗ 
         
-              We've detected that the S3 bucket cdk-hnb659fds-assets-${await account()}-${destination.region} was 
+              We've detected that the S3 bucket ${destination.bucketName} was 
               originally created in account ${await account()} as part of the CloudFormation stack CDKToolkit, 
               but now resides in a different AWS account. To prevent cross-account asset bucket access of your 
               deployments, CDK will stop now.
