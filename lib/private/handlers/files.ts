@@ -104,8 +104,8 @@ export class FileAssetHandler implements IAssetHandler {
               [1] https://repost.aws/knowledge-center/potential-account-compromise
               
               [2] https://aws.amazon.com/support`
-                  );
-                }
+            );
+          }
                 break;
     }
 
