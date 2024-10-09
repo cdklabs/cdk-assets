@@ -84,13 +84,29 @@ export class FileAssetHandler implements IAssetHandler {
         throw new Error(
           `Bucket named '${destination.bucketName}' exists, but we dont have access to it.`
         );
-      case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
-        if (!allowCrossAccount) {
-          throw new Error(
-            `Bucket named '${destination.bucketName}' exists, but not in account ${await account()}. Wrong account?`
-          );
-        }
-        break;
+        case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
+          if (!allowCrossAccount) {
+            throw new Error(
+              `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗ 
+        
+              We've detected that the S3 bucket cdk-hnb659fds-assets-${await account()}-${destination.region} was 
+              originally created in account ${await account()} as part of the CloudFormation stack CDKToolkit, 
+              but now resides in a different AWS account. To prevent cross-account asset bucket access of your 
+              deployments, CDK will stop now.
+
+              If this situation is intentional and you own the AWS account that the bucket has moved to, remove the 
+              resource named StagingBucket from the template of CloudFormation stack CDKToolkit and try again. 
+              
+              If this situation is not intentional, we strongly recommend auditing your account to make sure all 
+              resources are configured the way you expect them [1]. For questions or concerns, please contact 
+              AWS Support [2]. 
+              
+              [1] https://repost.aws/knowledge-center/potential-account-compromise
+              
+              [2] https://aws.amazon.com/support`
+                  );
+                }
+                break;
     }
 
     if (await objectExists(s3, destination.bucketName, destination.objectKey)) {
