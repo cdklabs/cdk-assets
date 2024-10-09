@@ -436,7 +436,7 @@ test('fails when cross account is required but not allowed', async () => {
     return { promise: () => Promise.resolve() };
   });
 
-  await expect(pub.publish({ allowCrossAccount: false })).rejects.toThrow('Wrong account?');
+  await expect(pub.publish({ allowCrossAccount: false })).rejects.toThrow('❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗');
 });
 
 test('succeeds when bucket doesnt belong to us but doesnt contain account id - cross account', async () => {
