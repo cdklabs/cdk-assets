@@ -1,36 +1,17 @@
 import * as os from 'os';
 import {
   DescribeImagesCommand,
-  DescribeImagesCommandInput,
-  DescribeImagesCommandOutput,
   DescribeRepositoriesCommand,
-  DescribeRepositoriesCommandInput,
-  DescribeRepositoriesCommandOutput,
   ECRClient,
   GetAuthorizationTokenCommand,
-  GetAuthorizationTokenCommandInput,
-  GetAuthorizationTokenCommandOutput,
 } from '@aws-sdk/client-ecr';
 import {
-  type CompleteMultipartUploadCommandOutput,
   GetBucketEncryptionCommand,
-  type GetBucketEncryptionCommandInput,
-  type GetBucketEncryptionCommandOutput,
   GetBucketLocationCommand,
-  type GetBucketLocationCommandInput,
-  type GetBucketLocationCommandOutput,
   ListObjectsV2Command,
-  type ListObjectsV2CommandInput,
-  type ListObjectsV2CommandOutput,
-  type PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3';
-import {
-  GetSecretValueCommand,
-  GetSecretValueCommandInput,
-  GetSecretValueCommandOutput,
-  SecretsManagerClient,
-} from '@aws-sdk/client-secrets-manager';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import {
   AssumeRoleCommandInput,
   GetCallerIdentityCommand,
@@ -44,7 +25,25 @@ import {
   NODE_REGION_CONFIG_OPTIONS,
 } from '@smithy/config-resolver';
 import { loadConfig } from '@smithy/node-config-provider';
-import type { AwsCredentialIdentityProvider } from '@smithy/types';
+import {
+  AwsCredentialIdentityProvider,
+  CompleteMultipartUploadCommandOutput,
+  DescribeImagesCommandInput,
+  DescribeImagesCommandOutput,
+  DescribeRepositoriesCommandInput,
+  DescribeRepositoriesCommandOutput,
+  GetAuthorizationTokenCommandInput,
+  GetAuthorizationTokenCommandOutput,
+  GetBucketEncryptionCommandInput,
+  GetBucketEncryptionCommandOutput,
+  GetBucketLocationCommandInput,
+  GetBucketLocationCommandOutput,
+  GetSecretValueCommandInput,
+  GetSecretValueCommandOutput,
+  ListObjectsV2CommandInput,
+  ListObjectsV2CommandOutput,
+  PutObjectCommandInput,
+} from './aws-types';
 
 export type AssumeRoleAdditionalOptions = Partial<
   Omit<AssumeRoleCommandInput, 'ExternalId' | 'RoleArn'>
