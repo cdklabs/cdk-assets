@@ -43,7 +43,6 @@ junit.xml
 /dist/changelog.md
 /dist/version.txt
 !/.github/workflows/release.yml
-!/.mergify.yml
 !/.github/workflows/upgrade-v2-main.yml
 !/.github/pull_request_template.md
 !/test/
