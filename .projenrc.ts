@@ -101,6 +101,10 @@ const project = new typescript.TypeScriptProject({
       run: 'npx projen shrinkwrap',
     },
   ],
+  githubOptions: {
+    mergify: false,
+    mergeQueue: true,
+  },
 });
 
 project.addPackageIgnore('*.ts');
