@@ -3,7 +3,7 @@ jest.mock('child_process');
 import 'aws-sdk-client-mock-jest';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
 import {
-  GetBucketEncryptionCommand,
+  GetBucketEncryptionCommand, GetBucketLocationCommand,
   ListObjectsV2Command,
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
@@ -354,4 +354,49 @@ test('pass destination properties into AWS client', async () => {
       assumeRoleArn: 'arn:aws:role',
     })
   );
+});
+
+test('fails when we dont have access to the bucket', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+
+  const err = new Error('Access Denied');
+  err.name = 'AccessDenied';
+
+  mockS3.on(GetBucketLocationCommand).rejects(err);
+
+  await expect(pub.publish()).rejects.toThrow('but we dont have access to it');
+});
+
+test('fails when cross account is required but not allowed', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+
+  mockS3.on(GetBucketLocationCommand).callsFake((req) => {
+    if (req.ExpectedBucketOwner) {
+      const err = new Error('Access Denied');
+      err.name = 'AccessDenied';
+      throw err;
+    }
+    return {};
+  });
+
+  await expect(pub.publish({ allowCrossAccount: false })).rejects.toThrow(
+    '❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗'
+  );
+});
+
+test('succeeds when bucket doesnt belong to us but doesnt contain account id - cross account', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+
+  mockS3.on(ListObjectsV2Command).resolves({ Contents: undefined });
+
+  mockS3.on(GetBucketLocationCommand).callsFake((req) => {
+    if (req.ExpectedBucketOwner) {
+      const err = new Error('Access Denied');
+      err.name = 'AccessDenied';
+      throw err;
+    }
+    return {};
+  });
+
+  await expect(pub.publish()).resolves.not.toThrow();
 });
