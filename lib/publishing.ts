@@ -1,6 +1,6 @@
 import { AssetManifest, IManifestEntry } from './asset-manifest';
 import { IAws } from './aws';
-import { IAssetHandler, IHandlerHost } from './private/asset-handler';
+import { IAssetHandler, IHandlerHost, type PublishOptions } from './private/asset-handler';
 import { DockerFactory } from './private/docker';
 import { makeAssetHandler } from './private/handlers';
 import { EventType, IPublishProgress, IPublishProgressListener } from './progress';
@@ -117,12 +117,12 @@ export class AssetPublishing implements IPublishProgress {
   /**
    * Publish all assets from the manifest
    */
-  public async publish(): Promise<void> {
+  public async publish(options: PublishOptions = {}): Promise<void> {
     if (this.publishInParallel) {
-      await Promise.all(this.assets.map(async (asset) => this.publishAsset(asset)));
+      await Promise.all(this.assets.map(async (asset) => this.publishAsset(asset, options)));
     } else {
       for (const asset of this.assets) {
-        if (!(await this.publishAsset(asset))) {
+        if (!(await this.publishAsset(asset, options))) {
           break;
         }
       }
@@ -167,14 +167,14 @@ export class AssetPublishing implements IPublishProgress {
   /**
    * Publish a single asset from the manifest
    */
-  public async publishEntry(asset: IManifestEntry) {
+  public async publishEntry(asset: IManifestEntry, options: PublishOptions = {}) {
     try {
       if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) {
         return false;
       }
 
       const handler = this.assetHandler(asset);
-      await handler.publish();
+      await handler.publish(options);
 
       if (this.aborted) {
         throw new Error('Aborted');
@@ -208,7 +208,7 @@ export class AssetPublishing implements IPublishProgress {
    * @param asset The asset to publish
    * @returns false when publishing should stop
    */
-  private async publishAsset(asset: IManifestEntry) {
+  private async publishAsset(asset: IManifestEntry, options: PublishOptions = {}) {
     try {
       if (this.progressEvent(EventType.START, `Publishing ${asset.id}`)) {
         return false;
@@ -221,7 +221,7 @@ export class AssetPublishing implements IPublishProgress {
       }
 
       if (this.publishAssets) {
-        await handler.publish();
+        await handler.publish(options);
       }
 
       if (this.aborted) {
