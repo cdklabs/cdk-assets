@@ -33,7 +33,7 @@
   "devDependencies": {
     "@types/archiver": "^5.3.4",
     "@types/glob": "^7.2.0",
-    "@types/jest": "^29.5.13",
+    "@types/jest": "^29.5.14",
     "@types/mime": "^2.0.3",
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^18",
@@ -54,14 +54,14 @@
     "jszip": "^3.10.1",
     "mock-fs": "^4.14.0",
     "prettier": "^3.3.3",
-    "projen": "^0.88.6",
+    "projen": "^0.88.8",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {
     "@aws-cdk/cloud-assembly-schema": "^38.0.1",
-    "@aws-cdk/cx-api": "^2.163.1",
+    "@aws-cdk/cx-api": "^2.164.1",
     "archiver": "^5.3.2",
     "aws-sdk": "^2.1691.0",
     "glob": "^7.2.3",
