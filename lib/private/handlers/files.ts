@@ -5,6 +5,7 @@ import * as mime from 'mime';
 import { destinationToClientOptions } from '.';
 import { FileManifestEntry } from '../../asset-manifest';
 import { IS3Client } from '../../aws';
+import { PutObjectCommandInput } from '../../aws-types';
 import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
 import { IAssetHandler, IHandlerHost, type PublishOptions } from '../asset-handler';
@@ -88,22 +89,22 @@ export class FileAssetHandler implements IAssetHandler {
       case BucketOwnership.SOMEONE_ELSES_AND_HAVE_ACCESS:
         if (!allowCrossAccount) {
           throw new Error(
-            `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗ 
-        
-              We've detected that the S3 bucket ${destination.bucketName} was 
-              originally created in account ${await account()} as part of the CloudFormation stack CDKToolkit, 
-              but now resides in a different AWS account. To prevent cross-account asset bucket access of your 
+            `❗❗ UNEXPECTED BUCKET OWNER DETECTED ❗❗
+
+              We've detected that the S3 bucket ${destination.bucketName} was
+              originally created in account ${await account()} as part of the CloudFormation stack CDKToolkit,
+              but now resides in a different AWS account. To prevent cross-account asset bucket access of your
               deployments, CDK will stop now.
 
-              If this situation is intentional and you own the AWS account that the bucket has moved to, remove the 
-              resource named StagingBucket from the template of CloudFormation stack CDKToolkit and try again. 
-              
-              If this situation is not intentional, we strongly recommend auditing your account to make sure all 
-              resources are configured the way you expect them [1]. For questions or concerns, please contact 
-              AWS Support [2]. 
-              
+              If this situation is intentional and you own the AWS account that the bucket has moved to, remove the
+              resource named StagingBucket from the template of CloudFormation stack CDKToolkit and try again.
+
+              If this situation is not intentional, we strongly recommend auditing your account to make sure all
+              resources are configured the way you expect them [1]. For questions or concerns, please contact
+              AWS Support [2].
+
               [1] https://repost.aws/knowledge-center/potential-account-compromise
-              
+
               [2] https://aws.amazon.com/support`
           );
         }
@@ -162,7 +163,8 @@ export class FileAssetHandler implements IAssetHandler {
         Key: destination.objectKey,
         Body: createReadStream(publishFile.packagedPath),
         ContentType: publishFile.contentType,
-      },
+        ChecksumAlgorithm: 'SHA256',
+      } satisfies PutObjectCommandInput,
       paramsEncryption
     );
 
