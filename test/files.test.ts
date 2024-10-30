@@ -1,5 +1,3 @@
-import { mockClient } from 'aws-sdk-client-mock';
-
 jest.mock('child_process');
 
 import 'aws-sdk-client-mock-jest';
@@ -11,6 +9,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import { mockClient } from 'aws-sdk-client-mock';
 import { FakeListener } from './fake-listener';
 import { MockAws, mockS3 } from './mock-aws';
 import { mockSpawn } from './mock-child_process';
@@ -188,6 +187,18 @@ test('upload with server side encryption AES256 header', async () => {
     Key: 'some_key',
     ServerSideEncryption: 'AES256',
     Body: Buffer.from('FILE_CONTENTS'),
+  });
+});
+
+test('will use SHA256 content checksum', async () => {
+  const s3 = mockClient(S3Client);
+  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/types/cdk.out')), { aws });
+  await pub.publish();
+
+  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
+    ChecksumAlgorithm: 'SHA256',
   });
 });
 
