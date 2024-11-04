@@ -245,7 +245,7 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@types/archiver,@types/glob,@types/jest,@types/mime,@types/mock-fs,@types/node,@types/yargs,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,mock-fs,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,archiver,aws-sdk,glob,mime,yargs"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/archiver,@types/glob,@types/jest,@types/mime,@types/mock-fs,@types/node,@types/yargs,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,mock-fs,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,archiver,aws-sdk,glob,mime,yargs"
         },
         {
           "exec": "yarn install --check-files"
