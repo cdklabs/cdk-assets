@@ -271,7 +271,7 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --dep=dev,peer,prod,optional --filter=@smithy/types,@types/archiver,@types/glob,@types/jest,@types/mime,@types/node,@types/yargs,aws-sdk-client-mock,aws-sdk-client-mock-jest,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,@aws-sdk/client-ecr,@aws-sdk/client-s3,@aws-sdk/client-secrets-manager,@aws-sdk/client-sts,@aws-sdk/credential-providers,@aws-sdk/lib-storage,@smithy/config-resolver,@smithy/node-config-provider,archiver,glob,mime,yargs"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@smithy/types,@types/archiver,@types/glob,@types/jest,@types/mime,@types/node,@types/yargs,aws-sdk-client-mock,aws-sdk-client-mock-jest,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,@aws-sdk/client-ecr,@aws-sdk/client-s3,@aws-sdk/client-secrets-manager,@aws-sdk/client-sts,@aws-sdk/credential-providers,@aws-sdk/lib-storage,@smithy/config-resolver,@smithy/node-config-provider,archiver,glob,mime,yargs"
         },
         {
           "exec": "yarn install --check-files"
