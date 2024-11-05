@@ -7,8 +7,6 @@ import { DefaultAwsClient } from '../lib';
 
 jest.mock('@aws-sdk/credential-providers');
 
-const { fromNodeProviderChain } = jest.requireActual('@aws-sdk/credential-providers');
-
 const roleArn = 'arn:aws:iam:123456789012:role/the-role-of-a-lifetime';
 
 mockSTS.on(GetCallerIdentityCommand).resolves({
