@@ -1,8 +1,18 @@
 import * as os from 'os';
 import { DefaultAwsClient } from '../lib';
 
+<<<<<<< HEAD
 beforeEach(() => {
   jest.requireActual('aws-sdk');
+=======
+jest.mock('@aws-sdk/credential-providers');
+
+const roleArn = 'arn:aws:iam:123456789012:role/the-role-of-a-lifetime';
+
+mockSTS.on(GetCallerIdentityCommand).resolves({
+  Account: '123456789012',
+  Arn: roleArn,
+>>>>>>> 403a498 (chore: remove unused declaration (#161))
 });
 
 test('assumeRole passes the right parameters to STS', async () => {
