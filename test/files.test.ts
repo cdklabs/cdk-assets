@@ -372,8 +372,6 @@ describe('external assets', () => {
 });
 
 test('pass destination properties into AWS client', async () => {
-  const s3 = mockClient(S3Client);
-
   aws = new DefaultAwsClient();
   const s3Client = jest.spyOn(aws, 's3Client');
   const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {

@@ -7,7 +7,8 @@
   "root": true,
   "plugins": [
     "@typescript-eslint",
-    "import"
+    "import",
+    "@cdklabs"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -133,6 +134,9 @@
         "trailingComma": "es5",
         "printWidth": 100
       }
+    ],
+    "@cdklabs/promiseall-no-unbounded-parallelism": [
+      "error"
     ]
   },
   "overrides": [

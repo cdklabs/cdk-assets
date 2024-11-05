@@ -3,6 +3,7 @@ import { IAws } from './aws';
 import { IAssetHandler, IHandlerHost, type PublishOptions } from './private/asset-handler';
 import { DockerFactory } from './private/docker';
 import { makeAssetHandler } from './private/handlers';
+import { pLimit } from './private/p-limit';
 import { EventType, IPublishProgress, IPublishProgressListener } from './progress';
 
 export interface AssetPublishingOptions {
@@ -119,7 +120,11 @@ export class AssetPublishing implements IPublishProgress {
    */
   public async publish(options: PublishOptions = {}): Promise<void> {
     if (this.publishInParallel) {
-      await Promise.all(this.assets.map(async (asset) => this.publishAsset(asset, options)));
+      const limit = pLimit(20);
+      // eslint-disable-next-line @cdklabs/promiseall-no-unbounded-parallelism
+      await Promise.all(
+        this.assets.map((asset) => limit(async () => this.publishAsset(asset, options)))
+      );
     } else {
       for (const asset of this.assets) {
         if (!(await this.publishAsset(asset, options))) {
