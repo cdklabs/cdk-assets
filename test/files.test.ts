@@ -408,6 +408,26 @@ describe('external assets', () => {
   });
 });
 
+<<<<<<< HEAD
+=======
+test('pass destination properties into AWS client', async () => {
+  aws = new DefaultAwsClient();
+  const s3Client = jest.spyOn(aws, 's3Client');
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
+    aws,
+    throwOnError: false,
+  });
+  await pub.publish();
+
+  expect(s3Client).toHaveBeenCalledWith(
+    expect.objectContaining({
+      region: 'us-north-50',
+      assumeRoleArn: 'arn:aws:role',
+    })
+  );
+});
+
+>>>>>>> b6fbdbe (chore: bound the parallelism (#162))
 test('fails when we dont have access to the bucket', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 

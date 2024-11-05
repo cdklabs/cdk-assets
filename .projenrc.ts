@@ -118,4 +118,10 @@ project.addTask('shrinkwrap', {
   ],
 });
 
+project.addDevDeps('@cdklabs/eslint-plugin');
+project.eslint?.addPlugins('@cdklabs');
+project.eslint?.addRules({
+  '@cdklabs/promiseall-no-unbounded-parallelism': ['error'],
+});
+
 project.synth();

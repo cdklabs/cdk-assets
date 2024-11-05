@@ -1,6 +1,17 @@
 {
   "dependencies": [
     {
+<<<<<<< HEAD
+=======
+      "name": "@cdklabs/eslint-plugin",
+      "type": "build"
+    },
+    {
+      "name": "@smithy/types",
+      "type": "build"
+    },
+    {
+>>>>>>> b6fbdbe (chore: bound the parallelism (#162))
       "name": "@types/archiver",
       "type": "build"
     },
