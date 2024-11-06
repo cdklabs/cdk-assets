@@ -411,7 +411,7 @@ describe('external assets', () => {
 test('fails when we dont have access to the bucket', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((_req: any) => {
     return {
       promise: () => {
         throw errorWithCode('AccessDenied', 'Whatever');
