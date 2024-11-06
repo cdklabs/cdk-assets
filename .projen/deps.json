@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@cdklabs/eslint-plugin",
+      "type": "build"
+    },
+    {
       "name": "@types/archiver",
       "type": "build"
     },
