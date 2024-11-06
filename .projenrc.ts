@@ -36,7 +36,7 @@ const project = new typescript.TypeScriptProject({
     'fs-extra',
     'graceful-fs',
     'jszip',
-    'mock-fs',
+    'mock-fs@^5',
   ],
   packageName: 'cdk-assets',
   eslintOptions: {

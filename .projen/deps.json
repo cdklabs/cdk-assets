@@ -96,6 +96,7 @@
     },
     {
       "name": "mock-fs",
+      "version": "^5",
       "type": "build"
     },
     {
