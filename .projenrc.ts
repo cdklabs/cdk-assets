@@ -1,4 +1,4 @@
-import { typescript } from 'projen';
+import { github, typescript } from 'projen';
 const project = new typescript.TypeScriptProject({
   name: 'cdk-assets',
   projenrcTs: true,
@@ -139,5 +139,8 @@ project.eslint?.addPlugins('@cdklabs');
 project.eslint?.addRules({
   '@cdklabs/promiseall-no-unbounded-parallelism': ['error'],
 });
+
+// Allow PR backports to all releasable branches
+new github.PullRequestBackport(project);
 
 project.synth();

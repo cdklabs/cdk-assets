@@ -1,10 +1,12 @@
 {
   "files": [
+    ".backportrc.json",
     ".eslintrc.json",
     ".gitattributes",
     ".github/pull_request_template.md",
     ".github/workflows/auto-approve.yml",
     ".github/workflows/auto-queue.yml",
+    ".github/workflows/backport.yml",
     ".github/workflows/build.yml",
     ".github/workflows/pull-request-lint.yml",
     ".github/workflows/release-v2-main.yml",
