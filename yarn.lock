@@ -288,13 +288,6 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cdklabs/eslint-plugin@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@cdklabs/eslint-plugin/-/eslint-plugin-1.0.0.tgz#3b0c79ccac1c13a35aa3fb81fd3cacc90cc1d8f0"
-  integrity sha512-R3HyeQqDMeYULyDPX5NqOf57m8gyJRHUEWDEQUjAqgKGrFUzcCND8Sus4o8uzn1b57qWYcQdNLWl+Q3lioT8Bg==
-  dependencies:
-    fs-extra "^11.2.0"
-
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
@@ -2468,15 +2461,6 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-extra@^11.2.0:
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
-  integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
-  dependencies:
-    graceful-fs "^4.2.0"
-    jsonfile "^6.0.1"
-    universalify "^2.0.0"
-
 fs-extra@^9.1.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.1.0.tgz#5954460c764a8da2094ba3554bf839e6b9a7c86d"
@@ -3933,10 +3917,10 @@ mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mock-fs@^5.4.1:
-  version "5.4.1"
-  resolved "https://registry.yarnpkg.com/mock-fs/-/mock-fs-5.4.1.tgz#b00abc658cb19dbbf282fde2f05bb751cd1e12a5"
-  integrity sha512-sz/Q8K1gXXXHR+qr0GZg2ysxCRr323kuN10O7CtQjraJsFDJ4SJ+0I5MzALz7aRp9lHk8Cc/YdsT95h9Ka1aFw==
+mock-fs@^4.14.0:
+  version "4.14.0"
+  resolved "https://registry.yarnpkg.com/mock-fs/-/mock-fs-4.14.0.tgz#ce5124d2c601421255985e6e94da80a7357b1b18"
+  integrity sha512-qYvlv/exQ4+svI3UOvPUpLDF0OMX5euvUH0Ny4N5QyRyhNdgAgUrVH3iUINSzEPLvx0kbo/Bp28GJKIqvE7URw==
 
 modify-values@^1.0.1:
   version "1.0.1"

@@ -1,34 +1,35 @@
 jest.mock('child_process');
 
-import 'aws-sdk-client-mock-jest';
-import { Manifest } from '@aws-cdk/cloud-assembly-schema';
-import {
-  GetBucketEncryptionCommand,
-  GetBucketLocationCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
-import { mockClient } from 'aws-sdk-client-mock';
+import { FileDestination, Manifest } from '@aws-cdk/cloud-assembly-schema';
+import * as mockfs from 'mock-fs';
 import { FakeListener } from './fake-listener';
-import { MockAws, mockS3 } from './mock-aws';
+import {
+  errorWithCode,
+  mockAws,
+  mockedApiFailure,
+  mockedApiResult,
+  mockUpload,
+  TARGET_ACCOUNT,
+} from './mock-aws';
 import { mockSpawn } from './mock-child_process';
-import mockfs from './mock-fs';
-import { AssetPublishing, AssetManifest, DefaultAwsClient } from '../lib';
+import { AssetPublishing, AssetManifest } from '../lib';
 
 const ABS_PATH = '/simple/cdk.out/some_external_file';
 
-const DEFAULT_DESTINATION = {
+const DEFAULT_DESTINATION: FileDestination = {
   region: 'us-north-50',
   assumeRoleArn: 'arn:aws:role',
+  assumeRoleExternalId: 'external-id',
+  assumeRoleAdditionalOptions: {
+    Tags: [{ Key: 'Departement', Value: 'Engineering' }],
+  },
   bucketName: 'some_bucket',
   objectKey: 'some_key',
 };
 
-let aws: MockAws;
+let aws: ReturnType<typeof mockAws>;
 beforeEach(() => {
   jest.resetAllMocks();
-  mockS3.resetHistory();
 
   mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
@@ -49,10 +50,26 @@ beforeEach(() => {
       files: {
         theAsset: {
           source: {
-            path: `${mockfs.path('/simple/cdk.out/some_file')}`,
+            path: '/simple/cdk.out/some_file',
           },
           destinations: {
             theDestination: { ...DEFAULT_DESTINATION, bucketName: 'some_other_bucket' },
+          },
+        },
+      },
+    }),
+    '/foreign-account/cdk.out/assets.json': JSON.stringify({
+      version: Manifest.version(),
+      files: {
+        theAsset: {
+          source: {
+            path: '/simple/cdk.out/some_file',
+          },
+          destinations: {
+            theDestination: {
+              ...DEFAULT_DESTINATION,
+              bucketName: `cdk-qualifier-assets-${TARGET_ACCOUNT}-us-east-1`,
+            },
           },
         },
       },
@@ -104,67 +121,85 @@ beforeEach(() => {
     '/emptyzip/cdk.out/empty_dir': {}, // Empty directory
   });
 
-  aws = new MockAws();
+  aws = mockAws();
 });
 
 afterEach(() => {
   mockfs.restore();
 });
 
-test('will only read bucketEncryption once even for multiple assets', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+test('pass destination properties to AWS client', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
+    aws,
+    throwOnError: false,
+  });
+  aws.mockS3.listObjectsV2 = mockedApiResult({});
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/types/cdk.out')), { aws });
   await pub.publish();
 
-  // Upload calls PutObjectCommand under the hood
-  expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 2);
-  expect(s3).toHaveReceivedCommandTimes(GetBucketEncryptionCommand, 1);
+  expect(aws.s3Client).toHaveBeenCalledWith(
+    expect.objectContaining({
+      region: 'us-north-50',
+      assumeRoleArn: 'arn:aws:role',
+      assumeRoleExternalId: 'external-id',
+      assumeRoleAdditionalOptions: {
+        Tags: [{ Key: 'Departement', Value: 'Engineering' }],
+      },
+    })
+  );
 });
 
 test('Do nothing if file already exists', async () => {
-  const s3 = mockClient(S3Client);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key' }] });
-
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key' }] });
+  aws.mockS3.upload = mockUpload();
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandWith(ListObjectsV2Command, {
-    Bucket: 'some_bucket',
-    Prefix: 'some_key',
-    MaxKeys: 1,
-  });
-
-  // Upload calls PutObjectCommand under the hood
-  expect(s3).not.toHaveReceivedCommand(PutObjectCommand);
+  expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Prefix: 'some_key',
+      MaxKeys: 1,
+    })
+  );
+  expect(aws.mockS3.upload).not.toHaveBeenCalled();
 });
 
 test('tiny file does not count as cache hit', async () => {
-  const s3 = mockClient(S3Client);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key', Size: 5 }] });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key', Size: 5 }] });
+  aws.mockS3.upload = mockUpload();
 
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 1);
+  expect(aws.mockS3.upload).toHaveBeenCalled();
 });
 
 test('upload file if new (list returns other key)', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 1);
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+    })
+  );
+
+  // We'll just have to assume the contents are correct
 });
 
 test('upload with server side encryption AES256 header', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(GetBucketEncryptionCommand).resolves({
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
+
+  aws.mockS3.getBucketEncryption = mockedApiResult({
     ServerSideEncryptionConfiguration: {
       Rules: [
         {
@@ -176,35 +211,27 @@ test('upload with server side encryption AES256 header', async () => {
       ],
     },
   });
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    ContentType: 'application/octet-stream',
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ServerSideEncryption: 'AES256',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
-});
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+      ServerSideEncryption: 'AES256',
+    })
+  );
 
-test('will use SHA256 content checksum', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
-
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/types/cdk.out')), { aws });
-  await pub.publish();
-
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    ChecksumAlgorithm: 'SHA256',
-  });
+  // We'll just have to assume the contents are correct
 });
 
 test('upload with server side encryption aws:kms header and key id', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(GetBucketEncryptionCommand).resolves({
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
+
+  aws.mockS3.getBucketEncryption = mockedApiResult({
     ServerSideEncryptionConfiguration: {
       Rules: [
         {
@@ -217,200 +244,196 @@ test('upload with server side encryption aws:kms header and key id', async () =>
       ],
     },
   });
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    ServerSideEncryption: 'aws:kms',
-    SSEKMSKeyId: 'the-key-id',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+      ContentType: 'application/octet-stream',
+      ServerSideEncryption: 'aws:kms',
+      SSEKMSKeyId: 'the-key-id',
+    })
+  );
+
+  // We'll just have to assume the contents are correct
+});
+
+test('will only read bucketEncryption once even for multiple assets', async () => {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/types/cdk.out'), { aws });
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
+  await pub.publish();
+
+  expect(aws.mockS3.upload).toHaveBeenCalledTimes(2);
+  expect(aws.mockS3.getBucketEncryption).toHaveBeenCalledTimes(1);
 });
 
 test('no server side encryption header if access denied for bucket encryption', async () => {
-  const s3 = mockClient(S3Client);
-  const err = new Error('Access Denied');
-  err.name = 'AccessDenied';
-  s3.on(GetBucketEncryptionCommand).rejects(err);
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
-
   const progressListener = new FakeListener();
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), {
     aws,
     progressListener,
   });
 
+  aws.mockS3.getBucketEncryption = mockedApiFailure('AccessDenied', 'Access Denied');
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
   await pub.publish();
 
-  expect(s3).not.toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    ServerSideEncryption: 'aws:kms',
-    SSEKMSKeyId: 'the-key-id',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.not.objectContaining({
+      ServerSideEncryption: 'aws:kms',
+    })
+  );
 
-  expect(s3).not.toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    ServerSideEncryption: 'AWS256',
-    SSEKMSKeyId: 'the-key-id',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
-
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    ContentType: 'application/octet-stream',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.not.objectContaining({
+      ServerSideEncryption: 'AES256',
+    })
+  );
 });
 
 test('correctly looks up content type', async () => {
-  const s3 = mockClient(S3Client);
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/types/cdk.out')), { aws });
-  s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/types/cdk.out'), { aws });
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key.but_not_the_one' }] });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
 
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key.txt',
-    ContentType: 'text/plain',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key.txt',
+      ContentType: 'text/plain',
+    })
+  );
 
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key.png',
-    ContentType: 'image/png',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key.png',
+      ContentType: 'image/png',
+    })
+  );
+
+  // We'll just have to assume the contents are correct
 });
 
 test('upload file if new (list returns no key)', async () => {
-  const s3 = mockClient(S3Client);
-  s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+
   await pub.publish();
 
-  expect(s3).toHaveReceivedCommandWith(PutObjectCommand, {
-    Bucket: 'some_bucket',
-    Key: 'some_key',
-    Body: Buffer.from('FILE_CONTENTS'),
-  });
+  expect(aws.mockS3.upload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      Bucket: 'some_bucket',
+      Key: 'some_key',
+    })
+  );
+
+  // We'll just have to assume the contents are correct
 });
 
 test('successful run does not need to query account ID', async () => {
-  const s3 = mockClient(S3Client);
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-  s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
-  const discoverCurrentAccount = jest.spyOn(aws, 'discoverCurrentAccount');
-  const discoverTargetAccount = jest.spyOn(aws, 'discoverTargetAccount');
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
+
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
 
   await pub.publish();
 
-  expect(discoverCurrentAccount).not.toHaveBeenCalled();
-  expect(discoverTargetAccount).not.toHaveBeenCalled();
+  expect(aws.discoverCurrentAccount).not.toHaveBeenCalled();
+  expect(aws.discoverTargetAccount).not.toHaveBeenCalled();
 });
 
 test('correctly identify asset path if path is absolute', async () => {
-  const s3 = mockClient(S3Client);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/abs/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/abs/cdk.out')), { aws });
-  s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
 
-  expect(async () => {
-    await pub.publish();
-  }).not.toThrow();
+  await pub.publish();
+
+  expect(true).toBeTruthy(); // No exception, satisfy linter
 });
 
 describe('external assets', () => {
   let pub: AssetPublishing;
   beforeEach(() => {
-    pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/external/cdk.out')), { aws });
+    pub = new AssetPublishing(AssetManifest.fromPath('/external/cdk.out'), { aws });
   });
 
   test('do nothing if file exists already', async () => {
-    const s3 = mockClient(S3Client);
-
-    s3.on(ListObjectsV2Command).resolves({ Contents: [{ Key: 'some_key' }] });
+    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: [{ Key: 'some_key' }] });
 
     await pub.publish();
 
-    expect(s3).toReceiveCommandWith(ListObjectsV2Command, {
-      Bucket: 'some_external_bucket',
-      Prefix: 'some_key',
-      MaxKeys: 1,
-    });
+    expect(aws.mockS3.listObjectsV2).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Bucket: 'some_external_bucket',
+        Prefix: 'some_key',
+        MaxKeys: 1,
+      })
+    );
   });
 
   test('upload external asset correctly', async () => {
-    const s3 = mockClient(S3Client);
-
-    s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
-
-    const expectAllSpawns = mockSpawn({
-      commandLine: ['sometool'],
-      stdout: `${mockfs.path(ABS_PATH)}`,
-    });
+    aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+    aws.mockS3.upload = mockUpload('ZIP_FILE_THAT_IS_DEFINITELY_NOT_EMPTY');
+    const expectAllSpawns = mockSpawn({ commandLine: ['sometool'], stdout: ABS_PATH });
 
     await pub.publish();
 
-    expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 2);
+    expect(aws.s3Client).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'us-north-50',
+        assumeRoleArn: 'arn:aws:role',
+      })
+    );
 
     expectAllSpawns();
   });
 });
 
-test('pass destination properties into AWS client', async () => {
-  aws = new DefaultAwsClient();
-  const s3Client = jest.spyOn(aws, 's3Client');
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), {
-    aws,
-    throwOnError: false,
-  });
-  await pub.publish();
-
-  expect(s3Client).toHaveBeenCalledWith(
-    expect.objectContaining({
-      region: 'us-north-50',
-      assumeRoleArn: 'arn:aws:role',
-    })
-  );
-});
-
 test('fails when we dont have access to the bucket', async () => {
-  const s3 = mockClient(S3Client);
-  const err = new Error('Access Denied');
-  err.name = 'AccessDenied';
-  s3.on(GetBucketLocationCommand).rejects(err);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
+    return {
+      promise: () => {
+        throw errorWithCode('AccessDenied', 'Whatever');
+      },
+    };
+  });
 
   await expect(pub.publish()).rejects.toThrow('but we dont have access to it');
 });
 
 test('fails when cross account is required but not allowed', async () => {
-  const s3 = mockClient(S3Client);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/foreign-account/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-
-  s3.on(GetBucketLocationCommand).callsFake((req) => {
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
     if (req.ExpectedBucketOwner) {
-      const err = new Error('Access Denied');
-      err.name = 'AccessDenied';
-      throw err;
+      return {
+        promise: () => {
+          throw errorWithCode('AccessDenied', 'Whatever');
+        },
+      };
     }
-    return {};
+    return { promise: () => Promise.resolve() };
   });
 
   await expect(pub.publish({ allowCrossAccount: false })).rejects.toThrow(
@@ -419,18 +442,19 @@ test('fails when cross account is required but not allowed', async () => {
 });
 
 test('succeeds when bucket doesnt belong to us but doesnt contain account id - cross account', async () => {
-  const s3 = mockClient(S3Client);
+  const pub = new AssetPublishing(AssetManifest.fromPath('/simple/cdk.out'), { aws });
 
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/simple/cdk.out')), { aws });
-
-  s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
-  s3.on(GetBucketLocationCommand).callsFake((req) => {
+  aws.mockS3.listObjectsV2 = mockedApiResult({ Contents: undefined });
+  aws.mockS3.upload = mockUpload('FILE_CONTENTS');
+  aws.mockS3.getBucketLocation = jest.fn().mockImplementation((req: any) => {
     if (req.ExpectedBucketOwner) {
-      const err = new Error('Access Denied');
-      err.name = 'AccessDenied';
-      throw err;
+      return {
+        promise: () => {
+          throw errorWithCode('AccessDenied', 'Whatever');
+        },
+      };
     }
-    return {};
+    return { promise: () => Promise.resolve() };
   });
 
   await expect(pub.publish()).resolves.not.toThrow();
