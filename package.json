@@ -57,7 +57,7 @@
     "jest-junit": "^15",
     "jszip": "^3.10.1",
     "prettier": "^3.3.3",
-    "projen": "^0.90.1",
+    "projen": "^0.90.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
