@@ -154,16 +154,11 @@ export class DefaultAwsClient implements IAws {
       listObjectsV2: (input: ListObjectsV2CommandInput): Promise<ListObjectsV2CommandOutput> =>
         client.send(new ListObjectsV2Command(input)),
       upload: (input: PutObjectCommandInput): Promise<CompleteMultipartUploadCommandOutput> => {
-        try {
-          const upload = new Upload({
-            client,
-            params: input,
-          });
-          return upload.done();
-        } catch (e: any) {
-          console.log(`Asset upload failed: '${e.message}'`);
-          throw e;
-        }
+        const upload = new Upload({
+          client,
+          params: input,
+        });
+        return upload.done();
       },
     };
   }

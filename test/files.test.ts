@@ -328,9 +328,9 @@ test('correctly identify asset path if path is absolute', async () => {
   const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/abs/cdk.out')), { aws });
   s3.on(ListObjectsV2Command).resolves({ Contents: undefined });
 
-  expect(async () => {
-    await pub.publish();
-  }).not.toThrow();
+  await pub.publish();
+
+  // THEN: doesn't throw
 });
 
 describe('external assets', () => {
@@ -365,7 +365,7 @@ describe('external assets', () => {
 
     await pub.publish();
 
-    expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 2);
+    expect(s3).toHaveReceivedCommandTimes(PutObjectCommand, 1);
 
     expectAllSpawns();
   });
