@@ -32,7 +32,7 @@
     "projen": "npx projen"
   },
   "devDependencies": {
-    "@cdklabs/eslint-plugin": "^1.0.0",
+    "@cdklabs/eslint-plugin": "^1.1.0",
     "@smithy/types": "^3.7.1",
     "@types/archiver": "^5.3.4",
     "@types/glob": "^7.2.0",
