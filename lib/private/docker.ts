@@ -58,33 +58,28 @@ export interface DockerOptions {
   readonly progressListener?: IPublishProgressListener;
 }
 
-interface LineStreamHandler {
-  processLine(line: string, isError: boolean): void;
-}
+// interface LineStreamHandler {
+//   processLine(line: string, isError: boolean): void;
+// }
 
-class LineStreamWrapper implements LineStreamHandler {
-  private buffer = '';
+// class LineStreamWrapper implements LineStreamHandler {
+//   private buffer = '';
 
-  constructor(private readonly callback: (line: string, isError: boolean) => void) {}
+//   constructor(private readonly callback: (line: string, isError: boolean) => void) {}
 
-  processLine(chunk: string, isError: boolean) {
-    // Add new chunk to existing buffer
-    this.buffer += chunk;
+//   processLine(chunk: string, isError: boolean) {
+//     this.buffer += chunk;
 
-    // Process complete lines
-    let newlineIndex;
-    while ((newlineIndex = this.buffer.indexOf('\n')) !== -1) {
-      // Extract the complete line
-      const line = this.buffer.slice(0, newlineIndex);
-      // Keep the rest in the buffer  
-      this.buffer = this.buffer.slice(newlineIndex + 1);
-      // Send the line to the callback if it's not empty
-      if (line.trim()) {
-        this.callback(line, isError);
-      }
-    }
-  }
-}
+//     let newlineIndex;
+//     while ((newlineIndex = this.buffer.indexOf('\n')) !== -1) {
+//       const line = this.buffer.slice(0, newlineIndex);
+//       this.buffer = this.buffer.slice(newlineIndex + 1);
+//       if (line.trim()) {
+//         this.callback(line, isError);
+//       }
+//     }
+//   }
+// }
 
 export class Docker {
   private configDir: string | undefined = undefined;
@@ -242,16 +237,14 @@ export class Docker {
           PATH: `${pathToCdkAssets}${path.delimiter}${shellOptions.env?.PATH ?? process.env.PATH}`,
         },
         outputListener: (data: string, isError: boolean) => {
-          if (this.options?.progressListener && !shellOptions.quiet) {
-            this.options.progressListener.onPublishEvent(
-              isError ? EventType.FAIL : EventType.DEBUG, 
-              {
-                message: `[docker ${isError ? 'stderr' : 'stdout'}] ${data}`,
-                currentAsset: undefined,
-                percentComplete: -1,
-                abort: () => {},
-              }
-            );
+          if (this.options?.progressListener && !shellOptions.quiet && data.trim().length > 0) {
+            const eventType = isError ? EventType.FAIL : EventType.DEBUG;
+            this.options.progressListener.onPublishEvent(eventType, {
+              message: `[docker ${isError ? 'stderr' : 'stdout'}] ${data}`,
+              currentAsset: undefined,
+              percentComplete: -1,
+              abort: () => {},
+            });
           }
         },
       });
