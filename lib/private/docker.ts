@@ -5,6 +5,7 @@ import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials
 import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
+import { IPublishProgressListener, EventType } from '../progress';
 
 interface BuildOptions {
   readonly directory: string;
@@ -52,10 +53,43 @@ export interface DockerCacheOption {
   readonly params?: { [key: string]: string };
 }
 
+export interface DockerOptions {
+  readonly logger?: Logger;
+  readonly progressListener?: IPublishProgressListener;
+}
+
+interface LineStreamHandler {
+  processLine(line: string, isError: boolean): void;
+}
+
+class LineStreamWrapper implements LineStreamHandler {
+  private buffer = '';
+
+  constructor(private readonly callback: (line: string, isError: boolean) => void) {}
+
+  processLine(chunk: string, isError: boolean) {
+    // Add new chunk to existing buffer
+    this.buffer += chunk;
+
+    // Process complete lines
+    let newlineIndex;
+    while ((newlineIndex = this.buffer.indexOf('\n')) !== -1) {
+      // Extract the complete line
+      const line = this.buffer.slice(0, newlineIndex);
+      // Keep the rest in the buffer  
+      this.buffer = this.buffer.slice(newlineIndex + 1);
+      // Send the line to the callback if it's not empty
+      if (line.trim()) {
+        this.callback(line, isError);
+      }
+    }
+  }
+}
+
 export class Docker {
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly logger?: Logger) {}
+  constructor(private readonly options?: DockerOptions) {}
 
   /**
    * Whether an image with the given tag exists
@@ -194,18 +228,31 @@ export class Docker {
     this.configDir = undefined;
   }
 
-  private async execute(args: string[], options: ShellOptions = {}) {
+  private async execute(args: string[], shellOptions: ShellOptions = {}) {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
-        logger: this.logger,
-        ...options,
+        logger: this.options?.logger,
+        ...shellOptions,
         env: {
           ...process.env,
-          ...options.env,
-          PATH: `${pathToCdkAssets}${path.delimiter}${options.env?.PATH ?? process.env.PATH}`,
+          ...shellOptions.env,
+          PATH: `${pathToCdkAssets}${path.delimiter}${shellOptions.env?.PATH ?? process.env.PATH}`,
+        },
+        outputListener: (data: string, isError: boolean) => {
+          if (this.options?.progressListener && !shellOptions.quiet) {
+            this.options.progressListener.onPublishEvent(
+              isError ? EventType.FAIL : EventType.DEBUG, 
+              {
+                message: `[docker ${isError ? 'stderr' : 'stdout'}] ${data}`,
+                currentAsset: undefined,
+                percentComplete: -1,
+                abort: () => {},
+              }
+            );
+          }
         },
       });
     } catch (e: any) {
@@ -235,6 +282,7 @@ export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
   readonly logger: (m: string) => void;
+  readonly progressListener?: IPublishProgressListener;
 }
 
 /**
@@ -249,7 +297,10 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.logger);
+    const docker = new Docker({
+      logger: options.logger,
+      progressListener: options.progressListener,
+    });
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -268,7 +319,10 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.logger);
+    const docker = new Docker({
+      logger: options.logger,
+      progressListener: options.progressListener,
+    });
     await this.loginOncePerDestination(docker, options);
     return docker;
   }
