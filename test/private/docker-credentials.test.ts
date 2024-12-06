@@ -4,6 +4,7 @@ import { GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { IAws } from '../../lib/aws';
 import {
+  _clearCdkCredentialsConfigCache,
   cdkCredentialsConfig,
   cdkCredentialsConfigFile,
   DockerCredentialsConfig,
@@ -18,6 +19,8 @@ let aws: IAws;
 beforeEach(() => {
   jest.resetModules();
   jest.resetAllMocks();
+  mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
+  _clearCdkCredentialsConfigCache();
 
   aws = new MockAws();
 
@@ -45,8 +48,9 @@ describe('cdkCredentialsConfigFile', () => {
 });
 
 describe('cdkCredentialsConfig', () => {
-  const credsFile = '/tmp/foo/bar/does/not/exist/config.json';
+  let credsFile: string;
   beforeEach(() => {
+    credsFile = `/tmp/foo/bar/does/not/exist/config${crypto.randomUUID()}.json`;
     process.env.CDK_DOCKER_CREDS_FILE = mockfs.path(credsFile);
   });
 
@@ -118,8 +122,6 @@ describe('fetchDockerLoginCredentials', () => {
   });
 
   test('does not throw on correctly configured raw domain', async () => {
-    mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
-
     await expect(
       fetchDockerLoginCredentials(aws, config, 'https://secret.example.com/v1/')
     ).resolves.toBeTruthy();
@@ -139,7 +141,6 @@ describe('fetchDockerLoginCredentials', () => {
     });
 
     test('supports assuming a role', async () => {
-      mockSecretWithSecretString({ username: 'secretUser', secret: 'secretPass' });
       const secretsManagerClient = jest.spyOn(aws, 'secretsManagerClient');
 
       const creds = await fetchDockerLoginCredentials(aws, config, 'secretwithrole.example.com');

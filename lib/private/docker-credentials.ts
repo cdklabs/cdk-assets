@@ -47,6 +47,13 @@ export function cdkCredentialsConfig(): DockerCredentialsConfig | undefined {
   return _cdkCredentials;
 }
 
+/**
+ * Just for testing
+ */
+export function _clearCdkCredentialsConfigCache() {
+  _cdkCredentials = undefined;
+}
+
 /** Fetches login credentials from the configured source (e.g., SecretsManager, ECR) */
 export async function fetchDockerLoginCredentials(
   aws: IAws,

@@ -6,25 +6,26 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { Account, ClientOptions, DefaultAwsClient } from '../lib/aws';
 
 export const mockEcr = mockClient(ECRClient);
-mockEcr.on(DescribeRepositoriesCommand).resolves({
-  repositories: [
-    {
-      repositoryName: 'repo',
-      repositoryUri: '12345.amazonaws.com/repo',
-    },
-  ],
-});
-mockEcr.on(DescribeImagesCommand).resolves({});
-
 export const mockS3 = mockClient(S3Client);
-mockS3.on(UploadPartCommand).resolves({ ETag: '1' });
-mockS3.on(PutObjectCommand).resolves({});
-
 export const mockSecretsManager = mockClient(SecretsManagerClient);
 export const mockSTS = mockClient(STSClient);
-mockSTS
-  .on(GetCallerIdentityCommand)
-  .resolves({ Account: '123456789012', Arn: 'aws:swa:123456789012:some-other-stuff' });
+
+export function resetDefaultAwsMockBehavior() {
+  mockEcr.on(DescribeRepositoriesCommand).resolves({
+    repositories: [
+      {
+        repositoryName: 'repo',
+        repositoryUri: '12345.amazonaws.com/repo',
+      },
+    ],
+  });
+  mockEcr.on(DescribeImagesCommand).resolves({});
+  mockS3.on(UploadPartCommand).resolves({ ETag: '1' });
+  mockS3.on(PutObjectCommand).resolves({});
+  mockSTS
+    .on(GetCallerIdentityCommand)
+    .resolves({ Account: '123456789012', Arn: 'aws:swa:123456789012:some-other-stuff' });
+}
 
 export class MockAws extends DefaultAwsClient {
   discoverPartition(): Promise<string> {
