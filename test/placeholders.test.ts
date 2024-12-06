@@ -3,12 +3,13 @@ import 'aws-sdk-client-mock-jest';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
 import { DescribeImagesCommand } from '@aws-sdk/client-ecr';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { MockAws, mockEcr, mockS3 } from './mock-aws';
+import { MockAws, mockEcr, mockS3, resetDefaultAwsMockBehavior } from './mock-aws';
 import mockfs from './mock-fs';
 import { AssetManifest, AssetPublishing, IAws } from '../lib';
 
 let aws: IAws;
 beforeEach(() => {
+  resetDefaultAwsMockBehavior();
   mockfs({
     '/simple/cdk.out/assets.json': JSON.stringify({
       version: Manifest.version(),

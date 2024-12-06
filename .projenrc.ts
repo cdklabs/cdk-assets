@@ -63,6 +63,7 @@ const project = new typescript.TypeScriptProject({
     jestConfig: {
       verbose: true,
       maxWorkers: '50%',
+      randomize: true,
     },
     configFilePath: 'jest.config.json',
   },

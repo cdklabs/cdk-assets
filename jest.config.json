@@ -2,6 +2,7 @@
   "coverageProvider": "v8",
   "verbose": true,
   "maxWorkers": "50%",
+  "randomize": true,
   "testMatch": [
     "<rootDir>/@(lib|test)/**/*(*.)@(spec|test).ts?(x)",
     "<rootDir>/@(lib|test)/**/__tests__/**/*.ts?(x)",
