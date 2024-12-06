@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as os from 'os';
 import * as path from 'path';
 import { GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
