@@ -58,29 +58,6 @@ export interface DockerOptions {
   readonly progressListener?: IPublishProgressListener;
 }
 
-// interface LineStreamHandler {
-//   processLine(line: string, isError: boolean): void;
-// }
-
-// class LineStreamWrapper implements LineStreamHandler {
-//   private buffer = '';
-
-//   constructor(private readonly callback: (line: string, isError: boolean) => void) {}
-
-//   processLine(chunk: string, isError: boolean) {
-//     this.buffer += chunk;
-
-//     let newlineIndex;
-//     while ((newlineIndex = this.buffer.indexOf('\n')) !== -1) {
-//       const line = this.buffer.slice(0, newlineIndex);
-//       this.buffer = this.buffer.slice(newlineIndex + 1);
-//       if (line.trim()) {
-//         this.callback(line, isError);
-//       }
-//     }
-//   }
-// }
-
 export class Docker {
   private configDir: string | undefined = undefined;
 

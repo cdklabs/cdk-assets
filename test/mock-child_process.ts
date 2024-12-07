@@ -44,15 +44,11 @@ export function mockSpawn(...invocations: Invocation[]): () => void {
         }
         if (invocation.stderr) {
           // Send stderr data after stdout
-          setTimeout(() => {
-            if (invocation.stderr) {
-              mockEmit(child.stderr, 'data', Buffer.from(invocation.stderr));
-            }
-          }, 10);
+          if (invocation.stderr) {
+            mockEmit(child.stderr, 'data', Buffer.from(invocation.stderr));
+          }
         }
-        setTimeout(() => {
-          mockEmit(child, 'close', invocation.exitCode ?? 0);
-        }, 20);
+        mockEmit(child, 'close', invocation.exitCode ?? 0);
 
         return child;
       }
