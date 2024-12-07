@@ -6,7 +6,8 @@ export class FakeListener implements IPublishProgressListener {
 
   constructor(private readonly doAbort = false) {}
 
-  public onPublishEvent(_type: EventType, event: IPublishProgress): void {
+  public onPublishEvent(type: EventType, event: IPublishProgress): void {
+    this.types.push(type);
     this.messages.push(event.message);
 
     if (this.doAbort) {

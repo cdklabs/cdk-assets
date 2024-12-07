@@ -6,6 +6,7 @@ export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
   readonly logger?: Logger;
   readonly input?: string;
+  readonly outputListener?: (data: string, isError: boolean) => void;
 }
 
 /**
@@ -35,16 +36,23 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     // Both write to stdout and collect
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stdout.write(chunk);
+        if (options.outputListener) {
+          options.outputListener(chunk.toString(), false);
+        } else {
+          process.stdout.write(chunk);
+        }
       }
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stderr.write(chunk);
+        if (options.outputListener) {
+          options.outputListener(chunk.toString(), true);
+        } else {
+          process.stderr.write(chunk);
+        }
       }
-
       stderr.push(chunk);
     });
 
