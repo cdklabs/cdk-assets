@@ -1,4 +1,3 @@
-// Modified bin/logging.ts to integrate with progress interface
 import * as fs from 'fs';
 import * as path from 'path';
 import { EventType, IPublishProgress, IPublishProgressListener } from '../lib/progress';
@@ -10,7 +9,7 @@ export const VERSION = JSON.parse(
 export type LogLevel = 'verbose' | 'info' | 'error';
 let logThreshold: LogLevel = 'info';
 
-// Global progress listener that can be set
+// Global progress listener that will eventually be set
 let globalProgressListener: IPublishProgressListener | undefined;
 
 export const LOG_LEVELS: Record<LogLevel, number> = {
@@ -41,10 +40,9 @@ function logLevelToEventType(level: LogLevel): EventType {
 
 export function log(level: LogLevel, message: string, percentComplete?: number) {
   if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
-    // Still write to stderr for backward compatibility
     console.error(`${level.padEnd(7, ' ')}: ${message}`);
 
-    // Also send to progress listener if configured
+    // Write to progress listener if configured
     if (globalProgressListener) {
       const progressEvent: IPublishProgress = {
         message: `${message}`,
@@ -62,14 +60,13 @@ export class ShellOutputHandler {
   public handleOutput(chunk: any, isError: boolean = false) {
     const text = chunk.toString();
 
-    // Write to standard streams for backward compatibility
     if (isError) {
       process.stderr.write(text);
     } else {
       process.stdout.write(text);
     }
 
-    // Also send to progress listener if configured
+    // Send to progress listener if configured
     if (this.progressListener) {
       const progressEvent: IPublishProgress = {
         message: text,

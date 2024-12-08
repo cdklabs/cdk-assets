@@ -1,4 +1,3 @@
-// Modified bin/cdk-assets.ts
 import * as yargs from 'yargs';
 import { list } from './list';
 import { log, setGlobalProgressListener, setLogThreshold, VERSION } from './logging';
@@ -7,7 +6,6 @@ import { AssetManifest, EventType, IPublishProgress, IPublishProgressListener } 
 
 class DefaultProgressListener implements IPublishProgressListener {
   public onPublishEvent(type: EventType, event: IPublishProgress): void {
-    // Map event types to log levels
     switch (type) {
       case EventType.FAIL:
         log('error', event.message);

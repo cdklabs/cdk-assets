@@ -11,6 +11,12 @@ export interface ShellOptions extends child_process.SpawnOptions {
   readonly progressListener?: IPublishProgressListener;
 }
 
+/**
+ * OS helpers
+ *
+ * Shell function which both prints to stdout and collects the output into a
+ * string.
+ */
 export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
   if (options.logger) {
     options.logger(renderCommandLine(command));
