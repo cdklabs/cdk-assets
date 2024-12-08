@@ -8,8 +8,9 @@ import {
   DescribeImagesCommand,
   DescribeRepositoriesCommand,
   GetAuthorizationTokenCommand,
+  GetAuthorizationTokenResponse,
 } from '@aws-sdk/client-ecr';
-import { MockAws, mockEcr } from './mock-aws';
+import { MockAws, mockEcr, resetDefaultAwsMockBehavior } from './mock-aws';
 import { mockSpawn } from './mock-child_process';
 import mockfs from './mock-fs';
 import { AssetManifest, AssetPublishing, IAws } from '../lib';
@@ -23,6 +24,7 @@ err.name = 'ImageNotFoundException';
 
 beforeEach(() => {
   jest.resetAllMocks();
+  resetDefaultAwsMockBehavior();
   delete process.env.CDK_DOCKER;
 
   // By default, assume no externally-configured credentials.
@@ -72,6 +74,39 @@ beforeEach(() => {
               region: 'us-north-50',
               assumeRoleArn: 'arn:aws:role',
               repositoryName: 'repo',
+              imageTag: 'theAsset2',
+            },
+          },
+        },
+      },
+    }),
+    '/multi2/cdk.out/assets.json': JSON.stringify({
+      version: Manifest.version(),
+      dockerImages: {
+        theAsset1: {
+          source: {
+            directory: 'dockerdir',
+          },
+          destinations: {
+            theDestination: {
+              region: 'us-north-50',
+              account: '12345',
+              assumeRoleArn: 'arn:aws:role',
+              repositoryName: 'repo',
+              imageTag: 'theAsset1',
+            },
+          },
+        },
+        theAsset2: {
+          source: {
+            directory: 'dockerdir',
+          },
+          destinations: {
+            theDestination: {
+              region: 'us-north-50',
+              account: '12346',
+              assumeRoleArn: 'arn:aws:role',
+              repositoryName: 'repo2',
               imageTag: 'theAsset2',
             },
           },
@@ -256,40 +291,42 @@ afterEach(() => {
 });
 
 test('logging in twice for two repository domains (containing account id & region)', async () => {
-  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/multi/cdk.out')), {
+  const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/multi2/cdk.out')), {
     aws,
-    throwOnError: false,
+    throwOnError: true,
   });
 
-  mockEcr
-    .on(DescribeRepositoriesCommand)
-    .resolvesOnce({
-      repositories: [{ repositoryUri: '12345.amazonaws.com/aws-cdk/assets' }],
-    })
-    .resolvesOnce({
-      repositories: [{ repositoryUri: '12346.amazonaws.com/aws-cdk/assets' }],
-    })
-    .resolves({
-      repositories: [
-        {
-          repositoryName: 'repo',
-          repositoryUri: '12345.amazonaws.com/repo',
-        },
-      ],
-    });
+  mockEcr.on(DescribeRepositoriesCommand).callsFake((input) => {
+    const url = {
+      repo: '12345.amazonaws.com/repo',
+      repo2: '12346.amazonaws.com/repo2',
+    }[input.repositoryNames[0]];
+    if (!url) {
+      throw new Error(`Unexpected repo: ${JSON.stringify(input)}`);
+    }
+    return {
+      repositories: [{ repositoryUri: url }],
+    };
+  });
 
-  mockEcr
-    .on(GetAuthorizationTokenCommand)
-    .resolvesOnce({
+  const responses: GetAuthorizationTokenResponse[] = [
+    {
       authorizationData: [
         { authorizationToken: 'dXNlcjpwYXNz', proxyEndpoint: 'https://12345.proxy.com/' },
       ],
-    })
-    .resolvesOnce({
+    },
+    {
       authorizationData: [
         { authorizationToken: 'dXNlcjpwYXNz', proxyEndpoint: 'https://12346.proxy.com/' },
       ],
-    });
+    },
+  ];
+
+  let i = 0;
+  // For some reason, `mockResolvedValueOnce()` doesn't work here, but this does.
+  mockEcr.on(GetAuthorizationTokenCommand).callsFake(() => {
+    return responses[i++];
+  });
 
   const expectAllSpawns = mockSpawn(
     {
@@ -305,17 +342,12 @@ test('logging in twice for two repository domains (containing account id & regio
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset1'], exitCode: 1 },
     {
       commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset1', '.'],
-      cwd: '/multi/cdk.out/dockerdir',
+      cwd: 'multi2/cdk.out/dockerdir',
     },
     {
-      commandLine: [
-        'docker',
-        'tag',
-        'cdkasset-theasset1',
-        '12345.amazonaws.com/aws-cdk/assets:theAsset1',
-      ],
+      commandLine: ['docker', 'tag', 'cdkasset-theasset1', '12345.amazonaws.com/repo:theAsset1'],
     },
-    { commandLine: ['docker', 'push', '12345.amazonaws.com/aws-cdk/assets:theAsset1'] },
+    { commandLine: ['docker', 'push', '12345.amazonaws.com/repo:theAsset1'] },
     {
       commandLine: [
         'docker',
@@ -329,17 +361,12 @@ test('logging in twice for two repository domains (containing account id & regio
     { commandLine: ['docker', 'inspect', 'cdkasset-theasset2'], exitCode: 1 },
     {
       commandLine: ['docker', 'build', '--tag', 'cdkasset-theasset2', '.'],
-      cwd: '/multi/cdk.out/dockerdir',
+      cwd: 'multi2/cdk.out/dockerdir',
     },
     {
-      commandLine: [
-        'docker',
-        'tag',
-        'cdkasset-theasset2',
-        '12346.amazonaws.com/aws-cdk/assets:theAsset2',
-      ],
+      commandLine: ['docker', 'tag', 'cdkasset-theasset2', '12346.amazonaws.com/repo2:theAsset2'],
     },
-    { commandLine: ['docker', 'push', '12346.amazonaws.com/aws-cdk/assets:theAsset2'] }
+    { commandLine: ['docker', 'push', '12346.amazonaws.com/repo2:theAsset2'] }
   );
 
   await pub.publish();
