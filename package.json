@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@aws-cdk/cloud-assembly-schema": "^38.0.1",
-    "@aws-cdk/cx-api": "^2.171.1",
+    "@aws-cdk/cx-api": "^2.172.0",
     "@aws-sdk/client-ecr": "^3.699.0",
     "@aws-sdk/client-s3": "^3.705.0",
     "@aws-sdk/client-secrets-manager": "^3.699.0",
