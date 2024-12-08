@@ -9,7 +9,8 @@ export const VERSION = JSON.parse(
 export type LogLevel = 'verbose' | 'info' | 'error';
 let logThreshold: LogLevel = 'info';
 
-// Global progress listener that will eventually be set
+// Global default progress listener that will be set if using the cli
+// If using the library, you should set your own listener
 let globalProgressListener: IPublishProgressListener | undefined;
 
 export const LOG_LEVELS: Record<LogLevel, number> = {
