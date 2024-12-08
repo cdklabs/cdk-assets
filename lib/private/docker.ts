@@ -5,7 +5,7 @@ import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials
 import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
-import { IPublishProgressListener, EventType } from '../progress';
+import { IPublishProgressListener } from '../progress';
 
 interface BuildOptions {
   readonly directory: string;
@@ -213,17 +213,7 @@ export class Docker {
           ...shellOptions.env,
           PATH: `${pathToCdkAssets}${path.delimiter}${shellOptions.env?.PATH ?? process.env.PATH}`,
         },
-        outputListener: (data: string, isError: boolean) => {
-          if (this.options?.progressListener && !shellOptions.quiet && data.trim().length > 0) {
-            const eventType = isError ? EventType.FAIL : EventType.DEBUG;
-            this.options.progressListener.onPublishEvent(eventType, {
-              message: `[docker ${isError ? 'stderr' : 'stdout'}] ${data}`,
-              currentAsset: undefined,
-              percentComplete: -1,
-              abort: () => {},
-            });
-          }
-        },
+        progressListener: this.options?.progressListener,
       });
     } catch (e: any) {
       if (e.code === 'ENOENT') {

@@ -1,10 +1,30 @@
+// Modified bin/cdk-assets.ts
 import * as yargs from 'yargs';
 import { list } from './list';
-import { setLogThreshold, VERSION } from './logging';
+import { log, setGlobalProgressListener, setLogThreshold, VERSION } from './logging';
 import { publish } from './publish';
-import { AssetManifest } from '../lib';
+import { AssetManifest, EventType, IPublishProgress, IPublishProgressListener } from '../lib';
+
+class DefaultProgressListener implements IPublishProgressListener {
+  public onPublishEvent(type: EventType, event: IPublishProgress): void {
+    // Map event types to log levels
+    switch (type) {
+      case EventType.FAIL:
+        log('error', event.message);
+        break;
+      case EventType.DEBUG:
+        log('verbose', event.message);
+        break;
+      default:
+        log('info', event.message);
+    }
+  }
+}
 
 async function main() {
+  const defaultListener = new DefaultProgressListener();
+  setGlobalProgressListener(defaultListener);
+
   const argv = yargs
     .usage('$0 <cmd> [args]')
     .option('verbose', {

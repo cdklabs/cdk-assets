@@ -1,14 +1,19 @@
+// Modified bin/logging.ts to integrate with progress interface
 import * as fs from 'fs';
 import * as path from 'path';
-
-export type LogLevel = 'verbose' | 'info' | 'error';
-let logThreshold: LogLevel = 'info';
+import { EventType, IPublishProgress, IPublishProgressListener } from '../lib/progress';
 
 export const VERSION = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'package.json'), { encoding: 'utf-8' })
 ).version;
 
-const LOG_LEVELS: Record<LogLevel, number> = {
+export type LogLevel = 'verbose' | 'info' | 'error';
+let logThreshold: LogLevel = 'info';
+
+// Global progress listener that can be set
+let globalProgressListener: IPublishProgressListener | undefined;
+
+export const LOG_LEVELS: Record<LogLevel, number> = {
   verbose: 1,
   info: 2,
   error: 3,
@@ -18,9 +23,62 @@ export function setLogThreshold(threshold: LogLevel) {
   logThreshold = threshold;
 }
 
-export function log(level: LogLevel, message: string) {
+export function setGlobalProgressListener(listener: IPublishProgressListener) {
+  globalProgressListener = listener;
+}
+
+// Convert log level to event type
+function logLevelToEventType(level: LogLevel): EventType {
+  switch (level) {
+    case 'error':
+      return EventType.FAIL;
+    case 'verbose':
+      return EventType.DEBUG;
+    default:
+      return EventType.DEBUG;
+  }
+}
+
+export function log(level: LogLevel, message: string, percentComplete?: number) {
   if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
-    // eslint-disable-next-line no-console
+    // Still write to stderr for backward compatibility
     console.error(`${level.padEnd(7, ' ')}: ${message}`);
+
+    // Also send to progress listener if configured
+    if (globalProgressListener) {
+      const progressEvent: IPublishProgress = {
+        message: `${message}`,
+        percentComplete: percentComplete,
+        abort: () => {},
+      };
+      globalProgressListener.onPublishEvent(logLevelToEventType(level), progressEvent);
+    }
+  }
+}
+
+export class ShellOutputHandler {
+  constructor(private readonly progressListener?: IPublishProgressListener) {}
+
+  public handleOutput(chunk: any, isError: boolean = false) {
+    const text = chunk.toString();
+
+    // Write to standard streams for backward compatibility
+    if (isError) {
+      process.stderr.write(text);
+    } else {
+      process.stdout.write(text);
+    }
+
+    // Also send to progress listener if configured
+    if (this.progressListener) {
+      const progressEvent: IPublishProgress = {
+        message: text,
+        abort: () => {},
+      };
+      this.progressListener.onPublishEvent(
+        isError ? EventType.FAIL : EventType.DEBUG,
+        progressEvent
+      );
+    }
   }
 }

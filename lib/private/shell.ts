@@ -1,4 +1,6 @@
 import * as child_process from 'child_process';
+import { ShellOutputHandler } from '../../bin/logging';
+import { IPublishProgressListener } from '../progress';
 
 export type Logger = (x: string) => void;
 
@@ -6,19 +8,16 @@ export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
   readonly logger?: Logger;
   readonly input?: string;
-  readonly outputListener?: (data: string, isError: boolean) => void;
+  readonly progressListener?: IPublishProgressListener;
 }
 
-/**
- * OS helpers
- *
- * Shell function which both prints to stdout and collects the output into a
- * string.
- */
 export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
   if (options.logger) {
     options.logger(renderCommandLine(command));
   }
+
+  const outputHandler = new ShellOutputHandler(options.progressListener);
+
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
     stdio: [options.input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
@@ -33,25 +32,16 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     const stdout = new Array<any>();
     const stderr = new Array<any>();
 
-    // Both write to stdout and collect
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        if (options.outputListener) {
-          options.outputListener(chunk.toString(), false);
-        } else {
-          process.stdout.write(chunk);
-        }
+        outputHandler.handleOutput(chunk, false);
       }
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        if (options.outputListener) {
-          options.outputListener(chunk.toString(), true);
-        } else {
-          process.stderr.write(chunk);
-        }
+        outputHandler.handleOutput(chunk, true);
       }
       stderr.push(chunk);
     });
