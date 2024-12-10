@@ -51,6 +51,10 @@ const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
 
 class ConsoleProgress implements IPublishProgressListener {
   public onPublishEvent(type: EventType, event: IPublishProgress): void {
-    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`);
+    log(
+      EVENT_TO_LEVEL[type],
+      `[${event.percentComplete}%] ${type}: ${event.message}`,
+      event.percentComplete
+    );
   }
 }

@@ -77,7 +77,7 @@ export interface IPublishProgress {
   /**
    * How far along are we?
    */
-  readonly percentComplete: number;
+  readonly percentComplete?: number;
 
   /**
    * Abort the current publishing operation
