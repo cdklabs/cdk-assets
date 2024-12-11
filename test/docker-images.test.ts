@@ -297,10 +297,11 @@ test('logging in twice for two repository domains (containing account id & regio
   });
 
   mockEcr.on(DescribeRepositoriesCommand).callsFake((input) => {
-    const url = {
+    const repos: Record<string, string> = {
       repo: '12345.amazonaws.com/repo',
       repo2: '12346.amazonaws.com/repo2',
-    }[input.repositoryNames[0]];
+    };
+    const url = repos[input.repositoryNames[0]];
     if (!url) {
       throw new Error(`Unexpected repo: ${JSON.stringify(input)}`);
     }
