@@ -11,23 +11,29 @@ export interface Invocation {
   exitCode?: number;
   stdout?: string;
   stderr?: string;
+  /**
+   * Only match a prefix of the command (don't care about the details of the arguments)
+   */
   prefix?: boolean;
 }
 
 export function mockSpawn(...invocations: Invocation[]): () => void {
   let mock = child_process.spawn as any;
   for (const _invocation of invocations) {
-    const invocation = _invocation;
+    const invocation = _invocation; // Mirror into variable for closure
     mock = mock.mockImplementationOnce(
       (binary: string, args: string[], options: child_process.SpawnOptions) => {
         if (invocation.prefix) {
+          // Match command line prefix
           expect([binary, ...args].slice(0, invocation.commandLine.length)).toEqual(
             invocation.commandLine
           );
         } else {
+          // Match full command line
           expect([binary, ...args]).toEqual(invocation.commandLine);
         }
 
+        // Prune the temp directory off here
         if (invocation.cwd != null) {
           expect(invocation.cwd).toEqual((options.cwd as string).slice(-invocation.cwd.length));
         }
@@ -43,10 +49,7 @@ export function mockSpawn(...invocations: Invocation[]): () => void {
           mockEmit(child.stdout, 'data', Buffer.from(invocation.stdout));
         }
         if (invocation.stderr) {
-          // Send stderr data after stdout
-          if (invocation.stderr) {
-            mockEmit(child.stderr, 'data', Buffer.from(invocation.stderr));
-          }
+          mockEmit(child.stderr, 'data', Buffer.from(invocation.stderr));
         }
         mockEmit(child, 'close', invocation.exitCode ?? 0);
 
