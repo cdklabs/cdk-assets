@@ -103,6 +103,10 @@
       "type": "build"
     },
     {
+      "name": "madge",
+      "type": "build"
+    },
+    {
       "name": "prettier",
       "type": "build"
     },

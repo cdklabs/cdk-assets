@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
-import { destinationToClientOptions } from '.';
+import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
 import { EventType } from '../../progress';
