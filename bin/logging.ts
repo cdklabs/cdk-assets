@@ -6,6 +6,21 @@ export const VERSION = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'package.json'), { encoding: 'utf-8' })
 ).version;
 
+export class DefaultProgressListener implements IPublishProgressListener {
+  public onPublishEvent(type: EventType, event: IPublishProgress): void {
+    switch (type) {
+      case EventType.FAIL:
+        console.error(`error  : ${event.message}`);
+        break;
+      case EventType.DEBUG:
+        console.error(`verbose: ${event.message}`);
+        break;
+      default:
+        console.error(`info   : ${event.message}`);
+    }
+  }
+}
+
 export type LogLevel = 'verbose' | 'info' | 'error';
 let logThreshold: LogLevel = 'info';
 
@@ -32,26 +47,25 @@ function logLevelToEventType(level: LogLevel): EventType {
   switch (level) {
     case 'error':
       return EventType.FAIL;
-    case 'verbose':
-      return EventType.DEBUG;
     default:
       return EventType.DEBUG;
   }
 }
 
 export function log(level: LogLevel, message: string, percentComplete?: number) {
-  if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
-    console.error(`${level.padEnd(7, ' ')}: ${message}`);
+  // should be entirely irrelevant but just to verify that the globalProgressListener is set
+  if (!globalProgressListener) {
+    setGlobalProgressListener(new DefaultProgressListener());
+  }
 
-    // Write to progress listener if configured
-    if (globalProgressListener) {
-      const progressEvent: IPublishProgress = {
-        message: `${message}`,
-        percentComplete: percentComplete,
-        abort: () => {},
-      };
-      globalProgressListener.onPublishEvent(logLevelToEventType(level), progressEvent);
-    }
+  if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
+    const progressEvent: IPublishProgress = {
+      message: `${message}`,
+      percentComplete: percentComplete,
+      abort: () => {},
+    };
+
+    globalProgressListener!.onPublishEvent(logLevelToEventType(level), progressEvent);
   }
 }
 
@@ -68,7 +82,7 @@ export class ShellOutputHandler {
     }
 
     // Send to progress listener if configured
-    if (this.progressListener) {
+    if (this.progressListener && text.length > 0) {
       const progressEvent: IPublishProgress = {
         message: text,
         abort: () => {},

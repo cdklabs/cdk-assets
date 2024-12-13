@@ -1,23 +1,8 @@
 import * as yargs from 'yargs';
 import { list } from './list';
-import { log, setGlobalProgressListener, setLogThreshold, VERSION } from './logging';
+import { setGlobalProgressListener, setLogThreshold, VERSION, DefaultProgressListener } from './logging';
 import { publish } from './publish';
-import { AssetManifest, EventType, IPublishProgress, IPublishProgressListener } from '../lib';
-
-class DefaultProgressListener implements IPublishProgressListener {
-  public onPublishEvent(type: EventType, event: IPublishProgress): void {
-    switch (type) {
-      case EventType.FAIL:
-        log('error', event.message);
-        break;
-      case EventType.DEBUG:
-        log('verbose', event.message);
-        break;
-      default:
-        log('info', event.message);
-    }
-  }
-}
+import { AssetManifest } from '../lib';
 
 async function main() {
   const defaultListener = new DefaultProgressListener();
