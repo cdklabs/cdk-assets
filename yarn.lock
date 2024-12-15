@@ -18,10 +18,10 @@
     jsonschema "^1.4.1"
     semver "^7.6.3"
 
-"@aws-cdk/cx-api@^2.173.0":
-  version "2.173.0"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.173.0.tgz#ef7c41544818a8242dc305049f7c7f481cad1c20"
-  integrity sha512-dC5+u4vEiXwN7Tp8Vv7gGMYoX4KQRxrG0lDA3LA888Z9VUCUAaru2CIVLYey1AATb8AAz9cckoK/82GZ1pmCYw==
+"@aws-cdk/cx-api@^2.173.1":
+  version "2.173.1"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.173.1.tgz#2008f89d47ee006eb9105c44182270266a38855f"
+  integrity sha512-4NxeqCDmmpVh8eFia9FW5YBK3xYnh6NIqD/uQDdOxDQNoqsF0CYKktwdumgSBOVi+orFelkSGDr+v+e25oaAJA==
   dependencies:
     semver "^7.6.3"
 
@@ -7019,17 +7019,17 @@ tinyspy@^3.0.2:
   resolved "https://registry.yarnpkg.com/tinyspy/-/tinyspy-3.0.2.tgz#86dd3cf3d737b15adcf17d7887c84a75201df20a"
   integrity sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==
 
-tldts-core@^6.1.67:
-  version "6.1.67"
-  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-6.1.67.tgz#dd1968bb4f09cfabb6746cd783a143fa13699307"
-  integrity sha512-12K5O4m3uUW6YM5v45Z7wc6NTSmAYj4Tq3de7eXghZkp879IlfPJrUWeWFwu1FS94U5t2vwETgJ1asu8UGNKVQ==
+tldts-core@^6.1.68:
+  version "6.1.68"
+  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-6.1.68.tgz#65f683a1100b3de9385184572ad68c6b8c337442"
+  integrity sha512-85TdlS/DLW/gVdf2oyyzqp3ocS30WxjaL4la85EArl9cHUR/nizifKAJPziWewSZjDZS71U517/i6ciUeqtB5Q==
 
 tldts@^6.1.32:
-  version "6.1.67"
-  resolved "https://registry.yarnpkg.com/tldts/-/tldts-6.1.67.tgz#c1aa1f72d0c93d16b8f0f8c53dedc0e6185c2189"
-  integrity sha512-714VbegxoZ9WF5/IsVCy9rWXKUpPkJq87ebWLXQzNawce96l5oRrRf2eHzB4pT2g/4HQU1dYbu+sdXClYxlDKQ==
+  version "6.1.68"
+  resolved "https://registry.yarnpkg.com/tldts/-/tldts-6.1.68.tgz#38e82b7ce9673c464c16c7952f007c3d7ab52b94"
+  integrity sha512-JKF17jROiYkjJPT73hUTEiTp2OBCf+kAlB+1novk8i6Q6dWjHsgEjw9VLiipV4KTJavazXhY1QUXyQFSem2T7w==
   dependencies:
-    tldts-core "^6.1.67"
+    tldts-core "^6.1.68"
 
 tmpl@1.0.5:
   version "1.0.5"
