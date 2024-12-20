@@ -55,7 +55,7 @@
     "jszip": "^3.10.1",
     "mock-fs": "^5",
     "prettier": "^3.4.2",
-    "projen": "^0.91.2",
+    "projen": "^0.91.3",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
