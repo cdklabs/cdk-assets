@@ -25,7 +25,7 @@ describe('Console Logging', () => {
       '/test/cdk.out/assets.json': JSON.stringify({
         version: Manifest.version(),
         files: {
-          'asset1': {
+          asset1: {
             source: {
               path: 'some_file',
             },
@@ -57,14 +57,14 @@ describe('Console Logging', () => {
 
   afterEach(() => {
     mockfs.restore();
-    
+
     // Restore all console methods
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
     console.warn = originalConsoleWarn;
     console.info = originalConsoleInfo;
     console.debug = originalConsoleDebug;
-    
+
     // Clear all mocks
     jest.clearAllMocks();
   });
@@ -72,7 +72,7 @@ describe('Console Logging', () => {
   test('no console output during successful asset publishing while still publishing assets', async () => {
     const aws = new MockAws();
     const publishedAssets: string[] = [];
-    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), { 
+    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), {
       aws,
       progressListener: {
         onPublishEvent: (type, event) => {
@@ -80,7 +80,7 @@ describe('Console Logging', () => {
             publishedAssets.push(event.message);
           }
         },
-      }
+      },
     });
 
     await pub.publish();
@@ -100,7 +100,7 @@ describe('Console Logging', () => {
   test('no console output when checking if asset is published while still checking status', async () => {
     const aws = new MockAws();
     const checkEvents: string[] = [];
-    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), { 
+    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), {
       aws,
       progressListener: {
         onPublishEvent: (type, event) => {
@@ -108,7 +108,7 @@ describe('Console Logging', () => {
             checkEvents.push(event.message);
           }
         },
-      }
+      },
     });
 
     const manifest = AssetManifest.fromPath(mockfs.path('/test/cdk.out'));
@@ -143,7 +143,7 @@ describe('Console Logging', () => {
   test('no console output during parallel publishing while still publishing assets', async () => {
     const aws = new MockAws();
     const publishEvents: string[] = [];
-    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), { 
+    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), {
       aws,
       publishInParallel: true,
       progressListener: {
@@ -152,7 +152,7 @@ describe('Console Logging', () => {
             publishEvents.push(event.message);
           }
         },
-      }
+      },
     });
 
     await pub.publish();
@@ -173,7 +173,7 @@ describe('Console Logging', () => {
   test('no console output when publishing fails while still handling errors properly', async () => {
     const aws = new MockAws();
     const failureEvents: string[] = [];
-    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), { 
+    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), {
       aws,
       throwOnError: false, // Prevent the test from failing due to the error
       progressListener: {
@@ -182,7 +182,7 @@ describe('Console Logging', () => {
             failureEvents.push(event.message);
           }
         },
-      }
+      },
     });
 
     // Force a failure by making S3 throw an error
@@ -209,7 +209,7 @@ describe('Console Logging', () => {
   test('progress listener receives messages without console output', async () => {
     const aws = new MockAws();
     const messages: string[] = [];
-    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), { 
+    const pub = new AssetPublishing(AssetManifest.fromPath(mockfs.path('/test/cdk.out')), {
       aws,
       progressListener: {
         onPublishEvent: (type, event) => {
