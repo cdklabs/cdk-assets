@@ -1,12 +1,10 @@
 import * as yargs from 'yargs';
 import { list } from './list';
-import { setGlobalProgressListener, setLogThreshold, VERSION, DefaultProgressListener } from './logging';
+import { setLogThreshold, VERSION } from './logging';
 import { publish } from './publish';
 import { AssetManifest } from '../lib';
 
 async function main() {
-  const defaultListener = new DefaultProgressListener();
-  setGlobalProgressListener(defaultListener);
 
   const argv = yargs
     .usage('$0 <cmd> [args]')
