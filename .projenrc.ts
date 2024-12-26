@@ -144,4 +144,7 @@ project.eslint?.addRules({
 // Allow PR backports to all releasable branches
 new github.PullRequestBackport(project);
 
+project.addDevDeps('madge');
+project.postCompileTask.exec('madge lib/index.js --circular');
+
 project.synth();

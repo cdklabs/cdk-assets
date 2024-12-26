@@ -2,7 +2,7 @@ import { createReadStream, promises as fs } from 'fs';
 import * as path from 'path';
 import { FileAssetPackaging, FileSource } from '@aws-cdk/cloud-assembly-schema';
 import * as mime from 'mime';
-import { destinationToClientOptions } from '.';
+import { destinationToClientOptions } from './client-options';
 import { FileManifestEntry } from '../../asset-manifest';
 import { IS3Client } from '../../aws';
 import { PutObjectCommandInput } from '../../aws-types';

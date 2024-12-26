@@ -149,7 +149,12 @@
     },
     "post-compile": {
       "name": "post-compile",
-      "description": "Runs after successful compilation"
+      "description": "Runs after successful compilation",
+      "steps": [
+        {
+          "exec": "madge lib/index.js --circular"
+        }
+      ]
     },
     "post-upgrade": {
       "name": "post-upgrade",
@@ -274,13 +279,13 @@
       },
       "steps": [
         {
-          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@cdklabs/eslint-plugin,@smithy/types,@types/archiver,@types/glob,@types/jest,@types/mime,@types/node,@types/yargs,aws-sdk-client-mock,aws-sdk-client-mock-jest,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,@aws-sdk/client-ecr,@aws-sdk/client-s3,@aws-sdk/client-secrets-manager,@aws-sdk/client-sts,@aws-sdk/credential-providers,@aws-sdk/lib-storage,@smithy/config-resolver,@smithy/node-config-provider,archiver,glob,mime,yargs"
+          "exec": "npx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@cdklabs/eslint-plugin,@smithy/types,@types/archiver,@types/glob,@types/jest,@types/mime,@types/node,@types/yargs,aws-sdk-client-mock,aws-sdk-client-mock-jest,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,fs-extra,graceful-fs,jest,jszip,madge,prettier,projen,ts-jest,ts-node,typescript,@aws-cdk/cloud-assembly-schema,@aws-cdk/cx-api,@aws-sdk/client-ecr,@aws-sdk/client-s3,@aws-sdk/client-secrets-manager,@aws-sdk/client-sts,@aws-sdk/credential-providers,@aws-sdk/lib-storage,@smithy/config-resolver,@smithy/node-config-provider,archiver,glob,mime,yargs"
         },
         {
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @cdklabs/eslint-plugin @smithy/types @types/archiver @types/glob @types/jest @types/mime @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-sdk-client-mock aws-sdk-client-mock-jest commit-and-tag-version constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip prettier projen ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api @aws-sdk/client-ecr @aws-sdk/client-s3 @aws-sdk/client-secrets-manager @aws-sdk/client-sts @aws-sdk/credential-providers @aws-sdk/lib-storage @smithy/config-resolver @smithy/node-config-provider archiver glob mime yargs"
+          "exec": "yarn upgrade @cdklabs/eslint-plugin @smithy/types @types/archiver @types/glob @types/jest @types/mime @types/node @types/yargs @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-sdk-client-mock aws-sdk-client-mock-jest commit-and-tag-version constructs eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra graceful-fs jest jest-junit jszip madge prettier projen ts-jest ts-node typescript @aws-cdk/cloud-assembly-schema @aws-cdk/cx-api @aws-sdk/client-ecr @aws-sdk/client-s3 @aws-sdk/client-secrets-manager @aws-sdk/client-sts @aws-sdk/credential-providers @aws-sdk/lib-storage @smithy/config-resolver @smithy/node-config-provider archiver glob mime yargs"
         },
         {
           "exec": "npx projen"
