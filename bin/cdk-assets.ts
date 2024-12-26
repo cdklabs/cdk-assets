@@ -5,7 +5,6 @@ import { publish } from './publish';
 import { AssetManifest } from '../lib';
 
 async function main() {
-
   const argv = yargs
     .usage('$0 <cmd> [args]')
     .option('verbose', {

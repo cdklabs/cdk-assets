@@ -1,6 +1,5 @@
 import * as child_process from 'child_process';
-import { ShellOutputHandler } from '../../bin/logging';
-import { IPublishProgressListener } from '../progress';
+import { EventType, IPublishProgress, IPublishProgressListener } from '../progress';
 
 export type Logger = (x: string) => void;
 
@@ -22,7 +21,7 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     options.logger(renderCommandLine(command));
   }
 
-  const outputHandler = new ShellOutputHandler(options.progressListener);
+  const outputHandler = new ShellOutputHandler();
 
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
@@ -145,4 +144,35 @@ function windowsEscape(x: string): string {
     .split('')
     .map((c) => (shellMeta.has(x) ? '^' + c : c))
     .join('');
+}
+
+export class ShellOutputHandler {
+  public handleOutput(chunk: any, isError: boolean = false) {
+    const text = chunk.toString();
+
+    // Send to progress listener if configured
+    if (shellProgressListener && text.length > 0) {
+      const progressEvent: IPublishProgress = {
+        message: text,
+        abort: () => {},
+        percentComplete: globalCompletionProgress,
+      };
+      shellProgressListener.onPublishEvent(
+        isError ? EventType.FAIL : EventType.DEBUG,
+        progressEvent
+      );
+    }
+  }
+}
+
+let shellProgressListener: IPublishProgressListener | undefined;
+
+let globalCompletionProgress: number;
+
+export function setShellProgressListener(listener: IPublishProgressListener) {
+  shellProgressListener = listener;
+}
+
+export function setGlobalCompletionProgress(progress: number) {
+  globalCompletionProgress = progress;
 }
