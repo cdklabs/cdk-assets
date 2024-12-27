@@ -18,10 +18,10 @@
     jsonschema "^1.4.1"
     semver "^7.6.3"
 
-"@aws-cdk/cx-api@^2.173.2":
-  version "2.173.2"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.173.2.tgz#cb84005614afbd2ab74aed1518d5587ddc1415cf"
-  integrity sha512-8o3adk8nHZwPtgLk1HleyJ5BGQWsoi1NSNY62Xn4yt+1hGvHXeFwvJEJ1EIuvsOqKeSajB8cL2J/wVEBFJbSVg==
+"@aws-cdk/cx-api@^2.173.3":
+  version "2.173.3"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.173.3.tgz#e83f1d03067a5cc3ebd2b4b897149fdd555c80ff"
+  integrity sha512-S5VP3EHVNW9GRySnJ136AOsuWyO1CHarQZVYY0bK4W26rjMukgDlrx0rOXPS98JrRYEt5U3QV2eNpksWFNwnEw==
   dependencies:
     semver "^7.6.3"
 
@@ -140,10 +140,10 @@
     "@smithy/util-utf8" "^3.0.0"
     tslib "^2.6.2"
 
-"@aws-sdk/client-ecr@^3.718.0":
-  version "3.718.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ecr/-/client-ecr-3.718.0.tgz#e441c66553af47697fa1e76604907414af3184af"
-  integrity sha512-bF9aqlAWimltuq7rZPMGP2qCLuy3i1EFCcGnsDfkd0U3SdLVgMc8d2p5qhpvYyAVHf8RvfkUn2Hedflgz9NRnw==
+"@aws-sdk/client-ecr@^3.719.0":
+  version "3.719.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-ecr/-/client-ecr-3.719.0.tgz#f672536cc499808bb6233668901a14cc757edf16"
+  integrity sha512-aEo9ZO2DxeHuA/TTwgKSF6r6F9aZMwPmwFHXHjLSyCMplKFWlltXO5+uJdQSHWRDCN0EQjpnpxC5suwpPLK2LQ==
   dependencies:
     "@aws-crypto/sha256-browser" "5.2.0"
     "@aws-crypto/sha256-js" "5.2.0"
