@@ -2,10 +2,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
+import { shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
-import { IPublishProgressListener } from '../progress';
 
 interface BuildOptions {
   readonly directory: string;
@@ -53,15 +52,8 @@ export interface DockerCacheOption {
   readonly params?: { [key: string]: string };
 }
 
-export interface DockerOptions {
-  readonly logger?: Logger;
-  readonly progressListener?: IPublishProgressListener;
-}
-
 export class Docker {
   private configDir: string | undefined = undefined;
-
-  constructor(private readonly options?: DockerOptions) {}
 
   /**
    * Whether an image with the given tag exists
@@ -200,20 +192,17 @@ export class Docker {
     this.configDir = undefined;
   }
 
-  private async execute(args: string[], shellOptions: ShellOptions = {}) {
+  private async execute(args: string[], options: ShellOptions = {}) {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
-        logger: this.options?.logger,
-        ...shellOptions,
+        ...options,
         env: {
-          ...process.env,
-          ...shellOptions.env,
-          PATH: `${pathToCdkAssets}${path.delimiter}${shellOptions.env?.PATH ?? process.env.PATH}`,
+          ...options.env,
+          PATH: `${pathToCdkAssets}${path.delimiter}${options.env?.PATH ?? process.env.PATH}`,
         },
-        progressListener: this.options?.progressListener,
       });
     } catch (e: any) {
       if (e.code === 'ENOENT') {
@@ -241,8 +230,6 @@ export class Docker {
 export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
-  readonly logger: (m: string) => void;
-  readonly progressListener?: IPublishProgressListener;
 }
 
 /**
@@ -257,10 +244,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker({
-      logger: options.logger,
-      progressListener: options.progressListener,
-    });
+    const docker = new Docker();
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -279,10 +263,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker({
-      logger: options.logger,
-      progressListener: options.progressListener,
-    });
+    const docker = new Docker();
     await this.loginOncePerDestination(docker, options);
     return docker;
   }

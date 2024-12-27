@@ -84,3 +84,50 @@ export interface IPublishProgress {
    */
   abort(): void;
 }
+
+class GlobalOutputHandler {
+  private progressListener: IPublishProgressListener | undefined;
+  private completionProgress: number;
+
+  constructor(completionProgress: number = 0, progressListener?: IPublishProgressListener) {
+    this.progressListener = progressListener;
+    this.completionProgress = completionProgress;
+  }
+
+  public setListener(listener: IPublishProgressListener) {
+    this.progressListener = listener;
+  }
+
+  public setCompletionProgress(progress: number) {
+    this.completionProgress = progress;
+  }
+
+  public publishEvent(eventType: EventType = EventType.DEBUG, text: string) {
+    const progressEvent: IPublishProgress = {
+      message: text,
+      abort: () => {},
+      percentComplete: this.completionProgress,
+    };
+    if (this.progressListener) {
+      this.progressListener.onPublishEvent(eventType, progressEvent);
+    }
+  }
+
+  public verbose(text: string) {
+    this.publishEvent(EventType.DEBUG, text);
+  }
+
+  public error(text: string) {
+    this.publishEvent(EventType.FAIL, text);
+  }
+
+  public info(text: string) {
+    this.publishEvent(EventType.SUCCESS, text);
+  }
+
+  public hasListener() {
+    return this.progressListener !== undefined;
+  }
+}
+
+export let globalOutputHandler = new GlobalOutputHandler();

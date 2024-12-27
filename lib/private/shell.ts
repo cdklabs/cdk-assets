@@ -1,13 +1,11 @@
 import * as child_process from 'child_process';
-import { EventType, IPublishProgress, IPublishProgressListener } from '../progress';
+import { EventType, globalOutputHandler } from '../progress';
 
 export type Logger = (x: string) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
-  readonly logger?: Logger;
   readonly input?: string;
-  readonly progressListener?: IPublishProgressListener;
 }
 
 /**
@@ -17,11 +15,8 @@ export interface ShellOptions extends child_process.SpawnOptions {
  * string.
  */
 export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
-  if (options.logger) {
-    options.logger(renderCommandLine(command));
-  }
-
-  const outputHandler = new ShellOutputHandler();
+  globalOutputHandler.publishEvent(EventType.START, command.join(' '));
+  globalOutputHandler.info(renderCommandLine(command));
 
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
@@ -39,32 +34,37 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
 
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        outputHandler.handleOutput(chunk, false);
+        globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        outputHandler.handleOutput(chunk, true);
+        globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
       stderr.push(chunk);
     });
 
-    child.once('error', reject);
+    child.once('error', (error) => {
+      globalOutputHandler.publishEvent(EventType.FAIL, error.message);
+      reject(error);
+    });
 
     child.once('close', (code, signal) => {
       if (code === 0) {
-        resolve(Buffer.concat(stdout).toString('utf-8'));
+        const output = Buffer.concat(stdout).toString('utf-8');
+        globalOutputHandler.publishEvent(EventType.SUCCESS, output);
+        resolve(output);
       } else {
-        const out = Buffer.concat(stderr).toString('utf-8').trim();
-        reject(
-          new ProcessFailed(
-            code,
-            signal,
-            `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${out}`
-          )
+        const errorOutput = Buffer.concat(stderr).toString('utf-8').trim();
+        const error = new ProcessFailed(
+          code,
+          signal,
+          `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${errorOutput}`
         );
+        globalOutputHandler.publishEvent(EventType.FAIL, error.message);
+        reject(error);
       }
     });
   });
@@ -144,35 +144,4 @@ function windowsEscape(x: string): string {
     .split('')
     .map((c) => (shellMeta.has(x) ? '^' + c : c))
     .join('');
-}
-
-export class ShellOutputHandler {
-  public handleOutput(chunk: any, isError: boolean = false) {
-    const text = chunk.toString();
-
-    // Send to progress listener if configured
-    if (shellProgressListener && text.length > 0) {
-      const progressEvent: IPublishProgress = {
-        message: text,
-        abort: () => {},
-        percentComplete: globalCompletionProgress,
-      };
-      shellProgressListener.onPublishEvent(
-        isError ? EventType.FAIL : EventType.DEBUG,
-        progressEvent
-      );
-    }
-  }
-}
-
-let shellProgressListener: IPublishProgressListener | undefined;
-
-let globalCompletionProgress: number;
-
-export function setShellProgressListener(listener: IPublishProgressListener) {
-  shellProgressListener = listener;
-}
-
-export function setGlobalCompletionProgress(progress: number) {
-  globalCompletionProgress = progress;
 }
