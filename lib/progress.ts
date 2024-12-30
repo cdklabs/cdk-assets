@@ -108,6 +108,7 @@ class GlobalOutputHandler {
       abort: () => {},
       percentComplete: this.completionProgress,
     };
+    // if no listener is passed we just swallow everything.
     if (this.progressListener) {
       this.progressListener.onPublishEvent(eventType, progressEvent);
     }
