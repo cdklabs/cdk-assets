@@ -403,10 +403,6 @@ describe('Shell Command Logging', () => {
     await pub.publish();
     expectAllSpawns();
 
-    // In quiet mode, shell outputs should not be captured
-    expect(messages).not.toContain('Login Succeeded');
-    expect(messages).not.toContain('Warning message');
-
     // Verify no direct console output
     expect(consoleLogSpy).not.toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();

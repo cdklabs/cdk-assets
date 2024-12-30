@@ -11,8 +11,8 @@ export interface ShellOptions extends child_process.SpawnOptions {
 /**
  * OS helpers
  *
- * Shell function which both prints to stdout and collects the output into a
- * string.
+ * Shell function which both emits the output to the configured output handler, and collects the output
+ * to return it as a string.
  */
 export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
   globalOutputHandler.publishEvent(EventType.START, command.join(' '));
@@ -29,21 +29,21 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
       child.stdin!.end();
     }
 
-    const stdout = new Array<any>();
-    const stderr = new Array<any>();
+    const stdoutChunks = new Array<any>();
+    const stderrChunks = new Array<any>();
 
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
         globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
-      stdout.push(chunk);
+      stdoutChunks.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
         globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
-      stderr.push(chunk);
+      stderrChunks.push(chunk);
     });
 
     child.once('error', (error) => {
@@ -53,14 +53,16 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
 
     child.once('close', (code, signal) => {
       if (code === 0) {
-        const output = Buffer.concat(stdout).toString('utf-8');
+        const output = Buffer.concat(stdoutChunks).toString('utf-8');
         resolve(output);
       } else {
-        const errorOutput = Buffer.concat(stderr).toString('utf-8').trim();
+        const errorOutput = Buffer.concat(stderrChunks).toString('utf-8').trim();
+        const error_message = `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${errorOutput}`;
+        globalOutputHandler.publishEvent(EventType.FAIL, error_message);
         const error = new ProcessFailed(
           code,
           signal,
-          `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${errorOutput}`
+          error_message,
         );
         reject(error);
       }
