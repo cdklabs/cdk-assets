@@ -54,7 +54,6 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     child.once('close', (code, signal) => {
       if (code === 0) {
         const output = Buffer.concat(stdout).toString('utf-8');
-        globalOutputHandler.publishEvent(EventType.SUCCESS, output);
         resolve(output);
       } else {
         const errorOutput = Buffer.concat(stderr).toString('utf-8').trim();
@@ -63,7 +62,6 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
           signal,
           `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${errorOutput}`
         );
-        globalOutputHandler.publishEvent(EventType.FAIL, error.message);
         reject(error);
       }
     });

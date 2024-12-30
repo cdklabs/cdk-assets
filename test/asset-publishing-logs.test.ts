@@ -291,7 +291,7 @@ describe('Shell Command Logging', () => {
     jest.clearAllMocks();
   });
 
-  test('captures both stdout and stderr from shell commands', async () => {
+  test('docker successfully emits publishing events when publishing asset', async () => {
     const messages: string[] = [];
     const aws = new MockAws();
 
@@ -315,12 +315,10 @@ describe('Shell Command Logging', () => {
           '--password-stdin',
           'https://12345.dkr.ecr.region.amazonaws.com',
         ],
-        stdout: 'Login Succeeded',
       },
       {
         commandLine: ['docker', 'inspect', 'cdkasset-thedockerasset'],
         exitCode: 1,
-        stderr: 'Warning: using default credentials\n',
       },
       {
         commandLine: ['docker', 'build', '--tag', 'cdkasset-thedockerasset', '.'],
@@ -345,8 +343,11 @@ describe('Shell Command Logging', () => {
     // Check that both stdout and stderr were captured
     expect(messages).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('Login Succeeded'),
-        expect.stringContaining('Warning: using default credentials'),
+        expect.stringContaining('Publishing theDockerAsset:theDestination'),
+        expect.stringContaining('Check 12345.dkr.ecr.region.amazonaws.com/repo:tag'),
+        expect.stringContaining('Building Docker image at '),
+        expect.stringContaining('Push 12345.dkr.ecr.region.amazonaws.com/repo:tag'),
+        expect.stringContaining('Published theDockerAsset:theDestination'),
       ])
     );
   });
