@@ -10,6 +10,7 @@ export interface Invocation {
   cwd?: string;
   exitCode?: number;
   stdout?: string;
+  stderr?: string;
 
   /**
    * Only match a prefix of the command (don't care about the details of the arguments)
@@ -47,6 +48,9 @@ export function mockSpawn(...invocations: Invocation[]): () => void {
 
         if (invocation.stdout) {
           mockEmit(child.stdout, 'data', Buffer.from(invocation.stdout));
+        }
+        if (invocation.stderr) {
+          mockEmit(child.stderr, 'data', Buffer.from(invocation.stderr));
         }
         mockEmit(child, 'close', invocation.exitCode ?? 0);
 
