@@ -38,7 +38,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForBuilding = await this.host.dockerFactory.forBuild({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
     });
 
@@ -85,7 +84,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForPushing = await this.host.dockerFactory.forEcrPush({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
     });
 

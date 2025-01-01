@@ -4,7 +4,12 @@ import { IAssetHandler, IHandlerHost, type PublishOptions } from './private/asse
 import { DockerFactory } from './private/docker';
 import { makeAssetHandler } from './private/handlers';
 import { pLimit } from './private/p-limit';
-import { EventType, IPublishProgress, IPublishProgressListener } from './progress';
+import {
+  EventType,
+  IPublishProgress,
+  IPublishProgressListener,
+  globalOutputHandler,
+} from './progress';
 
 export interface AssetPublishingOptions {
   /**
@@ -113,6 +118,10 @@ export class AssetPublishing implements IPublishProgress {
       },
       dockerFactory: new DockerFactory(),
     };
+    if (options.progressListener) {
+      globalOutputHandler.setListener(options.progressListener);
+    }
+    globalOutputHandler.setCompletionProgress(this.percentComplete);
   }
 
   /**
@@ -249,10 +258,12 @@ export class AssetPublishing implements IPublishProgress {
   }
 
   public get percentComplete() {
-    if (this.totalOperations === 0) {
-      return 100;
-    }
-    return Math.floor((this.completedOperations / this.totalOperations) * 100);
+    const completionProgress =
+      this.totalOperations === 0
+        ? 100
+        : Math.floor((this.completedOperations / this.totalOperations) * 100);
+    globalOutputHandler.setCompletionProgress(completionProgress);
+    return completionProgress;
   }
 
   public abort(): void {

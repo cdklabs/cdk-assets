@@ -1,23 +1,23 @@
 import * as child_process from 'child_process';
+import { EventType, globalOutputHandler } from '../progress';
 
 export type Logger = (x: string) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
-  readonly logger?: Logger;
   readonly input?: string;
 }
 
 /**
  * OS helpers
  *
- * Shell function which both prints to stdout and collects the output into a
- * string.
+ * Shell function which both emits the output to the configured output handler, and collects the output
+ * to return it as a string.
  */
 export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
-  if (options.logger) {
-    options.logger(renderCommandLine(command));
-  }
+  globalOutputHandler.publishEvent(EventType.START, command.join(' '));
+  globalOutputHandler.info(renderCommandLine(command));
+
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
     stdio: [options.input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
@@ -29,39 +29,42 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
       child.stdin!.end();
     }
 
-    const stdout = new Array<any>();
-    const stderr = new Array<any>();
+    const stdoutChunks = new Array<any>();
+    const stderrChunks = new Array<any>();
 
-    // Both write to stdout and collect
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stdout.write(chunk);
+        globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
-      stdout.push(chunk);
+      stdoutChunks.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stderr.write(chunk);
+        globalOutputHandler.publishEvent(chunk, EventType.DEBUG);
       }
-
-      stderr.push(chunk);
+      stderrChunks.push(chunk);
     });
 
-    child.once('error', reject);
+    child.once('error', (error) => {
+      globalOutputHandler.publishEvent(EventType.FAIL, error.message);
+      reject(error);
+    });
 
     child.once('close', (code, signal) => {
       if (code === 0) {
-        resolve(Buffer.concat(stdout).toString('utf-8'));
+        const output = Buffer.concat(stdoutChunks).toString('utf-8');
+        resolve(output);
       } else {
-        const out = Buffer.concat(stderr).toString('utf-8').trim();
-        reject(
-          new ProcessFailed(
-            code,
-            signal,
-            `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${out}`
-          )
+        const errorOutput = Buffer.concat(stderrChunks).toString('utf-8').trim();
+        const error_message = `${renderCommandLine(command)} exited with ${code != null ? 'error code' : 'signal'} ${code ?? signal}: ${errorOutput}`;
+        globalOutputHandler.publishEvent(EventType.FAIL, error_message);
+        const error = new ProcessFailed(
+          code,
+          signal,
+          error_message,
         );
+        reject(error);
       }
     });
   });

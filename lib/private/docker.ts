@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
+import { shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
 
@@ -54,8 +54,6 @@ export interface DockerCacheOption {
 
 export class Docker {
   private configDir: string | undefined = undefined;
-
-  constructor(private readonly logger?: Logger) {}
 
   /**
    * Whether an image with the given tag exists
@@ -200,10 +198,8 @@ export class Docker {
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
-        logger: this.logger,
         ...options,
         env: {
-          ...process.env,
           ...options.env,
           PATH: `${pathToCdkAssets}${path.delimiter}${options.env?.PATH ?? process.env.PATH}`,
         },
@@ -234,7 +230,6 @@ export class Docker {
 export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
-  readonly logger: (m: string) => void;
 }
 
 /**
@@ -249,7 +244,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.logger);
+    const docker = new Docker();
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -268,7 +263,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.logger);
+    const docker = new Docker();
     await this.loginOncePerDestination(docker, options);
     return docker;
   }

@@ -11,7 +11,6 @@ export interface Invocation {
   exitCode?: number;
   stdout?: string;
   stderr?: string;
-
   /**
    * Only match a prefix of the command (don't care about the details of the arguments)
    */
