@@ -11,17 +11,17 @@
     "@jridgewell/trace-mapping" "^0.3.24"
 
 "@aws-cdk/cloud-assembly-schema@^39.1.34":
-  version "39.1.36"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.1.36.tgz#5d74d2132ac92ad7c0079f0f0e895627eca13f8c"
-  integrity sha512-xFsy7y/Ed2hmYp+d5mmn8us07wCHSnqNtQeXYGgFYiORTgKHmVj6ZfonXP0sbH22k3Eu60vNvlo3MIYAroGAZg==
+  version "39.1.37"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.1.37.tgz#341c8432601cce2aec71add7143394bb1bd2682c"
+  integrity sha512-qChylPyI545731cXpH8LlosZKKZtkCz4Yo8404zOwAuIbdyR5CLW+RrG10DKyvVHqE8ufcI62astdcQuYY8D9A==
   dependencies:
     jsonschema "^1.4.1"
     semver "^7.6.3"
 
-"@aws-cdk/cx-api@^2.173.4":
-  version "2.173.4"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.173.4.tgz#6e417a3c8d80cef67ed57b3228a63614f525e4a8"
-  integrity sha512-TKiqmgKcr/LbM2T8Usp6/zlsygfK5eaZLzoraQwzL7uVAELNMZVGNrFSeJx6EXRf2Ab55WdK94x08g3eW0gyBg==
+"@aws-cdk/cx-api@^2.174.0":
+  version "2.174.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.174.0.tgz#98f6b2c69954da558e763f2aa6be58fd14337318"
+  integrity sha512-nyDZiYeuZGb/KbEnjvqFNlQEeDbA29dAXp4aRIAPHJPmupaMVozylON27Aqk4gWQZf++duROOBaB7SlH2mdOoA==
   dependencies:
     semver "^7.6.3"
 
