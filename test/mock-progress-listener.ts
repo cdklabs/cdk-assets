@@ -4,12 +4,25 @@ import { EventType } from '../lib';
 import { IPublishProgress, IPublishProgressListener } from '../lib/progress';
 
 /**
- * Represents a logged message with additional metadata
+ * Represents a logged message with additional metadata purely for testing purposes.
  */
 export interface LoggedMessage {
+    /**
+     * the {@link EventType} of the logged message
+     */
   readonly type: EventType;
+  /**
+   * The message text
+   */
   readonly message: string;
+  /**
+   * The stream this message would have been logged to, if cdk-assets was run from the CLI
+   */
   readonly stream: 'stdout' | 'stderr';
+
+  /**
+   * The {@link LogLevel} of this message
+   */
   readonly level: LogLevel;
 
   /**
@@ -19,14 +32,11 @@ export interface LoggedMessage {
 }
 
 /**
- * Mock implementation of IPublishProgressListener that captures events
+ * Mock implementation of IPublishProgressListener that captures events for testing purposes.
  */
 export class MockProgressListener implements IPublishProgressListener {
   public messages: LoggedMessage[] = [];
 
-  /**
-   * Capture publish events
-   */
   onPublishEvent(type: EventType, event: IPublishProgress, forceStdOut?: boolean): void {
     const level = EVENT_TO_LEVEL[type];
     this.messages.push({
