@@ -37,7 +37,7 @@ export async function publish(args: { path: string; assets?: string[]; profile?:
   }
 }
 
-const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
+export const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   build: 'verbose',
   cached: 'verbose',
   check: 'verbose',
@@ -49,8 +49,8 @@ const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   upload: 'verbose',
 };
 
-class ConsoleProgress implements IPublishProgressListener {
-  public onPublishEvent(type: EventType, event: IPublishProgress): void {
-    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`);
+export class ConsoleProgress implements IPublishProgressListener {
+  public onPublishEvent(type: EventType, event: IPublishProgress, forceStdOut?: boolean): void {
+    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`, forceStdOut);
   }
 }

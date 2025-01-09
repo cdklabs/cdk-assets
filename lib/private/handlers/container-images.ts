@@ -4,7 +4,7 @@ import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
 import { EventType } from '../../progress';
-import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
+import { IAssetHandler, IHandlerHost } from '../asset-handler';
 import { Docker } from '../docker';
 import { replaceAwsPlaceholders } from '../placeholders';
 import { shell } from '../shell';
@@ -22,8 +22,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
   constructor(
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
-    private readonly host: IHandlerHost,
-    private readonly options: IHandlerOptions
+    private readonly host: IHandlerHost
   ) {}
 
   public async build(): Promise<void> {
@@ -46,10 +45,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       dockerForBuilding,
       this.workDir,
       this.asset,
-      this.host,
-      {
-        quiet: this.options.quiet,
-      }
+      this.host
     );
     const localTagName = await builder.build();
 
@@ -65,7 +61,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
   public async isPublished(): Promise<boolean> {
     try {
-      const initOnce = await this.initOnce({ quiet: true });
+      const initOnce = await this.initOnce();
       return initOnce.destinationAlreadyExists;
     } catch (e: any) {
       this.host.emitMessage(EventType.DEBUG, `${e.message}`);
@@ -94,12 +90,10 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     }
 
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
-    await dockerForPushing.push({ tag: initOnce.imageUri, quiet: this.options.quiet });
+    await dockerForPushing.push({ tag: initOnce.imageUri });
   }
 
-  private async initOnce(
-    options: { quiet?: boolean } = {}
-  ): Promise<ContainerImageAssetHandlerInit> {
+  private async initOnce(): Promise<ContainerImageAssetHandlerInit> {
     if (this.init) {
       return this.init;
     }
@@ -107,7 +101,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     const destination = await replaceAwsPlaceholders(this.asset.destination, this.host.aws);
     const ecr = await this.host.aws.ecrClient({
       ...destinationToClientOptions(destination),
-      quiet: options.quiet,
     });
     const account = async () => (await this.host.aws.discoverCurrentAccount())?.accountId;
 
@@ -152,17 +145,12 @@ export class ContainerImageAssetHandler implements IAssetHandler {
   }
 }
 
-interface ContainerImageBuilderOptions {
-  readonly quiet?: boolean;
-}
-
 class ContainerImageBuilder {
   constructor(
     private readonly docker: Docker,
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
-    private readonly host: IHandlerHost,
-    private readonly options: ContainerImageBuilderOptions
+    private readonly host: IHandlerHost
   ) {}
 
   async build(): Promise<string | undefined> {
@@ -208,7 +196,12 @@ class ContainerImageBuilder {
       return undefined;
     }
 
-    return (await shell(executable, { cwd: assetPath, quiet: true })).trim();
+    return (
+      await shell(executable, {
+        cwd: assetPath,
+        eventPublisher: this.host.emitMessage,
+      })
+    ).trim();
   }
 
   private async buildImage(localTagName: string): Promise<void> {
@@ -236,7 +229,6 @@ class ContainerImageBuilder {
       cacheFrom: source.cacheFrom,
       cacheTo: source.cacheTo,
       cacheDisabled: source.cacheDisabled,
-      quiet: this.options.quiet,
     });
   }
 

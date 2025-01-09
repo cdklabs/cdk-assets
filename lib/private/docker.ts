@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
+import { EventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
 
@@ -24,12 +24,10 @@ interface BuildOptions {
   readonly cacheFrom?: DockerCacheOption[];
   readonly cacheTo?: DockerCacheOption;
   readonly cacheDisabled?: boolean;
-  readonly quiet?: boolean;
 }
 
 interface PushOptions {
   readonly tag: string;
-  readonly quiet?: boolean;
 }
 
 export interface DockerCredentialsConfig {
@@ -55,14 +53,14 @@ export interface DockerCacheOption {
 export class Docker {
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly logger?: Logger) {}
+  constructor(private readonly eventPublisher: EventPublisher) {}
 
   /**
    * Whether an image with the given tag exists
    */
   public async exists(tag: string) {
     try {
-      await this.execute(['inspect', tag], { quiet: true });
+      await this.execute(['inspect', tag], { eventPublisher: this.eventPublisher });
       return true;
     } catch (e: any) {
       const error: ProcessFailedError = e;
@@ -123,7 +121,7 @@ export class Docker {
     ];
     await this.execute(buildCommand, {
       cwd: options.directory,
-      quiet: options.quiet,
+      eventPublisher: this.eventPublisher,
     });
   }
 
@@ -143,16 +141,19 @@ export class Docker {
         // 'WARNING! Your password will be stored unencrypted'
         // doesn't really matter since it's a token.
         quiet: true,
+        eventPublisher: this.eventPublisher,
       }
     );
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag]);
+    await this.execute(['tag', sourceTag, targetTag], { eventPublisher: this.eventPublisher });
   }
 
   public async push(options: PushOptions) {
-    await this.execute(['push', options.tag], { quiet: options.quiet });
+    await this.execute(['push', options.tag], {
+      eventPublisher: this.eventPublisher,
+    });
   }
 
   /**
@@ -194,13 +195,12 @@ export class Docker {
     this.configDir = undefined;
   }
 
-  private async execute(args: string[], options: ShellOptions = {}) {
+  private async execute(args: string[], options: ShellOptions) {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
-        logger: this.logger,
         ...options,
         env: {
           ...process.env,

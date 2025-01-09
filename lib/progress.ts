@@ -7,7 +7,7 @@ export interface IPublishProgressListener {
   /**
    * Asset build event
    */
-  onPublishEvent(type: EventType, event: IPublishProgress): void;
+  onPublishEvent(type: EventType, event: IPublishProgress, forceStdOut?: boolean): void;
 }
 
 /**

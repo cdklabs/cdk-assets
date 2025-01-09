@@ -39,7 +39,6 @@ export class FileAssetHandler implements IAssetHandler {
     try {
       const s3 = await this.host.aws.s3Client({
         ...destinationToClientOptions(destination),
-        quiet: true,
       });
       this.host.emitMessage(EventType.CHECK, `Check ${s3Url}`);
 
@@ -204,7 +203,7 @@ export class FileAssetHandler implements IAssetHandler {
     this.host.emitMessage(EventType.BUILD, `Building asset source using command: '${executable}'`);
 
     return {
-      packagedPath: (await shell(executable, { quiet: true })).trim(),
+      packagedPath: (await shell(executable, { eventPublisher: this.host.emitMessage })).trim(),
       contentType: 'application/zip',
     };
   }

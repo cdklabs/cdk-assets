@@ -1,10 +1,11 @@
 import * as child_process from 'child_process';
+import { EventType } from '../progress';
 
-export type Logger = (x: string) => void;
+export type EventPublisher = (event: EventType, message: string, forceStdOut?: boolean) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
-  readonly logger?: Logger;
+  readonly eventPublisher: EventPublisher;
   readonly input?: string;
 }
 
@@ -14,10 +15,8 @@ export interface ShellOptions extends child_process.SpawnOptions {
  * Shell function which both prints to stdout and collects the output into a
  * string.
  */
-export async function shell(command: string[], options: ShellOptions = {}): Promise<string> {
-  if (options.logger) {
-    options.logger(renderCommandLine(command));
-  }
+export async function shell(command: string[], options: ShellOptions): Promise<string> {
+  options.eventPublisher(EventType.DEBUG, renderCommandLine(command));
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
     stdio: [options.input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
@@ -32,19 +31,21 @@ export async function shell(command: string[], options: ShellOptions = {}): Prom
     const stdout = new Array<any>();
     const stderr = new Array<any>();
 
-    // Both write to stdout and collect
+    // Both log to debug and collect
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stdout.write(chunk);
+        const message = Buffer.isBuffer(chunk) ? chunk.toString() : chunk;
+        // Emit events on stdout since we received the output on stdout
+        options.eventPublisher(EventType.DEBUG, message, true);
       }
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        process.stderr.write(chunk);
+        const message = Buffer.isBuffer(chunk) ? chunk.toString() : chunk;
+        options.eventPublisher(EventType.DEBUG, message);
       }
-
       stderr.push(chunk);
     });
 
