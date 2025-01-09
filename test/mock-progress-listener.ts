@@ -7,9 +7,9 @@ import { IPublishProgress, IPublishProgressListener } from '../lib/progress';
  * Represents a logged message with additional metadata purely for testing purposes.
  */
 export interface LoggedMessage {
-    /**
-     * the {@link EventType} of the logged message
-     */
+  /**
+   * The {@link EventType} of the logged message
+   */
   readonly type: EventType;
   /**
    * The message text

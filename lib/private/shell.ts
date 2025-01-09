@@ -34,17 +34,14 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
     // Both log to debug and collect
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
-        const message = Buffer.isBuffer(chunk) ? chunk.toString() : chunk;
-        // Emit events on stdout since we received the output on stdout
-        options.eventPublisher(EventType.DEBUG, message, true);
+        options.eventPublisher(EventType.DEBUG, chunk, true);
       }
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
       if (!options.quiet) {
-        const message = Buffer.isBuffer(chunk) ? chunk.toString() : chunk;
-        options.eventPublisher(EventType.DEBUG, message);
+        options.eventPublisher(EventType.DEBUG, chunk);
       }
       stderr.push(chunk);
     });
