@@ -31,7 +31,7 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
     const stdout = new Array<any>();
     const stderr = new Array<any>();
 
-    // Both log to debug and collect
+    // Both emit event and collect output
     child.stdout!.on('data', (chunk) => {
       if (!options.quiet) {
         options.eventPublisher(EventType.DEBUG, chunk, true);
