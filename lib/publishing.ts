@@ -1,6 +1,11 @@
 import { AssetManifest, IManifestEntry } from './asset-manifest';
 import { IAws } from './aws';
-import { IAssetHandler, IHandlerHost, type PublishOptions } from './private/asset-handler';
+import {
+  IAssetHandler,
+  IHandlerHost,
+  type PublishOptions,
+  SubprocessOutputDestination,
+} from './private/asset-handler';
 import { DockerFactory } from './private/docker';
 import { makeAssetHandler } from './private/handlers';
 import { pLimit } from './private/p-limit';
@@ -48,12 +53,16 @@ export interface AssetPublishingOptions {
   readonly publishAssets?: boolean;
 
   /**
-   * Whether to print publishing logs
-   *
-   * @default true
-   * @deprecated Implement a custom IPublishProgressListener with the desired behavior instead
+   * @deprecated use {@link #subprocessOutputDestination} instead
    */
   readonly quiet?: boolean;
+
+  /**
+   * Where to send output of a subprocesses
+   *
+   * @default 'stdio'
+   */
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 /**
@@ -282,7 +291,10 @@ export class AssetPublishing implements IPublishProgress {
     if (existing) {
       return existing;
     }
-    const ret = makeAssetHandler(this.manifest, asset, this.handlerHost);
+    const ret = makeAssetHandler(this.manifest, asset, this.handlerHost, {
+      quiet: this.options.quiet,
+      subprocessOutputDestination: this.options.subprocessOutputDestination ?? 'stdio',
+    });
     this.handlerCache.set(asset, ret);
     return ret;
   }

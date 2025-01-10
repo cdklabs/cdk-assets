@@ -2,18 +2,18 @@ import { mockSpawn } from './mock-child_process';
 import mockfs from './mock-fs';
 import { MockProgressListener } from './mock-progress-listener';
 import { setLogThreshold } from '../bin/logging';
-import { EventType } from '../lib';
-import { shell, ProcessFailedError } from '../lib/private/shell';
+import { EventType, MessageOrigin } from '../lib';
+import { shell } from '../lib/private/shell';
 
 jest.mock('child_process');
 
 describe('shell', () => {
   let progressListener: MockProgressListener;
-  let eventPublisher: (type: EventType, message: string, forceStdOut?: boolean) => void;
+  let eventPublisher: (type: EventType, message: string, messageOrigin?: MessageOrigin) => void;
 
   beforeEach(() => {
     progressListener = new MockProgressListener();
-    eventPublisher = (type, message, forceStdOut?) =>
+    eventPublisher = (type, message, messageOrigin?) =>
       progressListener.onPublishEvent(
         type,
         {
@@ -21,7 +21,7 @@ describe('shell', () => {
           percentComplete: 0,
           abort: () => {},
         },
-        forceStdOut
+        messageOrigin ?? 'cdk_assets'
       );
     mockfs({
       '/path/package.json': JSON.stringify({ version: '1.2.3' }),
@@ -42,15 +42,19 @@ describe('shell', () => {
     });
 
     // WHEN
-    await shell(['docker', 'build', '.'], { eventPublisher });
+    await shell(['docker', 'build', '.'], {
+      eventPublisher,
+      quiet: true,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
 
     const dockerOutputMessages = progressListener.messages.filter(
       (msg) =>
-        msg.message.includes('Step 1/3') &&
-        msg.message.includes('Step 2/3') &&
+        msg.message.includes('Step 1/3') ||
+        msg.message.includes('Step 2/3') ||
         msg.message.includes('Step 3/3')
     );
 
@@ -65,7 +69,11 @@ describe('shell', () => {
     });
 
     // WHEN
-    await shell(['docker', 'build', '.'], { eventPublisher });
+    await shell(['docker', 'build', '.'], {
+      eventPublisher,
+      quiet: true,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
@@ -83,11 +91,16 @@ describe('shell', () => {
 
     const expectAllSpawns = mockSpawn({
       commandLine: ['cat'],
-      stdout: expectedInput, // Echo back the input
+      stdout: expectedInput,
     });
 
     // WHEN
-    await shell(['cat'], { input: expectedInput, eventPublisher });
+    await shell(['cat'], {
+      input: expectedInput,
+      eventPublisher,
+      quiet: true,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
@@ -108,9 +121,13 @@ describe('shell', () => {
     });
 
     // WHEN/THEN
-    await expect(shell(['docker', 'build', '.'], { eventPublisher })).rejects.toThrow(
-      'Command failed'
-    );
+    await expect(
+      shell(['docker', 'build', '.'], {
+        eventPublisher,
+        quiet: true,
+        subprocessOutputDestination: 'publish',
+      })
+    ).rejects.toThrow('Command failed');
 
     expectAllSpawns();
 

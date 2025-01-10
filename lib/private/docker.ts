@@ -5,6 +5,7 @@ import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials
 import { EventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
+import { SubprocessOutputDestination } from './asset-handler';
 
 interface BuildOptions {
   readonly directory: string;
@@ -24,10 +25,13 @@ interface BuildOptions {
   readonly cacheFrom?: DockerCacheOption[];
   readonly cacheTo?: DockerCacheOption;
   readonly cacheDisabled?: boolean;
+  readonly quiet?: boolean;
+  readonly SubprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 interface PushOptions {
   readonly tag: string;
+  readonly quiet?: boolean;
 }
 
 export interface DockerCredentialsConfig {
@@ -60,7 +64,7 @@ export class Docker {
    */
   public async exists(tag: string) {
     try {
-      await this.execute(['inspect', tag], { eventPublisher: this.eventPublisher });
+      await this.execute(['inspect', tag], { quiet: true, eventPublisher: this.eventPublisher });
       return true;
     } catch (e: any) {
       const error: ProcessFailedError = e;
@@ -121,6 +125,8 @@ export class Docker {
     ];
     await this.execute(buildCommand, {
       cwd: options.directory,
+      quiet: options.quiet,
+      subprocessOutputDestination: options.SubprocessOutputDestination,
       eventPublisher: this.eventPublisher,
     });
   }
@@ -152,6 +158,7 @@ export class Docker {
 
   public async push(options: PushOptions) {
     await this.execute(['push', options.tag], {
+      quiet: options.quiet,
       eventPublisher: this.eventPublisher,
     });
   }

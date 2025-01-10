@@ -1,12 +1,18 @@
 import * as child_process from 'child_process';
-import { EventType } from '../progress';
+import { EventType, MessageOrigin } from '../progress';
+import { SubprocessOutputDestination } from './asset-handler';
 
-export type EventPublisher = (event: EventType, message: string, forceStdOut?: boolean) => void;
+export type EventPublisher = (
+  event: EventType,
+  message: string,
+  messageType?: MessageOrigin
+) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
   readonly eventPublisher: EventPublisher;
   readonly input?: string;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 /**
@@ -33,16 +39,12 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
 
     // Both emit event and collect output
     child.stdout!.on('data', (chunk) => {
-      if (!options.quiet) {
-        options.eventPublisher(EventType.DEBUG, chunk, true);
-      }
+      handleProcessOutput(chunk, options, 'stdout');
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
-      if (!options.quiet) {
-        options.eventPublisher(EventType.DEBUG, chunk);
-      }
+      handleProcessOutput(chunk, options, 'stderr');
       stderr.push(chunk);
     });
 
@@ -63,6 +65,33 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
       }
     });
   });
+}
+
+function handleProcessOutput(chunk: any, options: ShellOptions, stream: 'stderr' | 'stdout'): void {
+  if (options.subprocessOutputDestination === 'ignore') {
+    return;
+  }
+
+  switch (options.subprocessOutputDestination) {
+    case 'publish':
+      options.eventPublisher(
+        EventType.UPLOAD,
+        chunk,
+        stream === 'stdout' ? 'shell_out' : 'shell_err'
+      );
+      break;
+    case 'stdio':
+    default:
+      // Only write to stdio if not quiet
+      if (!options.quiet) {
+        if (stream === 'stdout') {
+          process.stdout.write(chunk);
+        } else {
+          process.stderr.write(chunk);
+        }
+      }
+      break;
+  }
 }
 
 export type ProcessFailedError = ProcessFailed;
