@@ -111,7 +111,7 @@ export async function obtainEcrCredentials(
   shellEventPublisher?: ShellEventPublisher
 ) {
   if (shellEventPublisher) {
-    shellEventPublisher('data', 'Fetching ECR authorization token', 'cdk_assets');
+    shellEventPublisher('data_stdout', 'Fetching ECR authorization token');
   }
 
   const authData = (await ecr.getAuthorizationToken()).authorizationData || [];

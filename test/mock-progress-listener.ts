@@ -1,6 +1,6 @@
 import { LogLevel } from '../bin/logging';
 import { EventType } from '../lib';
-import { IPublishProgress, IPublishProgressListener, MessageOrigin } from '../lib/progress';
+import { IPublishProgress, IPublishProgressListener } from '../lib/progress';
 
 let logThreshold = 'info';
 
@@ -61,12 +61,12 @@ export interface LoggedMessage {
 export class MockProgressListener implements IPublishProgressListener {
   public messages: LoggedMessage[] = [];
 
-  onPublishEvent(type: EventType, event: IPublishProgress, messageOrigin?: MessageOrigin): void {
+  onPublishEvent(type: EventType, event: IPublishProgress): void {
     const level = EVENT_TO_LEVEL[type];
     this.messages.push({
       type,
       message: event.message,
-      stream: messageOrigin ? 'stdout' : 'stderr',
+      stream: ['open', 'data_stdout', 'close'].includes(type) ? 'stdout' : 'stderr',
       level,
       wouldHaveBeenLogged: LOG_LEVELS[level] >= LOG_LEVELS[logThreshold],
     });

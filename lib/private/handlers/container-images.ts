@@ -3,7 +3,7 @@ import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
 import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
-import { EventType, MessageOrigin } from '../../progress';
+import { EventType } from '../../progress';
 import {
   IAssetHandler,
   IHandlerHost,
@@ -216,13 +216,9 @@ class ContainerImageBuilder {
       return undefined;
     }
 
-    const shellEventPublisher = (
-      event: ShellEventType,
-      message: string,
-      messageOrigin?: MessageOrigin
-    ) => {
+    const shellEventPublisher = (event: ShellEventType, message: string) => {
       const eventType = shellEventToEventType(event);
-      this.host.emitMessage(eventType, message, messageOrigin);
+      this.host.emitMessage(eventType, message);
     };
 
     return (

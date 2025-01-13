@@ -7,7 +7,7 @@ export interface IPublishProgressListener {
   /**
    * Asset build event
    */
-  onPublishEvent(type: EventType, event: IPublishProgress, messageType?: MessageOrigin): void;
+  onPublishEvent(type: EventType, event: IPublishProgress): void;
 }
 
 /**
@@ -75,8 +75,6 @@ export enum EventType {
   SHELL_CLOSE = 'shell_close',
 }
 
-export type MessageOrigin = 'shell_out' | 'shell_err' | 'cdk_assets';
-
 /**
  * Context object for publishing progress
  */
@@ -95,12 +93,6 @@ export interface IPublishProgress {
    * How far along are we?
    */
   readonly percentComplete: number;
-
-  /**
-   * Whether the message originated from a subprocess's stdout or stderr, or from the
-   * the main cdk-assets process itself.
-   */
-  readonly messageOrigin?: MessageOrigin;
 
   /**
    * Abort the current publishing operation

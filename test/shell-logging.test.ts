@@ -13,17 +13,13 @@ describe('shell', () => {
 
   beforeEach(() => {
     progressListener = new MockProgressListener();
-    shellEventPublisher = (event, message, messageOrigin?) => {
+    shellEventPublisher = (event, message) => {
       const eventType = shellEventToEventType(event);
-      progressListener.onPublishEvent(
-        eventType,
-        {
-          message,
-          percentComplete: 0,
-          abort: () => {},
-        },
-        messageOrigin ?? 'cdk_assets'
-      );
+      progressListener.onPublishEvent(eventType, {
+        message,
+        percentComplete: 0,
+        abort: () => {},
+      });
     };
     mockfs({
       '/path/package.json': JSON.stringify({ version: '1.2.3' }),

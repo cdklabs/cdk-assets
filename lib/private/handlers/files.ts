@@ -6,7 +6,7 @@ import { destinationToClientOptions } from './client-options';
 import { FileManifestEntry } from '../../asset-manifest';
 import { IS3Client } from '../../aws';
 import { PutObjectCommandInput } from '../../aws-types';
-import { EventType, MessageOrigin } from '../../progress';
+import { EventType } from '../../progress';
 import { zipDirectory } from '../archive';
 import { IAssetHandler, IHandlerHost, type PublishOptions } from '../asset-handler';
 import { pathExists } from '../fs-extra';
@@ -203,13 +203,9 @@ export class FileAssetHandler implements IAssetHandler {
   private async externalPackageFile(executable: string[]): Promise<PackagedFileAsset> {
     this.host.emitMessage(EventType.BUILD, `Building asset source using command: '${executable}'`);
 
-    const shellEventPublisher = (
-      event: ShellEventType,
-      message: string,
-      messageOrigin?: MessageOrigin
-    ) => {
+    const shellEventPublisher = (event: ShellEventType, message: string) => {
       const eventType = shellEventToEventType(event);
-      this.host.emitMessage(eventType, message, messageOrigin);
+      this.host.emitMessage(eventType, message);
     };
 
     return {

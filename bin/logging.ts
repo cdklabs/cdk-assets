@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { MessageOrigin } from '../lib';
 
 export type LogLevel = 'verbose' | 'info' | 'error';
 let logThreshold: LogLevel = 'info';
@@ -19,9 +18,9 @@ export function setLogThreshold(threshold: LogLevel) {
   logThreshold = threshold;
 }
 
-export function log(level: LogLevel, message: string, messageOrigin: MessageOrigin = 'cdk_assets') {
+export function log(level: LogLevel, message: string, stream?: 'stdout' | 'stderr') {
   if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
-    if (messageOrigin === 'shell_out') {
+    if (stream === 'stdout') {
       console.log(`${level.padEnd(7, ' ')}: ${message}`);
     } else {
       console.error(`${level.padEnd(7, ' ')}: ${message}`);

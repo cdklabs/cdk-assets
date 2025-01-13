@@ -7,7 +7,6 @@ import {
   EventType,
   IPublishProgress,
   IPublishProgressListener,
-  MessageOrigin,
 } from '../lib';
 
 export async function publish(args: { path: string; assets?: string[]; profile?: string }) {
@@ -54,15 +53,8 @@ const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
 };
 
 export class ConsoleProgress implements IPublishProgressListener {
-  public onPublishEvent(
-    type: EventType,
-    event: IPublishProgress,
-    messageOrigin?: MessageOrigin
-  ): void {
-    log(
-      EVENT_TO_LEVEL[type],
-      `[${event.percentComplete}%] ${type}: ${event.message}`,
-      messageOrigin
-    );
+  public onPublishEvent(type: EventType, event: IPublishProgress): void {
+    const stream = ['open', 'data_stdout', 'close'].includes(type) ? 'stdout' : 'stderr';
+    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`, stream);
   }
 }
