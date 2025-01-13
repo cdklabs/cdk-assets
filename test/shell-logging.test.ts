@@ -46,7 +46,6 @@ describe('shell', () => {
     // WHEN
     await shell(['docker', 'build', '.'], {
       shellEventPublisher,
-      quiet: true,
       subprocessOutputDestination: 'publish',
     });
 
@@ -74,7 +73,6 @@ describe('shell', () => {
     // WHEN
     await shell(['docker', 'build', '.'], {
       shellEventPublisher,
-      quiet: true,
       subprocessOutputDestination: 'publish',
     });
 
@@ -101,7 +99,6 @@ describe('shell', () => {
     await shell(['cat'], {
       input: expectedInput,
       shellEventPublisher,
-      quiet: true,
       subprocessOutputDestination: 'publish',
     });
 
@@ -127,7 +124,6 @@ describe('shell', () => {
     await expect(
       shell(['docker', 'build', '.'], {
         shellEventPublisher,
-        quiet: true,
         subprocessOutputDestination: 'publish',
       })
     ).rejects.toThrow('Command failed');
@@ -151,7 +147,6 @@ describe('shell', () => {
     // WHEN
     await shell(['echo', 'hello'], {
       shellEventPublisher,
-      quiet: true,
       subprocessOutputDestination: 'publish',
     });
 

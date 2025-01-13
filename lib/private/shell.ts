@@ -11,7 +11,6 @@ export type ShellEventPublisher = (
 ) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
-  readonly quiet?: boolean;
   readonly shellEventPublisher: ShellEventPublisher;
   readonly input?: string;
   readonly subprocessOutputDestination?: SubprocessOutputDestination;
@@ -100,13 +99,10 @@ function handleShellOutput(
       break;
     case 'stdio':
     default:
-      // Only write to stdio if not quiet
-      if (!options.quiet) {
-        if (stream === 'shell_out') {
-          process.stdout.write(chunk);
-        } else {
-          process.stderr.write(chunk);
-        }
+      if (stream === 'shell_out') {
+        process.stdout.write(chunk);
+      } else {
+        process.stderr.write(chunk);
       }
       break;
   }

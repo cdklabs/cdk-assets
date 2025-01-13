@@ -62,7 +62,7 @@ export interface AssetPublishingOptions {
    *
    * @default 'stdio'
    */
-  readonly subprocessOutputDestination?: SubprocessOutputDestination;
+  subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 /**
@@ -291,8 +291,10 @@ export class AssetPublishing implements IPublishProgress {
     if (existing) {
       return existing;
     }
+    if (this.options.quiet && this.options.subprocessOutputDestination == 'stdio') {
+      this.options.subprocessOutputDestination = 'ignore';
+    }
     const ret = makeAssetHandler(this.manifest, asset, this.handlerHost, {
-      quiet: this.options.quiet,
       subprocessOutputDestination: this.options.subprocessOutputDestination ?? 'stdio',
     });
     this.handlerCache.set(asset, ret);

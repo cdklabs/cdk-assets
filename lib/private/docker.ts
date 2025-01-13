@@ -25,13 +25,12 @@ interface BuildOptions {
   readonly cacheFrom?: DockerCacheOption[];
   readonly cacheTo?: DockerCacheOption;
   readonly cacheDisabled?: boolean;
-  readonly quiet?: boolean;
-  readonly SubprocessOutputDestination?: SubprocessOutputDestination;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 interface PushOptions {
   readonly tag: string;
-  readonly quiet?: boolean;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 export interface DockerCredentialsConfig {
@@ -65,7 +64,7 @@ export class Docker {
   public async exists(tag: string) {
     try {
       await this.execute(['inspect', tag], {
-        quiet: true,
+        subprocessOutputDestination: 'ignore',
         shellEventPublisher: this.shellEventPublisher,
       });
       return true;
@@ -128,8 +127,7 @@ export class Docker {
     ];
     await this.execute(buildCommand, {
       cwd: options.directory,
-      quiet: options.quiet,
-      subprocessOutputDestination: options.SubprocessOutputDestination,
+      subprocessOutputDestination: options.subprocessOutputDestination,
       shellEventPublisher: this.shellEventPublisher,
     });
   }
@@ -146,10 +144,10 @@ export class Docker {
       {
         input: credentials.password,
 
-        // Need to quiet otherwise Docker will complain
+        // Need to ignore otherwise Docker will complain
         // 'WARNING! Your password will be stored unencrypted'
         // doesn't really matter since it's a token.
-        quiet: true,
+        subprocessOutputDestination: 'ignore',
         shellEventPublisher: this.shellEventPublisher,
       }
     );
@@ -163,7 +161,7 @@ export class Docker {
 
   public async push(options: PushOptions) {
     await this.execute(['push', options.tag], {
-      quiet: options.quiet,
+      subprocessOutputDestination: options.subprocessOutputDestination,
       shellEventPublisher: this.shellEventPublisher,
     });
   }

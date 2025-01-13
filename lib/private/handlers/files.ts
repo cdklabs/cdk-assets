@@ -213,7 +213,9 @@ export class FileAssetHandler implements IAssetHandler {
     };
 
     return {
-      packagedPath: (await shell(executable, { quiet: true, shellEventPublisher })).trim(),
+      packagedPath: (
+        await shell(executable, { subprocessOutputDestination: 'ignore', shellEventPublisher })
+      ).trim(),
       contentType: 'application/zip',
     };
   }

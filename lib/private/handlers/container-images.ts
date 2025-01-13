@@ -52,7 +52,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       this.workDir,
       this.asset,
       {
-        quiet: this.options.quiet,
         subprocessOutputDestination: this.options.subprocessOutputDestination,
       },
       this.host
@@ -100,7 +99,10 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     }
 
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
-    await dockerForPushing.push({ tag: initOnce.imageUri, quiet: this.options.quiet });
+    await dockerForPushing.push({
+      tag: initOnce.imageUri,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
+    });
   }
 
   private async initOnce(
@@ -159,7 +161,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 }
 
 interface ContainerImageBuilderOptions {
-  readonly quiet?: boolean;
   readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
@@ -257,8 +258,7 @@ class ContainerImageBuilder {
       cacheFrom: source.cacheFrom,
       cacheTo: source.cacheTo,
       cacheDisabled: source.cacheDisabled,
-      quiet: this.options.quiet,
-      SubprocessOutputDestination: this.options.subprocessOutputDestination,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
   }
 

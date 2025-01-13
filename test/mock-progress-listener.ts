@@ -1,5 +1,4 @@
 import { LogLevel } from '../bin/logging';
-import { EVENT_TO_LEVEL } from '../bin/publish';
 import { EventType } from '../lib';
 import { IPublishProgress, IPublishProgressListener, MessageOrigin } from '../lib/progress';
 
@@ -9,6 +8,21 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   verbose: 1,
   info: 2,
   error: 3,
+};
+
+const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
+  build: 'verbose',
+  cached: 'verbose',
+  check: 'verbose',
+  debug: 'verbose',
+  fail: 'error',
+  found: 'verbose',
+  start: 'info',
+  success: 'info',
+  upload: 'verbose',
+  shell_open: 'verbose',
+  shell_data: 'verbose',
+  shell_close: 'verbose',
 };
 
 /**

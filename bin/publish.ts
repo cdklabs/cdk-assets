@@ -38,7 +38,7 @@ export async function publish(args: { path: string; assets?: string[]; profile?:
   }
 }
 
-export const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
+const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   build: 'verbose',
   cached: 'verbose',
   check: 'verbose',

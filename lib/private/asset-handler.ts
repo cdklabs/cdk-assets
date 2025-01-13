@@ -45,11 +45,6 @@ export interface IHandlerHost {
 
 export interface IHandlerOptions {
   /**
-   * Suppress all output
-   */
-  readonly quiet?: boolean;
-
-  /**
    * Where to send output of a subprocesses
    *
    * @default 'stdio'
