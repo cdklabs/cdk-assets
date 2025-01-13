@@ -83,12 +83,16 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
   });
 }
 
-function handleShellOutput(chunk: string, options: ShellOptions, eventType: ShellEventType): void {
+function handleShellOutput(
+  chunk: Buffer | string,
+  options: ShellOptions,
+  eventType: ShellEventType
+): void {
   switch (options.subprocessOutputDestination) {
     case 'ignore':
       return;
     case 'publish':
-      options.shellEventPublisher(eventType, chunk);
+      options.shellEventPublisher(eventType, chunk.toString('utf-8'));
       break;
     case 'stdio':
     default:
