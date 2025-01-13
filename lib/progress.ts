@@ -61,16 +61,22 @@ export enum EventType {
 
   /**
    * When a shell command is executed
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
    */
   SHELL_OPEN = 'shell_open',
 
   /**
    * Text output from a shell command
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
    */
   SHELL_DATA = 'shell_data',
 
   /**
    * When a shell command closes
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
    */
   SHELL_CLOSE = 'shell_close',
 }
