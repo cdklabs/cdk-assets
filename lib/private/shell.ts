@@ -2,12 +2,6 @@ import * as child_process from 'child_process';
 import { EventType, MessageOrigin } from '../progress';
 import { SubprocessOutputDestination } from './asset-handler';
 
-export interface ShellEvent {
-  event: ShellEventType;
-  message: string;
-  messageOrigin?: MessageOrigin;
-}
-
 export type ShellEventType = 'open' | 'data' | 'close';
 
 export type ShellEventPublisher = (
