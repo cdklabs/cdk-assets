@@ -9,7 +9,7 @@ export const VERSION = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'package.json'), { encoding: 'utf-8' })
 ).version;
 
-export const LOG_LEVELS: Record<LogLevel, number> = {
+const LOG_LEVELS: Record<LogLevel, number> = {
   verbose: 1,
   info: 2,
   error: 3,
