@@ -58,6 +58,21 @@ export enum EventType {
    * Another type of detail message
    */
   DEBUG = 'debug',
+
+  /**
+   * When a shell command is executed
+   */
+  SHELL_OPEN = 'shell_open',
+
+  /**
+   * When a shell command emits data
+   */
+  SHELL_DATA = 'shell_data',
+
+  /**
+   * When a shell command closes
+   */
+  SHELL_CLOSE = 'shell_close',
 }
 
 export type MessageOrigin = 'shell_out' | 'shell_err' | 'cdk_assets';

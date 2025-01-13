@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { EventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
+import { ShellEventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
 import { SubprocessOutputDestination } from './asset-handler';
@@ -57,14 +57,17 @@ export interface DockerCacheOption {
 export class Docker {
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly eventPublisher: EventPublisher) {}
+  constructor(private readonly shellEventPublisher: ShellEventPublisher) {}
 
   /**
    * Whether an image with the given tag exists
    */
   public async exists(tag: string) {
     try {
-      await this.execute(['inspect', tag], { quiet: true, eventPublisher: this.eventPublisher });
+      await this.execute(['inspect', tag], {
+        quiet: true,
+        shellEventPublisher: this.shellEventPublisher,
+      });
       return true;
     } catch (e: any) {
       const error: ProcessFailedError = e;
@@ -127,7 +130,7 @@ export class Docker {
       cwd: options.directory,
       quiet: options.quiet,
       subprocessOutputDestination: options.SubprocessOutputDestination,
-      eventPublisher: this.eventPublisher,
+      shellEventPublisher: this.shellEventPublisher,
     });
   }
 
@@ -147,19 +150,21 @@ export class Docker {
         // 'WARNING! Your password will be stored unencrypted'
         // doesn't really matter since it's a token.
         quiet: true,
-        eventPublisher: this.eventPublisher,
+        shellEventPublisher: this.shellEventPublisher,
       }
     );
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag], { eventPublisher: this.eventPublisher });
+    await this.execute(['tag', sourceTag, targetTag], {
+      shellEventPublisher: this.shellEventPublisher,
+    });
   }
 
   public async push(options: PushOptions) {
     await this.execute(['push', options.tag], {
       quiet: options.quiet,
-      eventPublisher: this.eventPublisher,
+      shellEventPublisher: this.shellEventPublisher,
     });
   }
 

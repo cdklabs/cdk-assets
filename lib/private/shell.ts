@@ -2,17 +2,41 @@ import * as child_process from 'child_process';
 import { EventType, MessageOrigin } from '../progress';
 import { SubprocessOutputDestination } from './asset-handler';
 
-export type EventPublisher = (
-  event: EventType,
+export interface ShellEvent {
+  event: ShellEventType;
+  message: string;
+  messageOrigin?: MessageOrigin;
+}
+
+export type ShellEventType = 'open' | 'data' | 'close';
+
+export type ShellEventPublisher = (
+  event: ShellEventType,
   message: string,
-  messageType?: MessageOrigin
+  messageOrigin?: MessageOrigin
 ) => void;
 
 export interface ShellOptions extends child_process.SpawnOptions {
   readonly quiet?: boolean;
-  readonly eventPublisher: EventPublisher;
+  readonly shellEventPublisher: ShellEventPublisher;
   readonly input?: string;
   readonly subprocessOutputDestination?: SubprocessOutputDestination;
+}
+
+/**
+ * A helper function to convert shell events to asset progress events
+ * @param event a shell event
+ * @returns an {@link EventType}
+ */
+export function shellEventToEventType(event: ShellEventType): EventType {
+  switch (event) {
+    case 'open':
+      return EventType.SHELL_OPEN;
+    case 'close':
+      return EventType.SHELL_CLOSE;
+    case 'data':
+      return EventType.SHELL_DATA;
+  }
 }
 
 /**
@@ -22,7 +46,7 @@ export interface ShellOptions extends child_process.SpawnOptions {
  * string.
  */
 export async function shell(command: string[], options: ShellOptions): Promise<string> {
-  options.eventPublisher(EventType.DEBUG, renderCommandLine(command));
+  handleShellOutput(renderCommandLine(command), options, 'open', 'shell_out');
   const child = child_process.spawn(command[0], command.slice(1), {
     ...options,
     stdio: [options.input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
@@ -39,18 +63,19 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
 
     // Both emit event and collect output
     child.stdout!.on('data', (chunk) => {
-      handleProcessOutput(chunk, options, 'stdout');
+      handleShellOutput(chunk, options, 'data', 'shell_out');
       stdout.push(chunk);
     });
 
     child.stderr!.on('data', (chunk) => {
-      handleProcessOutput(chunk, options, 'stderr');
+      handleShellOutput(chunk, options, 'data', 'shell_err');
       stderr.push(chunk);
     });
 
     child.once('error', reject);
 
     child.once('close', (code, signal) => {
+      handleShellOutput(renderCommandLine(command), options, 'close', 'shell_out');
       if (code === 0) {
         resolve(Buffer.concat(stdout).toString('utf-8'));
       } else {
@@ -67,24 +92,25 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
   });
 }
 
-function handleProcessOutput(chunk: any, options: ShellOptions, stream: 'stderr' | 'stdout'): void {
+function handleShellOutput(
+  chunk: any,
+  options: ShellOptions,
+  eventType: ShellEventType,
+  stream: MessageOrigin
+): void {
   if (options.subprocessOutputDestination === 'ignore') {
     return;
   }
 
   switch (options.subprocessOutputDestination) {
     case 'publish':
-      options.eventPublisher(
-        EventType.UPLOAD,
-        chunk,
-        stream === 'stdout' ? 'shell_out' : 'shell_err'
-      );
+      options.shellEventPublisher(eventType, chunk, stream);
       break;
     case 'stdio':
     default:
       // Only write to stdio if not quiet
       if (!options.quiet) {
-        if (stream === 'stdout') {
+        if (stream === 'shell_out') {
           process.stdout.write(chunk);
         } else {
           process.stderr.write(chunk);
@@ -93,7 +119,6 @@ function handleProcessOutput(chunk: any, options: ShellOptions, stream: 'stderr'
       break;
   }
 }
-
 export type ProcessFailedError = ProcessFailed;
 
 class ProcessFailed extends Error {

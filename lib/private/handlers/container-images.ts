@@ -3,7 +3,7 @@ import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
 import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
-import { EventType } from '../../progress';
+import { EventType, MessageOrigin } from '../../progress';
 import {
   IAssetHandler,
   IHandlerHost,
@@ -12,7 +12,7 @@ import {
 } from '../asset-handler';
 import { Docker } from '../docker';
 import { replaceAwsPlaceholders } from '../placeholders';
-import { shell } from '../shell';
+import { shell, shellEventToEventType, ShellEventType } from '../shell';
 
 interface ContainerImageAssetHandlerInit {
   readonly ecr: IECRClient;
@@ -215,10 +215,19 @@ class ContainerImageBuilder {
       return undefined;
     }
 
+    const shellEventPublisher = (
+      event: ShellEventType,
+      message: string,
+      messageOrigin?: MessageOrigin
+    ) => {
+      const eventType = shellEventToEventType(event);
+      this.host.emitMessage(eventType, message, messageOrigin);
+    };
+
     return (
       await shell(executable, {
         cwd: assetPath,
-        eventPublisher: this.host.emitMessage,
+        shellEventPublisher,
       })
     ).trim();
   }

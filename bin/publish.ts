@@ -48,6 +48,9 @@ export const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   start: 'info',
   success: 'info',
   upload: 'verbose',
+  shell_open: 'verbose',
+  shell_data: 'verbose',
+  shell_close: 'verbose',
 };
 
 export class ConsoleProgress implements IPublishProgressListener {

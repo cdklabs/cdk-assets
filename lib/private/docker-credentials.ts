@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { EventPublisher } from './shell';
+import { ShellEventPublisher } from './shell';
 import { IAws, IECRClient } from '../aws';
-import { EventType } from '../progress';
 
 export interface DockerCredentials {
   readonly Username: string;
@@ -107,9 +106,12 @@ export async function fetchDockerLoginCredentials(
   }
 }
 
-export async function obtainEcrCredentials(ecr: IECRClient, eventPublisher?: EventPublisher) {
-  if (eventPublisher) {
-    eventPublisher(EventType.DEBUG, 'Fetching ECR authorization token');
+export async function obtainEcrCredentials(
+  ecr: IECRClient,
+  shellEventPublisher?: ShellEventPublisher
+) {
+  if (shellEventPublisher) {
+    shellEventPublisher('data', 'Fetching ECR authorization token', 'cdk_assets');
   }
 
   const authData = (await ecr.getAuthorizationToken()).authorizationData || [];

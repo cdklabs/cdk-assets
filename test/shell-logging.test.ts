@@ -2,20 +2,21 @@ import { mockSpawn } from './mock-child_process';
 import mockfs from './mock-fs';
 import { MockProgressListener } from './mock-progress-listener';
 import { setLogThreshold } from '../bin/logging';
-import { EventType, MessageOrigin } from '../lib';
-import { shell } from '../lib/private/shell';
+import { EventType } from '../lib';
+import { shell, ShellEventPublisher, shellEventToEventType } from '../lib/private/shell';
 
 jest.mock('child_process');
 
 describe('shell', () => {
   let progressListener: MockProgressListener;
-  let eventPublisher: (type: EventType, message: string, messageOrigin?: MessageOrigin) => void;
+  let shellEventPublisher: ShellEventPublisher;
 
   beforeEach(() => {
     progressListener = new MockProgressListener();
-    eventPublisher = (type, message, messageOrigin?) =>
+    shellEventPublisher = (event, message, messageOrigin?) => {
+      const eventType = shellEventToEventType(event);
       progressListener.onPublishEvent(
-        type,
+        eventType,
         {
           message,
           percentComplete: 0,
@@ -23,6 +24,7 @@ describe('shell', () => {
         },
         messageOrigin ?? 'cdk_assets'
       );
+    };
     mockfs({
       '/path/package.json': JSON.stringify({ version: '1.2.3' }),
     });
@@ -43,7 +45,7 @@ describe('shell', () => {
 
     // WHEN
     await shell(['docker', 'build', '.'], {
-      eventPublisher,
+      shellEventPublisher,
       quiet: true,
       subprocessOutputDestination: 'publish',
     });
@@ -53,9 +55,10 @@ describe('shell', () => {
 
     const dockerOutputMessages = progressListener.messages.filter(
       (msg) =>
-        msg.message.includes('Step 1/3') ||
-        msg.message.includes('Step 2/3') ||
-        msg.message.includes('Step 3/3')
+        msg.type === EventType.SHELL_DATA &&
+        (msg.message.includes('Step 1/3') ||
+          msg.message.includes('Step 2/3') ||
+          msg.message.includes('Step 3/3'))
     );
 
     expect(dockerOutputMessages.length).toBeGreaterThan(0);
@@ -70,7 +73,7 @@ describe('shell', () => {
 
     // WHEN
     await shell(['docker', 'build', '.'], {
-      eventPublisher,
+      shellEventPublisher,
       quiet: true,
       subprocessOutputDestination: 'publish',
     });
@@ -97,7 +100,7 @@ describe('shell', () => {
     // WHEN
     await shell(['cat'], {
       input: expectedInput,
-      eventPublisher,
+      shellEventPublisher,
       quiet: true,
       subprocessOutputDestination: 'publish',
     });
@@ -123,7 +126,7 @@ describe('shell', () => {
     // WHEN/THEN
     await expect(
       shell(['docker', 'build', '.'], {
-        eventPublisher,
+        shellEventPublisher,
         quiet: true,
         subprocessOutputDestination: 'publish',
       })
@@ -136,5 +139,27 @@ describe('shell', () => {
     );
 
     expect(errorMessages.length).toBeGreaterThan(0);
+  });
+
+  test('emits proper shell event sequence', async () => {
+    // GIVEN
+    const expectAllSpawns = mockSpawn({
+      commandLine: ['echo', 'hello'],
+      stdout: 'hello',
+    });
+
+    // WHEN
+    await shell(['echo', 'hello'], {
+      shellEventPublisher,
+      quiet: true,
+      subprocessOutputDestination: 'publish',
+    });
+
+    // THEN
+    expectAllSpawns();
+
+    // Verify event sequence
+    const events = progressListener.messages.map((msg) => msg.type);
+    expect(events).toEqual([EventType.SHELL_OPEN, EventType.SHELL_DATA, EventType.SHELL_CLOSE]);
   });
 });
