@@ -92,11 +92,9 @@ function handleShellOutput(
   eventType: ShellEventType,
   stream: MessageOrigin
 ): void {
-  if (options.subprocessOutputDestination === 'ignore') {
-    return;
-  }
-
   switch (options.subprocessOutputDestination) {
+    case 'ignore':
+      return;
     case 'publish':
       options.shellEventPublisher(eventType, chunk, stream);
       break;

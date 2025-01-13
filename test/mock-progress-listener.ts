@@ -1,9 +1,15 @@
-import { LogLevel, LOG_LEVELS } from '../bin/logging';
+import { LogLevel } from '../bin/logging';
 import { EVENT_TO_LEVEL } from '../bin/publish';
 import { EventType } from '../lib';
 import { IPublishProgress, IPublishProgressListener, MessageOrigin } from '../lib/progress';
 
 let logThreshold = 'info';
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  verbose: 1,
+  info: 2,
+  error: 3,
+};
 
 /**
  * Represents a logged message with additional metadata purely for testing purposes.

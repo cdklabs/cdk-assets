@@ -65,7 +65,7 @@ export enum EventType {
   SHELL_OPEN = 'shell_open',
 
   /**
-   * When a shell command emits data
+   * Text output from a shell command
    */
   SHELL_DATA = 'shell_data',
 
@@ -97,8 +97,8 @@ export interface IPublishProgress {
   readonly percentComplete: number;
 
   /**
-   * Whether the message originated from a subprocess's stdout or stderr, otherwise it
-   * originated from the main process.
+   * Whether the message originated from a subprocess's stdout or stderr, or from the
+   * the main cdk-assets process itself.
    */
   readonly messageOrigin?: MessageOrigin;
 
