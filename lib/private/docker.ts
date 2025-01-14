@@ -2,9 +2,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { Logger, shell, ShellOptions, ProcessFailedError } from './shell';
+import { ShellEventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
+import { SubprocessOutputDestination } from './asset-handler';
 
 interface BuildOptions {
   readonly directory: string;
@@ -24,12 +25,12 @@ interface BuildOptions {
   readonly cacheFrom?: DockerCacheOption[];
   readonly cacheTo?: DockerCacheOption;
   readonly cacheDisabled?: boolean;
-  readonly quiet?: boolean;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 interface PushOptions {
   readonly tag: string;
-  readonly quiet?: boolean;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 export interface DockerCredentialsConfig {
@@ -55,14 +56,17 @@ export interface DockerCacheOption {
 export class Docker {
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly logger?: Logger) {}
+  constructor(private readonly shellEventPublisher: ShellEventPublisher) {}
 
   /**
    * Whether an image with the given tag exists
    */
   public async exists(tag: string) {
     try {
-      await this.execute(['inspect', tag], { quiet: true });
+      await this.execute(['inspect', tag], {
+        subprocessOutputDestination: 'ignore',
+        shellEventPublisher: this.shellEventPublisher,
+      });
       return true;
     } catch (e: any) {
       const error: ProcessFailedError = e;
@@ -123,15 +127,16 @@ export class Docker {
     ];
     await this.execute(buildCommand, {
       cwd: options.directory,
-      quiet: options.quiet,
+      subprocessOutputDestination: options.subprocessOutputDestination,
+      shellEventPublisher: this.shellEventPublisher,
     });
   }
 
   /**
    * Get credentials from ECR and run docker login
    */
-  public async login(ecr: IECRClient) {
-    const credentials = await obtainEcrCredentials(ecr);
+  public async login(ecr: IECRClient, eventEmitter?: (m: string) => void) {
+    const credentials = await obtainEcrCredentials(ecr, eventEmitter);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
     await this.execute(
@@ -139,20 +144,26 @@ export class Docker {
       {
         input: credentials.password,
 
-        // Need to quiet otherwise Docker will complain
+        // Need to ignore otherwise Docker will complain
         // 'WARNING! Your password will be stored unencrypted'
         // doesn't really matter since it's a token.
-        quiet: true,
+        subprocessOutputDestination: 'ignore',
+        shellEventPublisher: this.shellEventPublisher,
       }
     );
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag]);
+    await this.execute(['tag', sourceTag, targetTag], {
+      shellEventPublisher: this.shellEventPublisher,
+    });
   }
 
   public async push(options: PushOptions) {
-    await this.execute(['push', options.tag], { quiet: options.quiet });
+    await this.execute(['push', options.tag], {
+      subprocessOutputDestination: options.subprocessOutputDestination,
+      shellEventPublisher: this.shellEventPublisher,
+    });
   }
 
   /**
@@ -194,13 +205,12 @@ export class Docker {
     this.configDir = undefined;
   }
 
-  private async execute(args: string[], options: ShellOptions = {}) {
+  private async execute(args: string[], options: ShellOptions) {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
-        logger: this.logger,
         ...options,
         env: {
           ...process.env,
@@ -234,7 +244,7 @@ export class Docker {
 export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
-  readonly logger: (m: string) => void;
+  readonly eventEmitter: (m: string) => void;
 }
 
 /**
@@ -249,7 +259,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.logger);
+    const docker = new Docker(options.eventEmitter);
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -268,7 +278,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.logger);
+    const docker = new Docker(options.eventEmitter);
     await this.loginOncePerDestination(docker, options);
     return docker;
   }
@@ -284,7 +294,7 @@ export class DockerFactory {
         return;
       }
 
-      await docker.login(options.ecr);
+      await docker.login(options.ecr, options.eventEmitter);
       this.loggedInDestinations.add(repositoryDomain);
     });
   }

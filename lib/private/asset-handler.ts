@@ -45,7 +45,18 @@ export interface IHandlerHost {
 
 export interface IHandlerOptions {
   /**
-   * Suppress all output
+   * Where to send output of a subprocesses
+   *
+   * @default 'stdio'
    */
-  readonly quiet?: boolean;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
+
+/**
+ * The potential destinations for subprocess output.
+ *
+ * 'stdio' will send output directly to stdout/stderr,
+ * 'publish' will publish the output to the {@link IPublishProgressListener},
+ * 'ignore' will ignore the output, and emit it nowhere.
+ */
+export type SubprocessOutputDestination = 'stdio' | 'ignore' | 'publish';

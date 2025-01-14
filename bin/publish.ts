@@ -47,10 +47,14 @@ const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   start: 'info',
   success: 'info',
   upload: 'verbose',
+  shell_open: 'verbose',
+  shell_data: 'verbose',
+  shell_close: 'verbose',
 };
 
 class ConsoleProgress implements IPublishProgressListener {
   public onPublishEvent(type: EventType, event: IPublishProgress): void {
-    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`);
+    const stream = ['open', 'data_stdout', 'close'].includes(type) ? 'stdout' : 'stderr';
+    log(EVENT_TO_LEVEL[type], `[${event.percentComplete}%] ${type}: ${event.message}`, stream);
   }
 }

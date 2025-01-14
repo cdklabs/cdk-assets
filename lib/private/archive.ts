@@ -6,18 +6,18 @@ import * as glob from 'glob';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const archiver = require('archiver');
 
-type Logger = (x: string) => void;
+type EventEmitter = (x: string) => void;
 
 export async function zipDirectory(
   directory: string,
   outputFile: string,
-  logger: Logger
+  eventEmitter: EventEmitter
 ): Promise<void> {
   // We write to a temporary file and rename at the last moment. This is so that if we are
   // interrupted during this process, we don't leave a half-finished file in the target location.
   const temporaryOutputFile = `${outputFile}.${randomString()}._tmp`;
   await writeZipFile(directory, temporaryOutputFile);
-  await moveIntoPlace(temporaryOutputFile, outputFile, logger);
+  await moveIntoPlace(temporaryOutputFile, outputFile, eventEmitter);
 }
 
 function writeZipFile(directory: string, outputFile: string): Promise<void> {
@@ -70,7 +70,7 @@ function writeZipFile(directory: string, outputFile: string): Promise<void> {
  *   file open, so retry a couple of times.
  * - This same function may be called in parallel and be interrupted at any point.
  */
-async function moveIntoPlace(source: string, target: string, logger: Logger) {
+async function moveIntoPlace(source: string, target: string, eventEmitter: EventEmitter) {
   let delay = 100;
   let attempts = 5;
   while (true) {
@@ -82,7 +82,7 @@ async function moveIntoPlace(source: string, target: string, logger: Logger) {
       if (e.code !== 'EPERM' || attempts-- <= 0) {
         throw e;
       }
-      logger(e.message);
+      eventEmitter(e.message);
       await sleep(Math.floor(Math.random() * delay));
       delay *= 2;
     }

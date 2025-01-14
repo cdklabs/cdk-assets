@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { Logger } from './shell';
 import { IAws, IECRClient } from '../aws';
 
 export interface DockerCredentials {
@@ -106,9 +105,9 @@ export async function fetchDockerLoginCredentials(
   }
 }
 
-export async function obtainEcrCredentials(ecr: IECRClient, logger?: Logger) {
-  if (logger) {
-    logger('Fetching ECR authorization token');
+export async function obtainEcrCredentials(ecr: IECRClient, eventEmitter?: (m: string) => void) {
+  if (eventEmitter) {
+    eventEmitter('Fetching ECR authorization token');
   }
 
   const authData = (await ecr.getAuthorizationToken()).authorizationData || [];

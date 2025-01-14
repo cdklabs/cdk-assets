@@ -3,11 +3,16 @@ import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
 import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
-import { EventType } from '../../progress';
-import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
+import { EventType, shellEventToEventType } from '../../progress';
+import {
+  IAssetHandler,
+  IHandlerHost,
+  IHandlerOptions,
+  SubprocessOutputDestination,
+} from '../asset-handler';
 import { Docker } from '../docker';
 import { replaceAwsPlaceholders } from '../placeholders';
-import { shell } from '../shell';
+import { shell, ShellEventType } from '../shell';
 
 interface ContainerImageAssetHandlerInit {
   readonly ecr: IECRClient;
@@ -38,7 +43,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForBuilding = await this.host.dockerFactory.forBuild({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
+      eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
     });
 
@@ -46,10 +51,10 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       dockerForBuilding,
       this.workDir,
       this.asset,
-      this.host,
       {
-        quiet: this.options.quiet,
-      }
+        subprocessOutputDestination: this.options.subprocessOutputDestination,
+      },
+      this.host
     );
     const localTagName = await builder.build();
 
@@ -85,7 +90,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForPushing = await this.host.dockerFactory.forEcrPush({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
+      eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
     });
 
@@ -94,7 +99,10 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     }
 
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
-    await dockerForPushing.push({ tag: initOnce.imageUri, quiet: this.options.quiet });
+    await dockerForPushing.push({
+      tag: initOnce.imageUri,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
+    });
   }
 
   private async initOnce(
@@ -153,7 +161,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 }
 
 interface ContainerImageBuilderOptions {
-  readonly quiet?: boolean;
+  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 class ContainerImageBuilder {
@@ -161,8 +169,8 @@ class ContainerImageBuilder {
     private readonly docker: Docker,
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
-    private readonly host: IHandlerHost,
-    private readonly options: ContainerImageBuilderOptions
+    private readonly options: ContainerImageBuilderOptions,
+    private readonly host: IHandlerHost
   ) {}
 
   async build(): Promise<string | undefined> {
@@ -208,7 +216,18 @@ class ContainerImageBuilder {
       return undefined;
     }
 
-    return (await shell(executable, { cwd: assetPath, quiet: true })).trim();
+    const shellEventPublisher = (event: ShellEventType, message: string) => {
+      const eventType = shellEventToEventType(event);
+      this.host.emitMessage(eventType, message);
+    };
+
+    return (
+      await shell(executable, {
+        cwd: assetPath,
+        shellEventPublisher,
+        subprocessOutputDestination: 'ignore',
+      })
+    ).trim();
   }
 
   private async buildImage(localTagName: string): Promise<void> {
@@ -236,7 +255,7 @@ class ContainerImageBuilder {
       cacheFrom: source.cacheFrom,
       cacheTo: source.cacheTo,
       cacheDisabled: source.cacheDisabled,
-      quiet: this.options.quiet,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
   }
 

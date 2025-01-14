@@ -1,6 +1,11 @@
 import { AssetManifest, IManifestEntry } from './asset-manifest';
 import { IAws } from './aws';
-import { IAssetHandler, IHandlerHost, type PublishOptions } from './private/asset-handler';
+import {
+  IAssetHandler,
+  IHandlerHost,
+  type PublishOptions,
+  SubprocessOutputDestination,
+} from './private/asset-handler';
 import { DockerFactory } from './private/docker';
 import { makeAssetHandler } from './private/handlers';
 import { pLimit } from './private/p-limit';
@@ -48,11 +53,16 @@ export interface AssetPublishingOptions {
   readonly publishAssets?: boolean;
 
   /**
-   * Whether to print publishing logs
-   *
-   * @default true
+   * @deprecated use {@link #subprocessOutputDestination} instead
    */
   readonly quiet?: boolean;
+
+  /**
+   * Where to send output of a subprocesses
+   *
+   * @default 'stdio'
+   */
+  subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 /**
@@ -281,8 +291,15 @@ export class AssetPublishing implements IPublishProgress {
     if (existing) {
       return existing;
     }
+    if (this.options.quiet !== undefined && this.options.subprocessOutputDestination) {
+      throw new Error(
+        'Cannot set both quiet and subprocessOutputDestination. Please use only subprocessOutputDestination'
+      );
+    }
+    const subprocessOutputDestination =
+      this.options.subprocessOutputDestination ?? (this.options.quiet ? 'ignore' : 'stdio');
     const ret = makeAssetHandler(this.manifest, asset, this.handlerHost, {
-      quiet: this.options.quiet,
+      subprocessOutputDestination,
     });
     this.handlerCache.set(asset, ret);
     return ret;
