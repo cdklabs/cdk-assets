@@ -135,8 +135,8 @@ export class Docker {
   /**
    * Get credentials from ECR and run docker login
    */
-  public async login(ecr: IECRClient, logger?: (m: string) => void) {
-    const credentials = await obtainEcrCredentials(ecr, logger);
+  public async login(ecr: IECRClient, eventEmitter?: (m: string) => void) {
+    const credentials = await obtainEcrCredentials(ecr, eventEmitter);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
     await this.execute(
@@ -244,7 +244,7 @@ export class Docker {
 export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
-  readonly logger: (m: string) => void;
+  readonly eventEmitter: (m: string) => void;
 }
 
 /**
@@ -259,7 +259,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.logger);
+    const docker = new Docker(options.eventEmitter);
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -278,7 +278,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.logger);
+    const docker = new Docker(options.eventEmitter);
     await this.loginOncePerDestination(docker, options);
     return docker;
   }
@@ -294,7 +294,7 @@ export class DockerFactory {
         return;
       }
 
-      await docker.login(options.ecr, options.logger);
+      await docker.login(options.ecr, options.eventEmitter);
       this.loggedInDestinations.add(repositoryDomain);
     });
   }

@@ -105,12 +105,9 @@ export async function fetchDockerLoginCredentials(
   }
 }
 
-export async function obtainEcrCredentials(
-  ecr: IECRClient,
-  eventPublisher?: (m: string) => void,
-) {
-  if (eventPublisher) {
-    eventPublisher('Fetching ECR authorization token');
+export async function obtainEcrCredentials(ecr: IECRClient, eventEmitter?: (m: string) => void) {
+  if (eventEmitter) {
+    eventEmitter('Fetching ECR authorization token');
   }
 
   const authData = (await ecr.getAuthorizationToken()).authorizationData || [];
