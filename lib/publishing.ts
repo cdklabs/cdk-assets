@@ -292,9 +292,12 @@ export class AssetPublishing implements IPublishProgress {
       return existing;
     }
     if (this.options.quiet !== undefined && this.options.subprocessOutputDestination) {
-      throw new Error('Cannot set both quiet and subprocessOutputDestination. Please use only subprocessOutputDestination');
+      throw new Error(
+        'Cannot set both quiet and subprocessOutputDestination. Please use only subprocessOutputDestination'
+      );
     }
-    const subprocessOutputDestination =  this.options.subprocessOutputDestination ?? (this.options.quiet ? 'ignore' : 'stdio');
+    const subprocessOutputDestination =
+      this.options.subprocessOutputDestination ?? (this.options.quiet ? 'ignore' : 'stdio');
     const ret = makeAssetHandler(this.manifest, asset, this.handlerHost, {
       subprocessOutputDestination,
     });
