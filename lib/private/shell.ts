@@ -77,9 +77,9 @@ function handleShellOutput(
       break;
     case 'stdio':
     default:
-      if (eventType != 'data_stderr') {
+      if (eventType == 'data_stdout' || eventType == 'open') {
         process.stdout.write(chunk);
-      } else {
+      } else if (eventType == 'data_stderr') {
         process.stderr.write(chunk);
       }
       break;

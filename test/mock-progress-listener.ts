@@ -48,11 +48,6 @@ export interface LoggedMessage {
    * The {@link LogLevel} of this message
    */
   readonly level: LogLevel;
-
-  /**
-   * Whether this message would have been logged if cdk-assets was run from the CLI
-   */
-  readonly wouldHaveBeenLogged: boolean;
 }
 
 /**
@@ -68,7 +63,6 @@ export class MockProgressListener implements IPublishProgressListener {
       message: event.message,
       stream: ['open', 'data_stdout', 'close'].includes(type) ? 'stdout' : 'stderr',
       level,
-      wouldHaveBeenLogged: LOG_LEVELS[level] >= LOG_LEVELS[logThreshold],
     });
   }
 

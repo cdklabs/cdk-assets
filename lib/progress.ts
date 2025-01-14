@@ -61,7 +61,8 @@ export enum EventType {
   DEBUG = 'debug',
 
   /**
-   * When a shell command is executed
+   * When a shell command is executed. Emits the the command line arguments given to
+   * the subprocess as a string upon shell execution.
    *
    * Only emitted when subprocessOutputDestination is set to 'publish'
    */
@@ -75,7 +76,8 @@ export enum EventType {
   SHELL_DATA = 'shell_data',
 
   /**
-   * When a shell command closes
+   * When a shell command closes. Emits the the command line arguments given to
+   * the subprocess as a string upon shell closure.
    *
    * Only emitted when subprocessOutputDestination is set to 'publish'
    */
