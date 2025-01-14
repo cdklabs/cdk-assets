@@ -135,8 +135,8 @@ export class Docker {
   /**
    * Get credentials from ECR and run docker login
    */
-  public async login(ecr: IECRClient) {
-    const credentials = await obtainEcrCredentials(ecr);
+  public async login(ecr: IECRClient, logger?: (m: string) => void) {
+    const credentials = await obtainEcrCredentials(ecr, logger);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
     await this.execute(
@@ -294,7 +294,7 @@ export class DockerFactory {
         return;
       }
 
-      await docker.login(options.ecr);
+      await docker.login(options.ecr, options.logger);
       this.loggedInDestinations.add(repositoryDomain);
     });
   }
