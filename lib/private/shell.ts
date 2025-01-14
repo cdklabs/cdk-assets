@@ -1,5 +1,4 @@
 import * as child_process from 'child_process';
-import { EventType } from '../progress';
 import { SubprocessOutputDestination } from './asset-handler';
 
 export type ShellEventType = 'open' | 'data_stdout' | 'data_stderr' | 'close';
@@ -10,24 +9,6 @@ export interface ShellOptions extends child_process.SpawnOptions {
   readonly shellEventPublisher: ShellEventPublisher;
   readonly input?: string;
   readonly subprocessOutputDestination?: SubprocessOutputDestination;
-}
-
-/**
- * A helper function to convert shell events to asset progress events
- * @param event a shell event
- * @returns an {@link EventType}
- */
-export function shellEventToEventType(event: ShellEventType): EventType {
-  switch (event) {
-    case 'open':
-      return EventType.SHELL_OPEN;
-    case 'close':
-      return EventType.SHELL_CLOSE;
-    case 'data_stdout':
-      return EventType.SHELL_DATA;
-    case 'data_stderr':
-      return EventType.SHELL_DATA;
-  }
 }
 
 /**

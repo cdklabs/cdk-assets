@@ -1,4 +1,5 @@
 import { IManifestEntry } from './asset-manifest';
+import { ShellEventType } from './private/shell';
 
 /**
  * A listener for progress events from the publisher
@@ -79,6 +80,24 @@ export enum EventType {
    * Only emitted when subprocessOutputDestination is set to 'publish'
    */
   SHELL_CLOSE = 'shell_close',
+}
+
+/**
+ * A helper function to convert shell events to asset progress events
+ * @param event a shell event
+ * @returns an {@link EventType}
+ */
+export function shellEventToEventType(event: ShellEventType): EventType {
+  switch (event) {
+    case 'open':
+      return EventType.SHELL_OPEN;
+    case 'close':
+      return EventType.SHELL_CLOSE;
+    case 'data_stdout':
+      return EventType.SHELL_DATA;
+    case 'data_stderr':
+      return EventType.SHELL_DATA;
+  }
 }
 
 /**
