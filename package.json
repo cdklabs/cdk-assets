@@ -31,7 +31,7 @@
     "projen": "npx projen"
   },
   "devDependencies": {
-    "@cdklabs/eslint-plugin": "^1.3.0",
+    "@cdklabs/eslint-plugin": "^1.3.1",
     "@types/archiver": "^5.3.4",
     "@types/glob": "^7.2.0",
     "@types/jest": "^29.5.14",
@@ -61,7 +61,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@aws-cdk/cloud-assembly-schema": "^39.1.46",
+    "@aws-cdk/cloud-assembly-schema": "^39.1.47",
     "@aws-cdk/cx-api": "^2.176.0",
     "archiver": "^5.3.2",
     "aws-sdk": "^2.1692.0",

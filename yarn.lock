@@ -21,10 +21,10 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@aws-cdk/cloud-assembly-schema@^39.1.46":
-  version "39.1.46"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.1.46.tgz#616c06c111a8586b7f9fc91b3e71731956e2f003"
-  integrity sha512-ChqTG6IZX7ya2VYYhM4BkhWXPa+xp3XyfE0++Gt4C5yZnRqVgL4NFjuwVCHwzGup5YHyYLjCXasfJ0hrvwmTzA==
+"@aws-cdk/cloud-assembly-schema@^39.1.47":
+  version "39.1.47"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.1.47.tgz#5801a406837efa43e74b8444556c04339cec4a00"
+  integrity sha512-gn0eqDJYQu/StmvWXoy3QOYOu9tUMYnoViBqgc9cuAXwkRxD4l1TBsOpN2qPzPEXlrfRjJJ5GRh4wI2s/n0Z7g==
   dependencies:
     jsonschema "~1.4.1"
     semver "^7.6.3"
@@ -299,12 +299,12 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cdklabs/eslint-plugin@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@cdklabs/eslint-plugin/-/eslint-plugin-1.3.0.tgz#01408b8de0835a0e1827dd2e7493d82a2f773c88"
-  integrity sha512-4trLLS6/P3s7vwSXfGEIUUjtum2+YkkZG4+RFm6cB/67rIdR6uoC8ZAmcM7HIhqKnM6i3VBKCyw60gOLulGUDQ==
+"@cdklabs/eslint-plugin@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@cdklabs/eslint-plugin/-/eslint-plugin-1.3.1.tgz#4e5650d384a2c2ffd808331d8133c167474a7997"
+  integrity sha512-TAlUeHxCj/lYOdr+ZZlSUKTiUd8cD6CJOxFIGvpPD1qQvGassWHMqbdYewZWxTr+Bg6B/8AOcywFd7INEziH1A==
   dependencies:
-    fs-extra "^11.2.0"
+    fs-extra "^11.3.0"
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -912,16 +912,16 @@
     "@types/node" "*"
 
 "@types/node@*":
-  version "22.10.6"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.10.6.tgz#5c6795e71635876039f853cbccd59f523d9e4239"
-  integrity sha512-qNiuwC4ZDAUNcY47xgaSuS92cjf8JbSUoaKS77bmLG1rU7MlATVSiw/IlrjtIyyskXBZ8KkNfjK/P5na7rgXbQ==
+  version "22.10.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.10.7.tgz#14a1ca33fd0ebdd9d63593ed8d3fbc882a6d28d7"
+  integrity sha512-V09KvXxFiutGp6B7XkpaDXlNadZxrzajcY50EuoLIpQ6WWYCSvf19lVIazzfIzQvhUN2HjX12spLojTnhuKlGg==
   dependencies:
     undici-types "~6.20.0"
 
 "@types/node@^18":
-  version "18.19.70"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.70.tgz#5a77508f5568d16fcd3b711c8102d7a430a04df7"
-  integrity sha512-RE+K0+KZoEpDUbGGctnGdkrLFwi1eYKTlIHNl2Um98mUkGsm1u2Ff6Ltd0e8DktTtC98uy7rSj+hO8t/QuLoVQ==
+  version "18.19.71"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.71.tgz#96d4f0a0be735ead6c8998c62a4b2c0012a5d09a"
+  integrity sha512-evXpcgtZm8FY4jqBSN8+DmOTcVkkvTmAayeo4Wf3m1xAruyVGzGuDh/Fb/WWX2yLItUiho42ozyJjB0dw//Tkw==
   dependencies:
     undici-types "~5.26.4"
 
@@ -2557,7 +2557,7 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-extra@^11.2.0:
+fs-extra@^11.3.0:
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.0.tgz#0daced136bbaf65a555a326719af931adc7a314d"
   integrity sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==
