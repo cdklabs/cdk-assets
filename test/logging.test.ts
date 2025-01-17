@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
