@@ -191,7 +191,7 @@ describe('CLI Logging Integration', () => {
         combinedOutput.push(str);
       });
 
-      child.on('close', (code) => {
+      child.on('close', () => {
         resolve({ stdout, stderr, combinedOutput });
       });
 
