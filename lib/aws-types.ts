@@ -344,14 +344,16 @@ export const RequestCharged = {
 
 export type RequestCharged = (typeof RequestCharged)[keyof typeof RequestCharged];
 
-export const ChecksumAlgorithm = {
+export const ChecksumAlgorithmIn = {
   CRC32: 'CRC32',
   CRC32C: 'CRC32C',
   SHA1: 'SHA1',
   SHA256: 'SHA256',
 } as const;
 
-export type ChecksumAlgorithm = (typeof ChecksumAlgorithm)[keyof typeof ChecksumAlgorithm];
+export type ChecksumAlgorithmIn = (typeof ChecksumAlgorithmIn)[keyof typeof ChecksumAlgorithmIn];
+
+export type ChecksumAlgorithmOut = string;
 
 export const ObjectStorageClass = {
   DEEP_ARCHIVE: 'DEEP_ARCHIVE',
@@ -439,7 +441,20 @@ export interface RestoreStatus {
   RestoreExpiryDate?: Date;
 }
 
-export interface _Object {
+/**
+ * Return one of 2 types, depending on whether we are passing values in or out
+ *
+ * Use as follows:
+ *
+ * ```ts
+ * interface ContainingType<Dir> {
+ *    field: InOut<Dir, FieldTypeIn, FieldTypeOut>;
+ * }
+ * ```
+ */
+type InOut<Dir, I, O> = Dir extends 'in' ? I : Dir extends 'out' ? O : never;
+
+export interface _Object<Dir> {
   /**
    * <p>The name that you assign to an object. You use the object key to retrieve the
    *          object.</p>
@@ -484,7 +499,7 @@ export interface _Object {
   /**
    * <p>The algorithm that was used to create a checksum of the object.</p>
    */
-  ChecksumAlgorithm?: ChecksumAlgorithm[];
+  ChecksumAlgorithm?: InOut<Dir, ChecksumAlgorithmIn, ChecksumAlgorithmOut>[];
 
   /**
    * <p>Size in bytes of the object</p>
@@ -538,7 +553,7 @@ export interface ListObjectsV2Output {
   /**
    * <p>Metadata about each object returned.</p>
    */
-  Contents?: _Object[];
+  Contents?: _Object<'out'>[];
   /**
    * <p>The bucket name.</p>
    */
@@ -866,7 +881,7 @@ export interface PutObjectRequest {
    *             <p>For directory buckets, when you use Amazon Web Services SDKs, <code>CRC32</code> is the default checksum algorithm that's used for performance.</p>
    *          </note>
    */
-  ChecksumAlgorithm?: ChecksumAlgorithm;
+  ChecksumAlgorithm?: ChecksumAlgorithmIn;
   /**
    * <p>This header can be used as a data integrity check to verify that the data received is the same data that was originally sent.
    *     This header specifies the base64-encoded, 32-bit CRC32 checksum of the object. For more information, see
