@@ -65,7 +65,6 @@ export class Docker {
     try {
       await this.execute(['inspect', tag], {
         subprocessOutputDestination: 'ignore',
-        shellEventPublisher: this.shellEventPublisher,
       });
       return true;
     } catch (e: any) {
@@ -128,7 +127,6 @@ export class Docker {
     await this.execute(buildCommand, {
       cwd: options.directory,
       subprocessOutputDestination: options.subprocessOutputDestination,
-      shellEventPublisher: this.shellEventPublisher,
     });
   }
 
@@ -148,21 +146,17 @@ export class Docker {
         // 'WARNING! Your password will be stored unencrypted'
         // doesn't really matter since it's a token.
         subprocessOutputDestination: 'ignore',
-        shellEventPublisher: this.shellEventPublisher,
       }
     );
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag], {
-      shellEventPublisher: this.shellEventPublisher,
-    });
+    await this.execute(['tag', sourceTag, targetTag], {});
   }
 
   public async push(options: PushOptions) {
     await this.execute(['push', options.tag], {
       subprocessOutputDestination: options.subprocessOutputDestination,
-      shellEventPublisher: this.shellEventPublisher,
     });
   }
 
@@ -205,13 +199,14 @@ export class Docker {
     this.configDir = undefined;
   }
 
-  private async execute(args: string[], options: ShellOptions) {
+  private async execute(args: string[], options: Omit<ShellOptions, 'shellEventPublisher'>) {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
         ...options,
+        shellEventPublisher: this.shellEventPublisher,
         env: {
           ...process.env,
           ...options.env,
