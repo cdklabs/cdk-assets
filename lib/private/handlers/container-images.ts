@@ -83,7 +83,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForPushing = await this.host.dockerFactory.forEcrPush({
       repoUri: initOnce.repoUri,
-      eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
+      eventEmitter: this.host.emitMessage,
       ecr: initOnce.ecr,
       SubprocessOutputDestination: this.options.subprocessOutputDestination,
     });

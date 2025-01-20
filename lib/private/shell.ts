@@ -67,19 +67,19 @@ export async function shell(command: string[], options: ShellOptions): Promise<s
 function handleShellOutput(
   chunk: Buffer | string,
   options: ShellOptions,
-  eventType: ShellEventType
+  shellEventType: ShellEventType
 ): void {
   switch (options.subprocessOutputDestination) {
     case 'ignore':
       return;
     case 'publish':
-      options.shellEventPublisher(eventType, chunk.toString('utf-8'));
+      options.shellEventPublisher(shellEventType, chunk.toString('utf-8'));
       break;
     case 'stdio':
     default:
-      if (eventType == 'data_stdout' || eventType == 'open') {
+      if (shellEventType == 'data_stdout') {
         process.stdout.write(chunk);
-      } else if (eventType == 'data_stderr') {
+      } else if (shellEventType == 'data_stderr' || shellEventType == 'open') {
         process.stderr.write(chunk);
       }
       break;

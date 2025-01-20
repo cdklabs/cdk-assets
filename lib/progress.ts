@@ -102,6 +102,8 @@ export function shellEventToEventType(event: ShellEventType): EventType {
   }
 }
 
+export type EventEmitter = (type: EventType, m: string) => void;
+
 /**
  * Context object for publishing progress
  */

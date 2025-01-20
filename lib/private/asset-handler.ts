@@ -1,6 +1,6 @@
 import { DockerFactory } from './docker';
 import { IAws } from '../aws';
-import { EventType } from '../progress';
+import { EventEmitter } from '../progress';
 
 /**
  * Options for publishing an asset.
@@ -40,7 +40,7 @@ export interface IHandlerHost {
   readonly aborted: boolean;
   readonly dockerFactory: DockerFactory;
 
-  emitMessage(type: EventType, m: string): void;
+  emitMessage: EventEmitter;
 }
 
 export interface IHandlerOptions {

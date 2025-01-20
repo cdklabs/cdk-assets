@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { IAws, IECRClient } from '../aws';
+import { EventEmitter, EventType } from '../progress';
 
 export interface DockerCredentials {
   readonly Username: string;
@@ -105,9 +106,9 @@ export async function fetchDockerLoginCredentials(
   }
 }
 
-export async function obtainEcrCredentials(ecr: IECRClient, eventEmitter?: (m: string) => void) {
+export async function obtainEcrCredentials(ecr: IECRClient, eventEmitter?: EventEmitter) {
   if (eventEmitter) {
-    eventEmitter('Fetching ECR authorization token');
+    eventEmitter(EventType.DEBUG, 'Fetching ECR authorization token');
   }
 
   const authData = (await ecr.getAuthorizationToken()).authorizationData || [];

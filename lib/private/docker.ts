@@ -2,10 +2,11 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { ShellEventPublisher, shell, ShellOptions, ProcessFailedError } from './shell';
+import { shell, ShellOptions, ProcessFailedError, ShellEventType } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
 import { SubprocessOutputDestination } from './asset-handler';
+import { EventEmitter, shellEventToEventType } from '../progress';
 
 interface BuildOptions {
   readonly directory: string;
@@ -55,7 +56,7 @@ export class Docker {
   private configDir: string | undefined = undefined;
 
   constructor(
-    private readonly shellEventPublisher: ShellEventPublisher,
+    private readonly eventEmitter: EventEmitter,
     private readonly subprocessOutputDestination: SubprocessOutputDestination
   ) {}
 
@@ -134,8 +135,8 @@ export class Docker {
   /**
    * Get credentials from ECR and run docker login
    */
-  public async login(ecr: IECRClient, eventEmitter?: (m: string) => void) {
-    const credentials = await obtainEcrCredentials(ecr, eventEmitter);
+  public async login(ecr: IECRClient) {
+    const credentials = await obtainEcrCredentials(ecr, this.eventEmitter);
 
     // Use --password-stdin otherwise docker will complain. Loudly.
     await this.execute(
@@ -204,10 +205,15 @@ export class Docker {
     const configArgs = this.configDir ? ['--config', this.configDir] : [];
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
+
+    const shellEventPublisher = (event: ShellEventType, message: string) => {
+      const eventType = shellEventToEventType(event);
+      this.eventEmitter(eventType, message);
+    };
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
         ...options,
-        shellEventPublisher: this.shellEventPublisher,
+        shellEventPublisher: shellEventPublisher,
         env: {
           ...process.env,
           ...options.env,
@@ -240,7 +246,7 @@ export class Docker {
 export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
-  readonly eventEmitter: (m: string) => void;
+  readonly eventEmitter: EventEmitter;
   readonly SubprocessOutputDestination: SubprocessOutputDestination;
 }
 
@@ -291,7 +297,7 @@ export class DockerFactory {
         return;
       }
 
-      await docker.login(options.ecr, options.eventEmitter);
+      await docker.login(options.ecr);
       this.loggedInDestinations.add(repositoryDomain);
     });
   }
