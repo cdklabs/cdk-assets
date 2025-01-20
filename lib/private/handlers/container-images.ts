@@ -4,12 +4,7 @@ import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
 import { EventType, shellEventToEventType } from '../../progress';
-import {
-  IAssetHandler,
-  IHandlerHost,
-  IHandlerOptions,
-  SubprocessOutputDestination,
-} from '../asset-handler';
+import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
 import { Docker } from '../docker';
 import { replaceAwsPlaceholders } from '../placeholders';
 import { shell, ShellEventType } from '../shell';
@@ -45,15 +40,13 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       repoUri: initOnce.repoUri,
       eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
+      SubprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     const builder = new ContainerImageBuilder(
       dockerForBuilding,
       this.workDir,
       this.asset,
-      {
-        subprocessOutputDestination: this.options.subprocessOutputDestination,
-      },
       this.host
     );
     const localTagName = await builder.build();
@@ -92,6 +85,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       repoUri: initOnce.repoUri,
       eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
+      SubprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     if (this.host.aborted) {
@@ -101,7 +95,6 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
     await dockerForPushing.push({
       tag: initOnce.imageUri,
-      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
   }
 
@@ -160,16 +153,11 @@ export class ContainerImageAssetHandler implements IAssetHandler {
   }
 }
 
-interface ContainerImageBuilderOptions {
-  readonly subprocessOutputDestination?: SubprocessOutputDestination;
-}
-
 class ContainerImageBuilder {
   constructor(
     private readonly docker: Docker,
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
-    private readonly options: ContainerImageBuilderOptions,
     private readonly host: IHandlerHost
   ) {}
 
@@ -255,7 +243,6 @@ class ContainerImageBuilder {
       cacheFrom: source.cacheFrom,
       cacheTo: source.cacheTo,
       cacheDisabled: source.cacheDisabled,
-      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
   }
 

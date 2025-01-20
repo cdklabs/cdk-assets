@@ -25,12 +25,10 @@ interface BuildOptions {
   readonly cacheFrom?: DockerCacheOption[];
   readonly cacheTo?: DockerCacheOption;
   readonly cacheDisabled?: boolean;
-  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 interface PushOptions {
   readonly tag: string;
-  readonly subprocessOutputDestination?: SubprocessOutputDestination;
 }
 
 export interface DockerCredentialsConfig {
@@ -56,7 +54,10 @@ export interface DockerCacheOption {
 export class Docker {
   private configDir: string | undefined = undefined;
 
-  constructor(private readonly shellEventPublisher: ShellEventPublisher) {}
+  constructor(
+    private readonly shellEventPublisher: ShellEventPublisher,
+    private readonly subprocessOutputDestination: SubprocessOutputDestination
+  ) {}
 
   /**
    * Whether an image with the given tag exists
@@ -126,7 +127,7 @@ export class Docker {
     ];
     await this.execute(buildCommand, {
       cwd: options.directory,
-      subprocessOutputDestination: options.subprocessOutputDestination,
+      subprocessOutputDestination: this.subprocessOutputDestination,
     });
   }
 
@@ -156,7 +157,7 @@ export class Docker {
 
   public async push(options: PushOptions) {
     await this.execute(['push', options.tag], {
-      subprocessOutputDestination: options.subprocessOutputDestination,
+      subprocessOutputDestination: this.subprocessOutputDestination,
     });
   }
 
@@ -240,6 +241,7 @@ export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
   readonly eventEmitter: (m: string) => void;
+  readonly SubprocessOutputDestination: SubprocessOutputDestination;
 }
 
 /**
@@ -254,7 +256,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.eventEmitter);
+    const docker = new Docker(options.eventEmitter, options.SubprocessOutputDestination);
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -273,7 +275,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.eventEmitter);
+    const docker = new Docker(options.eventEmitter, options.SubprocessOutputDestination);
     await this.loginOncePerDestination(docker, options);
     return docker;
   }

@@ -49,7 +49,7 @@ export interface IHandlerOptions {
    *
    * @default 'stdio'
    */
-  readonly subprocessOutputDestination?: SubprocessOutputDestination;
+  readonly subprocessOutputDestination: SubprocessOutputDestination;
 }
 
 /**
