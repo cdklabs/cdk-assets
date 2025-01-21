@@ -18,9 +18,12 @@ export function setLogThreshold(threshold: LogLevel) {
   logThreshold = threshold;
 }
 
-export function log(level: LogLevel, message: string) {
+export function log(level: LogLevel, message: string, stream?: 'stdout' | 'stderr') {
   if (LOG_LEVELS[level] >= LOG_LEVELS[logThreshold]) {
-    // eslint-disable-next-line no-console
-    console.error(`${level.padEnd(7, ' ')}: ${message}`);
+    if (stream === 'stdout') {
+      console.log(`${level.padEnd(7, ' ')}: ${message}`);
+    } else {
+      console.error(`${level.padEnd(7, ' ')}: ${message}`);
+    }
   }
 }

@@ -3,7 +3,7 @@ import { DockerImageDestination } from '@aws-cdk/cloud-assembly-schema';
 import { destinationToClientOptions } from './client-options';
 import { DockerImageManifestEntry } from '../../asset-manifest';
 import type { IECRClient } from '../../aws';
-import { EventType } from '../../progress';
+import { EventType, shellEventPublisherFromEventEmitter } from '../../progress';
 import { IAssetHandler, IHandlerHost, IHandlerOptions } from '../asset-handler';
 import { Docker } from '../docker';
 import { replaceAwsPlaceholders } from '../placeholders';
@@ -38,18 +38,16 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForBuilding = await this.host.dockerFactory.forBuild({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
+      eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     const builder = new ContainerImageBuilder(
       dockerForBuilding,
       this.workDir,
       this.asset,
-      this.host,
-      {
-        quiet: this.options.quiet,
-      }
+      this.host
     );
     const localTagName = await builder.build();
 
@@ -85,8 +83,9 @@ export class ContainerImageAssetHandler implements IAssetHandler {
 
     const dockerForPushing = await this.host.dockerFactory.forEcrPush({
       repoUri: initOnce.repoUri,
-      logger: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
+      eventEmitter: this.host.emitMessage,
       ecr: initOnce.ecr,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     if (this.host.aborted) {
@@ -94,7 +93,9 @@ export class ContainerImageAssetHandler implements IAssetHandler {
     }
 
     this.host.emitMessage(EventType.UPLOAD, `Push ${initOnce.imageUri}`);
-    await dockerForPushing.push({ tag: initOnce.imageUri, quiet: this.options.quiet });
+    await dockerForPushing.push({
+      tag: initOnce.imageUri,
+    });
   }
 
   private async initOnce(
@@ -152,17 +153,12 @@ export class ContainerImageAssetHandler implements IAssetHandler {
   }
 }
 
-interface ContainerImageBuilderOptions {
-  readonly quiet?: boolean;
-}
-
 class ContainerImageBuilder {
   constructor(
     private readonly docker: Docker,
     private readonly workDir: string,
     private readonly asset: DockerImageManifestEntry,
-    private readonly host: IHandlerHost,
-    private readonly options: ContainerImageBuilderOptions
+    private readonly host: IHandlerHost
   ) {}
 
   async build(): Promise<string | undefined> {
@@ -208,7 +204,15 @@ class ContainerImageBuilder {
       return undefined;
     }
 
-    return (await shell(executable, { cwd: assetPath, quiet: true })).trim();
+    const shellEventPublisher = shellEventPublisherFromEventEmitter(this.host.emitMessage);
+
+    return (
+      await shell(executable, {
+        cwd: assetPath,
+        shellEventPublisher,
+        subprocessOutputDestination: 'ignore',
+      })
+    ).trim();
   }
 
   private async buildImage(localTagName: string): Promise<void> {
@@ -236,7 +240,6 @@ class ContainerImageBuilder {
       cacheFrom: source.cacheFrom,
       cacheTo: source.cacheTo,
       cacheDisabled: source.cacheDisabled,
-      quiet: this.options.quiet,
     });
   }
 

@@ -1,32 +1,38 @@
 import { mockSpawn } from './mock-child_process';
 import mockfs from './mock-fs';
+import { MockProgressListener } from './mock-progress-listener';
 import { setLogThreshold } from '../bin/logging';
-import { shell } from '../lib/private/shell';
+import { EventType, shellEventToEventType } from '../lib';
+import { shell, ShellEventPublisher } from '../lib/private/shell';
+
 jest.mock('child_process');
 
-describe('logging', () => {
-  let consoleSpy: jest.SpyInstance;
+describe('shell', () => {
+  let progressListener: MockProgressListener;
+  let shellEventPublisher: ShellEventPublisher;
 
   beforeEach(() => {
-    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    progressListener = new MockProgressListener();
+    shellEventPublisher = (event, message) => {
+      const eventType = shellEventToEventType(event);
+      progressListener.onPublishEvent(eventType, {
+        message,
+        percentComplete: 0,
+        abort: () => {},
+      });
+    };
     mockfs({
       '/path/package.json': JSON.stringify({ version: '1.2.3' }),
     });
   });
 
   afterEach(() => {
-    consoleSpy.mockRestore();
     mockfs.restore();
   });
 
   test('docker stdout is captured during builds', async () => {
     // GIVEN
     setLogThreshold('verbose');
-    const processOut = new Array<string>();
-    const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
-      processOut.push(Buffer.isBuffer(chunk) ? chunk.toString() : (chunk as string));
-      return true;
-    });
 
     const expectAllSpawns = mockSpawn({
       commandLine: ['docker', 'build', '.'],
@@ -34,104 +40,72 @@ describe('logging', () => {
     });
 
     // WHEN
-    await shell(['docker', 'build', '.']);
+    await shell(['docker', 'build', '.'], {
+      shellEventPublisher,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
-    await new Promise((resolve) => setImmediate(resolve));
 
-    const hasDockerOutput = processOut.some(
-      (chunk) =>
-        chunk.includes('Step 1/3') && chunk.includes('Step 2/3') && chunk.includes('Step 3/3')
+    const dockerOutputMessages = progressListener.messages.filter(
+      (msg) =>
+        msg.type === EventType.SHELL_STDOUT &&
+        (msg.message.includes('Step 1/3') ||
+          msg.message.includes('Step 2/3') ||
+          msg.message.includes('Step 3/3'))
     );
 
-    expect(hasDockerOutput).toBe(true);
-    mockStdout.mockRestore();
+    expect(dockerOutputMessages.length).toBeGreaterThan(0);
   });
 
-  test('stderr is captured and written to process.stderr', async () => {
+  test('stderr is captured', async () => {
     // GIVEN
-    const processErr = new Array<string>();
-    const mockStderr = jest.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
-      processErr.push(Buffer.isBuffer(chunk) ? chunk.toString() : (chunk as string));
-      return true;
-    });
-
     const expectAllSpawns = mockSpawn({
       commandLine: ['docker', 'build', '.'],
       stderr: 'Warning: Something went wrong',
     });
 
     // WHEN
-    await shell(['docker', 'build', '.']);
+    await shell(['docker', 'build', '.'], {
+      shellEventPublisher,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
-    await new Promise((resolve) => setImmediate(resolve));
 
-    expect(processErr.some((chunk) => chunk.includes('Warning: Something went wrong'))).toBe(true);
-    mockStderr.mockRestore();
-  });
+    const errorMessages = progressListener.messages.filter((msg) =>
+      msg.message.includes('Warning: Something went wrong')
+    );
 
-  test('quiet mode suppresses stdout and stderr', async () => {
-    // GIVEN
-    const processOut = new Array<string>();
-    const processErr = new Array<string>();
-
-    const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
-      processOut.push(Buffer.isBuffer(chunk) ? chunk.toString() : (chunk as string));
-      return true;
-    });
-
-    const mockStderr = jest.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
-      processErr.push(Buffer.isBuffer(chunk) ? chunk.toString() : (chunk as string));
-      return true;
-    });
-
-    const expectAllSpawns = mockSpawn({
-      commandLine: ['docker', 'build', '.'],
-      stdout: 'Normal output',
-      stderr: 'Warning output',
-    });
-
-    // WHEN
-    await shell(['docker', 'build', '.'], { quiet: true });
-
-    // THEN
-    expectAllSpawns();
-    await new Promise((resolve) => setImmediate(resolve));
-
-    expect(processOut.length).toBe(0);
-    expect(processErr.length).toBe(0);
-
-    mockStdout.mockRestore();
-    mockStderr.mockRestore();
+    expect(errorMessages.length).toBeGreaterThan(0);
   });
 
   test('handles input option correctly', async () => {
     // GIVEN
     const expectedInput = 'some input';
-    const processOut = new Array<string>();
-
-    const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
-      processOut.push(Buffer.isBuffer(chunk) ? chunk.toString() : (chunk as string));
-      return true;
-    });
 
     const expectAllSpawns = mockSpawn({
       commandLine: ['cat'],
-      stdout: expectedInput, // Echo back the input
+      stdout: expectedInput,
     });
 
     // WHEN
-    await shell(['cat'], { input: expectedInput });
+    await shell(['cat'], {
+      input: expectedInput,
+      shellEventPublisher,
+      subprocessOutputDestination: 'publish',
+    });
 
     // THEN
     expectAllSpawns();
-    await new Promise((resolve) => setImmediate(resolve));
 
-    expect(processOut.some((chunk) => chunk.includes(expectedInput))).toBe(true);
-    mockStdout.mockRestore();
+    const inputMessages = progressListener.messages.filter((msg) =>
+      msg.message.includes(expectedInput)
+    );
+
+    expect(inputMessages.length).toBeGreaterThan(0);
   });
 
   test('throws error on non-zero exit code', async () => {
@@ -143,8 +117,40 @@ describe('logging', () => {
     });
 
     // WHEN/THEN
-    await expect(shell(['docker', 'build', '.'])).rejects.toThrow('Command failed');
+    await expect(
+      shell(['docker', 'build', '.'], {
+        shellEventPublisher,
+        subprocessOutputDestination: 'publish',
+      })
+    ).rejects.toThrow('Command failed');
 
     expectAllSpawns();
+
+    const errorMessages = progressListener.messages.filter((msg) =>
+      msg.message.includes('Command failed')
+    );
+
+    expect(errorMessages.length).toBeGreaterThan(0);
+  });
+
+  test('emits proper shell event sequence', async () => {
+    // GIVEN
+    const expectAllSpawns = mockSpawn({
+      commandLine: ['echo', 'hello'],
+      stdout: 'hello',
+    });
+
+    // WHEN
+    await shell(['echo', 'hello'], {
+      shellEventPublisher,
+      subprocessOutputDestination: 'publish',
+    });
+
+    // THEN
+    expectAllSpawns();
+
+    // Verify event sequence
+    const events = progressListener.messages.map((msg) => msg.type);
+    expect(events).toEqual([EventType.SHELL_OPEN, EventType.SHELL_STDOUT, EventType.SHELL_CLOSE]);
   });
 });

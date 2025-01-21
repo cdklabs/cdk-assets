@@ -1,4 +1,5 @@
 import { IManifestEntry } from './asset-manifest';
+import { ShellEventType } from './private/shell';
 
 /**
  * A listener for progress events from the publisher
@@ -58,7 +59,71 @@ export enum EventType {
    * Another type of detail message
    */
   DEBUG = 'debug',
+
+  /**
+   * When a shell command is executed. Emits the the command line arguments given to
+   * the subprocess as a string upon shell execution.
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
+   */
+  SHELL_OPEN = 'shell_open',
+
+  /**
+   * stdout from a shell command
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
+   */
+  SHELL_STDOUT = 'shell_stdout',
+
+  /**
+   * stdout from a shell command
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
+   */
+  SHELL_STDERR = 'shell_stderr',
+
+  /**
+   * When a shell command closes. Emits the the command line arguments given to
+   * the subprocess as a string upon shell closure.
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
+   */
+  SHELL_CLOSE = 'shell_close',
 }
+
+/**
+ * A helper function to convert shell events to asset progress events
+ * @param event a shell event
+ * @returns an {@link EventType}
+ */
+export function shellEventToEventType(event: ShellEventType): EventType {
+  switch (event) {
+    case 'open':
+      return EventType.SHELL_OPEN;
+    case 'close':
+      return EventType.SHELL_CLOSE;
+    case 'data_stdout':
+      return EventType.SHELL_STDOUT;
+    case 'data_stderr':
+      return EventType.SHELL_STDERR;
+  }
+}
+
+/**
+ * Create a ShellEventPublisher for an {@link EventEmitter}
+ *
+ * Returns a ShellEventPublisher that translates ShellEvents into messages
+ * emitted via the EventEmitter. Uses `shellEventToEventType` to translate
+ * shell event types to event types
+ */
+export function shellEventPublisherFromEventEmitter(eventEmitter: EventEmitter) {
+  return (event: ShellEventType, message: string) => {
+    const eventType = shellEventToEventType(event);
+    eventEmitter(eventType, message);
+  };
+}
+
+export type EventEmitter = (type: EventType, m: string) => void;
 
 /**
  * Context object for publishing progress
