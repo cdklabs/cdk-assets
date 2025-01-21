@@ -153,7 +153,7 @@ export class Docker {
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag]);
+    await this.execute(['tag', sourceTag, targetTag], {});
   }
 
   public async push(options: PushOptions) {
@@ -259,7 +259,7 @@ export class DockerFactory {
    * Gets a Docker instance for building images.
    */
   public async forBuild(options: DockerFactoryOptions): Promise<Docker> {
-    const docker = new Docker(options.eventEmitter, options.SubprocessOutputDestination);
+    const docker = new Docker(options.eventEmitter, options.subprocessOutputDestination);
 
     // Default behavior is to login before build so that the Dockerfile can reference images in the ECR repo
     // However, if we're in a pipelines environment (for example),
@@ -278,7 +278,7 @@ export class DockerFactory {
    * Gets a Docker instance for pushing images to ECR.
    */
   public async forEcrPush(options: DockerFactoryOptions) {
-    const docker = new Docker(options.eventEmitter, options.SubprocessOutputDestination);
+    const docker = new Docker(options.eventEmitter, options.subprocessOutputDestination);
     await this.loginOncePerDestination(docker, options);
     return docker;
   }

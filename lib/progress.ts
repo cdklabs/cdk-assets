@@ -69,11 +69,18 @@ export enum EventType {
   SHELL_OPEN = 'shell_open',
 
   /**
-   * Text output from a shell command
+   * stdout from a shell command
    *
    * Only emitted when subprocessOutputDestination is set to 'publish'
    */
-  SHELL_DATA = 'shell_data',
+  SHELL_STDOUT = 'shell_stdout',
+
+  /**
+   * stdout from a shell command
+   *
+   * Only emitted when subprocessOutputDestination is set to 'publish'
+   */
+  SHELL_STDERR = 'shell_stderr',
 
   /**
    * When a shell command closes. Emits the the command line arguments given to
@@ -96,9 +103,9 @@ export function shellEventToEventType(event: ShellEventType): EventType {
     case 'close':
       return EventType.SHELL_CLOSE;
     case 'data_stdout':
-      return EventType.SHELL_DATA;
+      return EventType.SHELL_STDOUT;
     case 'data_stderr':
-      return EventType.SHELL_DATA;
+      return EventType.SHELL_STDERR;
   }
 }
 

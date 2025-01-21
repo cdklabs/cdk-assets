@@ -40,7 +40,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       repoUri: initOnce.repoUri,
       eventEmitter: (m: string) => this.host.emitMessage(EventType.DEBUG, m),
       ecr: initOnce.ecr,
-      SubprocessOutputDestination: this.options.subprocessOutputDestination,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     const builder = new ContainerImageBuilder(
@@ -85,7 +85,7 @@ export class ContainerImageAssetHandler implements IAssetHandler {
       repoUri: initOnce.repoUri,
       eventEmitter: this.host.emitMessage,
       ecr: initOnce.ecr,
-      SubprocessOutputDestination: this.options.subprocessOutputDestination,
+      subprocessOutputDestination: this.options.subprocessOutputDestination,
     });
 
     if (this.host.aborted) {

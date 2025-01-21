@@ -50,7 +50,7 @@ describe('shell', () => {
 
     const dockerOutputMessages = progressListener.messages.filter(
       (msg) =>
-        msg.type === EventType.SHELL_DATA &&
+        msg.type === EventType.SHELL_STDOUT &&
         (msg.message.includes('Step 1/3') ||
           msg.message.includes('Step 2/3') ||
           msg.message.includes('Step 3/3'))
@@ -151,6 +151,6 @@ describe('shell', () => {
 
     // Verify event sequence
     const events = progressListener.messages.map((msg) => msg.type);
-    expect(events).toEqual([EventType.SHELL_OPEN, EventType.SHELL_DATA, EventType.SHELL_CLOSE]);
+    expect(events).toEqual([EventType.SHELL_OPEN, EventType.SHELL_STDOUT, EventType.SHELL_CLOSE]);
   });
 });

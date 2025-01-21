@@ -48,7 +48,8 @@ const EVENT_TO_LEVEL: Record<EventType, LogLevel> = {
   success: 'info',
   upload: 'verbose',
   shell_open: 'verbose',
-  shell_data: 'verbose',
+  shell_stdout: 'verbose',
+  shell_stderr: 'verbose',
   shell_close: 'verbose',
 };
 
