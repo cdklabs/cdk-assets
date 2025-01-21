@@ -244,7 +244,7 @@ export interface DockerFactoryOptions {
   readonly repoUri: string;
   readonly ecr: IECRClient;
   readonly eventEmitter: EventEmitter;
-  readonly SubprocessOutputDestination: SubprocessOutputDestination;
+  readonly subprocessOutputDestination: SubprocessOutputDestination;
 }
 
 /**
