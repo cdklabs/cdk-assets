@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { Manifest } from '@aws-cdk/cloud-assembly-schema';
@@ -191,7 +192,7 @@ describe('CLI Logging Integration', () => {
         combinedOutput.push(str);
       });
 
-      child.on('close', (code) => {
+      child.on('close', () => {
         resolve({ stdout, stderr, combinedOutput });
       });
 
