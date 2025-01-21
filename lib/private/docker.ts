@@ -153,7 +153,7 @@ export class Docker {
   }
 
   public async tag(sourceTag: string, targetTag: string) {
-    await this.execute(['tag', sourceTag, targetTag], {});
+    await this.execute(['tag', sourceTag, targetTag]);
   }
 
   public async push(options: PushOptions) {
