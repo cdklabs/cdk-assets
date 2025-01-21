@@ -6,12 +6,12 @@ import { destinationToClientOptions } from './client-options';
 import { FileManifestEntry } from '../../asset-manifest';
 import { IS3Client } from '../../aws';
 import { PutObjectCommandInput } from '../../aws-types';
-import { EventType, shellEventToEventType } from '../../progress';
+import { EventType, shellEventPublisherFromEventEmitter } from '../../progress';
 import { zipDirectory } from '../archive';
 import { IAssetHandler, IHandlerHost, type PublishOptions } from '../asset-handler';
 import { pathExists } from '../fs-extra';
 import { replaceAwsPlaceholders } from '../placeholders';
-import { shell, ShellEventType } from '../shell';
+import { shell } from '../shell';
 
 /**
  * The size of an empty zip file is 22 bytes
@@ -203,10 +203,7 @@ export class FileAssetHandler implements IAssetHandler {
   private async externalPackageFile(executable: string[]): Promise<PackagedFileAsset> {
     this.host.emitMessage(EventType.BUILD, `Building asset source using command: '${executable}'`);
 
-    const shellEventPublisher = (event: ShellEventType, message: string) => {
-      const eventType = shellEventToEventType(event);
-      this.host.emitMessage(eventType, message);
-    };
+    const shellEventPublisher = shellEventPublisherFromEventEmitter(this.host.emitMessage);
 
     return {
       packagedPath: (

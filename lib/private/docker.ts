@@ -2,11 +2,11 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { cdkCredentialsConfig, obtainEcrCredentials } from './docker-credentials';
-import { shell, ShellOptions, ProcessFailedError, ShellEventType } from './shell';
+import { shell, ShellOptions, ProcessFailedError } from './shell';
 import { createCriticalSection } from './util';
 import { IECRClient } from '../aws';
 import { SubprocessOutputDestination } from './asset-handler';
-import { EventEmitter, shellEventToEventType } from '../progress';
+import { EventEmitter, shellEventPublisherFromEventEmitter } from '../progress';
 
 interface BuildOptions {
   readonly directory: string;
@@ -206,10 +206,7 @@ export class Docker {
 
     const pathToCdkAssets = path.resolve(__dirname, '..', '..', 'bin');
 
-    const shellEventPublisher = (event: ShellEventType, message: string) => {
-      const eventType = shellEventToEventType(event);
-      this.eventEmitter(eventType, message);
-    };
+    const shellEventPublisher = shellEventPublisherFromEventEmitter(this.eventEmitter);
     try {
       await shell([getDockerCmd(), ...configArgs, ...args], {
         ...options,

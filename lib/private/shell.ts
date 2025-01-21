@@ -77,10 +77,16 @@ function handleShellOutput(
       break;
     case 'stdio':
     default:
-      if (shellEventType == 'data_stdout') {
-        process.stdout.write(chunk);
-      } else if (shellEventType == 'data_stderr' || shellEventType == 'open') {
-        process.stderr.write(chunk);
+      switch (shellEventType) {
+        case 'data_stdout':
+          process.stdout.write(chunk);
+          break;
+        case 'data_stderr':
+          process.stderr.write(chunk);
+          break;
+        case 'open':
+          options.shellEventPublisher(shellEventType, chunk.toString('utf-8'));
+          break;
       }
       break;
   }

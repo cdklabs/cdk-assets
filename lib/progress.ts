@@ -102,6 +102,20 @@ export function shellEventToEventType(event: ShellEventType): EventType {
   }
 }
 
+/**
+ * Create a ShellEventPublisher for an {@link EventEmitter}
+ *
+ * Returns a ShellEventPublisher that translates ShellEvents into messages
+ * emitted via the EventEmitter. Uses `shellEventToEventType` to translate
+ * shell event types to event types
+ */
+export function shellEventPublisherFromEventEmitter(eventEmitter: EventEmitter) {
+  return (event: ShellEventType, message: string) => {
+    const eventType = shellEventToEventType(event);
+    eventEmitter(eventType, message);
+  };
+}
+
 export type EventEmitter = (type: EventType, m: string) => void;
 
 /**
