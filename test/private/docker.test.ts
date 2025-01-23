@@ -13,14 +13,17 @@ describe('Docker', () => {
     const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
       jest
         .spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute')
-        .mockImplementation(async (params: string[], _options?: ShellOptions) => fn(params));
+        .mockImplementation(
+          async (params: string[], _options?: Omit<ShellOptions, 'shellEventPublisher'>) =>
+            fn(params)
+        );
 
     afterEach(() => {
       jest.restoreAllMocks();
     });
 
     beforeEach(() => {
-      docker = new Docker();
+      docker = new Docker(() => {}, 'ignore');
     });
 
     test('returns true when image inspect command does not throw', async () => {
