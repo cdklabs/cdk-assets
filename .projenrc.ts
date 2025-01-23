@@ -43,7 +43,7 @@ const project = new typescript.TypeScriptProject({
   ],
   description: 'CDK Asset Publishing Tool',
   devDeps: [
-    '@smithy/types',
+    '@smithy/types@^4',
     '@types/archiver',
     '@types/glob',
     '@types/mime',
