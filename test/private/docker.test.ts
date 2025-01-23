@@ -13,7 +13,10 @@ describe('Docker', () => {
     const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
       jest
         .spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute')
-        .mockImplementation(async (params: string[], _options?: Omit<ShellOptions, 'shellEventPublisher'>) => fn(params));
+        .mockImplementation(
+          async (params: string[], _options?: Omit<ShellOptions, 'shellEventPublisher'>) =>
+            fn(params)
+        );
 
     afterEach(() => {
       jest.restoreAllMocks();
