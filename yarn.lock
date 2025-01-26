@@ -21,18 +21,18 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@aws-cdk/cloud-assembly-schema@^39.2.4":
-  version "39.2.4"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.4.tgz#97bf89da8e7ab38624ffb533901d0eea0efea16a"
-  integrity sha512-XURv3LSmtL6n2Yzb+ejxd7ZiG09+KE79fZxDzvo+vIOLm1YlJ53s6I3KnvwsbGriP4wAbOouaKvNoo7n5pzgPg==
+"@aws-cdk/cloud-assembly-schema@^39.2.5":
+  version "39.2.5"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.5.tgz#c7c6a9866262e43e4d777934dcc3804191a586db"
+  integrity sha512-2065lXgoHT7XzrL5bm+jIutUNNBTDFBOSSgQNdHntTkl7Ljhyaithp2Ppayy1aLmShW12S1yJ+6JAGzE4M7EGg==
   dependencies:
     jsonschema "~1.4.1"
     semver "^7.6.3"
 
-"@aws-cdk/cx-api@^2.176.0":
-  version "2.176.0"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.176.0.tgz#a98f663c396140eed2d041d8798b0624aa2055a4"
-  integrity sha512-OtOV6VYaBFJ/L/b+3e4c7cwA0oqCa3rhjDMGyo0LdElAKjXkLTg0fg89kGKxY0HE7MO9n3vaIcgjP8Xc5LC6Bg==
+"@aws-cdk/cx-api@^2.177.0":
+  version "2.177.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.177.0.tgz#437e52c32d13b14c6f350c143c40f5ef6551faab"
+  integrity sha512-UMo11mxeqPKOAmZLzNzdwtG0OLbVCtQyn8H+iBhNUqHS3vCDkjpgSmBFB1JdH6+dDsn3gNgFUIiWDItDXIrn0g==
   dependencies:
     semver "^7.6.3"
 
