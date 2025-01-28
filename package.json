@@ -64,7 +64,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@aws-cdk/cloud-assembly-schema": "^39.2.5",
+    "@aws-cdk/cloud-assembly-schema": "^39.2.6",
     "@aws-cdk/cx-api": "^2.177.0",
     "@aws-sdk/client-ecr": "^3.734.0",
     "@aws-sdk/client-s3": "^3.735.0",
