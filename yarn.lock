@@ -21,10 +21,10 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@aws-cdk/cloud-assembly-schema@^39.2.10":
-  version "39.2.10"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.10.tgz#c638375f3ca3efd73cf4faa8309499f56650e729"
-  integrity sha512-TpMEalAybKtRKoKUsJsg1Jp27jIaQUwwjNniZEVLDRDn/ATEMBkcTnUOSbCePSk5fJNmp5wHew0Z03eNxDsjkQ==
+"@aws-cdk/cloud-assembly-schema@^39.2.11":
+  version "39.2.11"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.11.tgz#97b692f3e00e7e68dfb2890457a89c9e0edd2946"
+  integrity sha512-/iDXQtxtqKOuUpds51GK/neVzq/UdxLWuGgLs01HdA30xOunVbAe+CAExvHPw0/h2qlfaEkJRpAxZ0Ch6gJnJQ==
   dependencies:
     jsonschema "~1.4.1"
     semver "^7.7.0"
@@ -1127,13 +1127,13 @@
   resolved "https://registry.yarnpkg.com/@csstools/css-tokenizer/-/css-tokenizer-3.0.3.tgz#a5502c8539265fecbd873c1e395a890339f119c2"
   integrity sha512-UJnjoFsmxfKUdNYdWgOB0mWUypuLvAfQPH1+pyvRJs6euowbFkFC6P13w1l8mJyi3vxYMxc9kld5jZEGRQs6bw==
 
-"@dependents/detective-less@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@dependents/detective-less/-/detective-less-5.0.0.tgz#e06bd05352a9e90ad337c740ea98783709e0630c"
-  integrity sha512-D/9dozteKcutI5OdxJd8rU+fL6XgaaRg60sPPJWkT33OCiRfkCu5wO5B/yXTaaL2e6EB0lcCBGe5E0XscZCvvQ==
+"@dependents/detective-less@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@dependents/detective-less/-/detective-less-5.0.1.tgz#e6c5b502f0d26a81da4170c1ccd848a6eaa68470"
+  integrity sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==
   dependencies:
     gonzales-pe "^4.3.0"
-    node-source-walk "^7.0.0"
+    node-source-walk "^7.0.1"
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":
   version "4.4.1"
@@ -2437,7 +2437,7 @@
     semver "^7.6.0"
     ts-api-utils "^2.0.0"
 
-"@typescript-eslint/typescript-estree@^7.6.0":
+"@typescript-eslint/typescript-estree@^7.18.0":
   version "7.18.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-7.18.0.tgz#b5868d486c51ce8f312309ba79bdb9f331b37931"
   integrity sha512-aP1v/BSPnnyhMHts8cf1qQ6Q1IFwwRvAQGRvBFkWlo3/lH29OXA3Pts+c10nxRxIBrDnoMqzhgdwVe5f2D6OzA==
@@ -2803,10 +2803,10 @@ assertion-error@^2.0.1:
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-2.0.1.tgz#f641a196b335690b1070bf00b6e7593fec190bf7"
   integrity sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==
 
-ast-module-types@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/ast-module-types/-/ast-module-types-6.0.0.tgz#ea6132bb44a115717299dfdac934d2d13e8ecd93"
-  integrity sha512-LFRg7178Fw5R4FAEwZxVqiRI8IxSM+Ay2UBrHoCerXNme+kMMMfz7T3xDGV/c2fer87hcrtgJGsnSOfUrPK6ng==
+ast-module-types@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/ast-module-types/-/ast-module-types-6.0.1.tgz#4b4ca0251c57b815bab62604dcb22f8c903e2523"
+  integrity sha512-WHw67kLXYbZuHTmcdbIrVArCq5wxo6NEuj3hiYAWr8mwJeC+C2mMCIBIWCiDoCye/OF/xelc+teJ1ERoWmnEIA==
 
 async-function@^1.0.0:
   version "1.0.0"
@@ -3196,7 +3196,7 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^12.0.0, commander@^12.1.0:
+commander@^12.1.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-12.1.0.tgz#01423b36f501259fdaac4d0e4d60c96c991585d3"
   integrity sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==
@@ -3612,14 +3612,14 @@ delayed-stream@~1.0.0:
   integrity sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==
 
 dependency-tree@^11.0.0:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/dependency-tree/-/dependency-tree-11.0.1.tgz#319c27652655f0ff63dc90809322156e90aa2a55"
-  integrity sha512-eCt7HSKIC9NxgIykG2DRq3Aewn9UhVS14MB3rEn6l/AsEI1FBg6ZGSlCU0SZ6Tjm2kkhj6/8c2pViinuyKELhg==
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/dependency-tree/-/dependency-tree-11.0.2.tgz#8840dc3668a2803282384e727e0ae53f0cc42aad"
+  integrity sha512-eQPTn16WpphktLNvG/h0vQyKCCDpR4x6wYdQOM1aJBiCqWzCRYV7Yr9F7pv/o0DcMpamazd5hE+B2RvITXeNaw==
   dependencies:
-    commander "^12.0.0"
-    filing-cabinet "^5.0.1"
-    precinct "^12.0.2"
-    typescript "^5.4.5"
+    commander "^12.1.0"
+    filing-cabinet "^5.0.2"
+    precinct "^12.1.3"
+    typescript "^5.7.3"
 
 detect-indent@^6.0.0:
   version "6.1.0"
@@ -3631,80 +3631,80 @@ detect-newline@^3.0.0, detect-newline@^3.1.0:
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
 
-detective-amd@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/detective-amd/-/detective-amd-6.0.0.tgz#29207f8309f3d2d130e3356d67f7fcd90e0c2cbf"
-  integrity sha512-NTqfYfwNsW7AQltKSEaWR66hGkTeD52Kz3eRQ+nfkA9ZFZt3iifRCWh+yZ/m6t3H42JFwVFTrml/D64R2PAIOA==
+detective-amd@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/detective-amd/-/detective-amd-6.0.1.tgz#71eb13b5d9b17222d7b4de3fb89a8e684d8b9a23"
+  integrity sha512-TtyZ3OhwUoEEIhTFoc1C9IyJIud3y+xYkSRjmvCt65+ycQuc3VcBrPRTMWoO/AnuCyOB8T5gky+xf7Igxtjd3g==
   dependencies:
-    ast-module-types "^6.0.0"
+    ast-module-types "^6.0.1"
     escodegen "^2.1.0"
-    get-amd-module-type "^6.0.0"
-    node-source-walk "^7.0.0"
+    get-amd-module-type "^6.0.1"
+    node-source-walk "^7.0.1"
 
-detective-cjs@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/detective-cjs/-/detective-cjs-6.0.0.tgz#65975719993fb4165a86e341a86784d7fcb4e3c8"
-  integrity sha512-R55jTS6Kkmy6ukdrbzY4x+I7KkXiuDPpFzUViFV/tm2PBGtTCjkh9ZmTuJc1SaziMHJOe636dtiZLEuzBL9drg==
+detective-cjs@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/detective-cjs/-/detective-cjs-6.0.1.tgz#4fb81a67337630811409abb2148b2b622cacbdcd"
+  integrity sha512-tLTQsWvd2WMcmn/60T2inEJNhJoi7a//PQ7DwRKEj1yEeiQs4mrONgsUtEJKnZmrGWBBmE0kJ1vqOG/NAxwaJw==
   dependencies:
-    ast-module-types "^6.0.0"
-    node-source-walk "^7.0.0"
+    ast-module-types "^6.0.1"
+    node-source-walk "^7.0.1"
 
-detective-es6@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/detective-es6/-/detective-es6-5.0.0.tgz#0dc90a946a0120d93b28901395ec99c4642990bd"
-  integrity sha512-NGTnzjvgeMW1khUSEXCzPDoraLenWbUjCFjwxReH+Ir+P6LGjYtaBbAvITWn2H0VSC+eM7/9LFOTAkrta6hNYg==
+detective-es6@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/detective-es6/-/detective-es6-5.0.1.tgz#f0c026bc9b767a243e57ef282f4343fcf3b8ec4e"
+  integrity sha512-XusTPuewnSUdoxRSx8OOI6xIA/uld/wMQwYsouvFN2LAg7HgP06NF1lHRV3x6BZxyL2Kkoih4ewcq8hcbGtwew==
   dependencies:
-    node-source-walk "^7.0.0"
+    node-source-walk "^7.0.1"
 
-detective-postcss@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-7.0.0.tgz#e9cff50836d67339a0bf4378f22dba4ed5809c01"
-  integrity sha512-pSXA6dyqmBPBuERpoOKKTUUjQCZwZPLRbd1VdsTbt6W+m/+6ROl4BbE87yQBUtLoK7yX8pvXHdKyM/xNIW9F7A==
+detective-postcss@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-7.0.1.tgz#f5822d8988339fb56851fcdb079d51fbcff114db"
+  integrity sha512-bEOVpHU9picRZux5XnwGsmCN4+8oZo7vSW0O0/Enq/TO5R2pIAP2279NsszpJR7ocnQt4WXU0+nnh/0JuK4KHQ==
   dependencies:
     is-url "^1.2.4"
     postcss-values-parser "^6.0.2"
 
-detective-sass@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/detective-sass/-/detective-sass-6.0.0.tgz#0585093840afe069ac2bdb55f662a1928c8f6d81"
-  integrity sha512-h5GCfFMkPm4ZUUfGHVPKNHKT8jV7cSmgK+s4dgQH4/dIUNh9/huR1fjEQrblOQNDalSU7k7g+tiW9LJ+nVEUhg==
+detective-sass@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/detective-sass/-/detective-sass-6.0.1.tgz#fcf5aa51bebf7b721807be418418470ee2409f8a"
+  integrity sha512-jSGPO8QDy7K7pztUmGC6aiHkexBQT4GIH+mBAL9ZyBmnUIOFbkfZnO8wPRRJFP/QP83irObgsZHCoDHZ173tRw==
   dependencies:
     gonzales-pe "^4.3.0"
-    node-source-walk "^7.0.0"
+    node-source-walk "^7.0.1"
 
-detective-scss@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/detective-scss/-/detective-scss-5.0.0.tgz#3603e967bfc541c28b5cc9ceccd21c36725d6d86"
-  integrity sha512-Y64HyMqntdsCh1qAH7ci95dk0nnpA29g319w/5d/oYcHolcGUVJbIhOirOFjfN1KnMAXAFm5FIkZ4l2EKFGgxg==
+detective-scss@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/detective-scss/-/detective-scss-5.0.1.tgz#6a7f792dc9c0e8cfc0d252a50ba26a6df12596a7"
+  integrity sha512-MAyPYRgS6DCiS6n6AoSBJXLGVOydsr9huwXORUlJ37K3YLyiN0vYHpzs3AdJOgHobBfispokoqrEon9rbmKacg==
   dependencies:
     gonzales-pe "^4.3.0"
-    node-source-walk "^7.0.0"
+    node-source-walk "^7.0.1"
 
-detective-stylus@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/detective-stylus/-/detective-stylus-5.0.0.tgz#11c0464350d0b1484d6a7e281547280500c8353f"
-  integrity sha512-KMHOsPY6aq3196WteVhkY5FF+6Nnc/r7q741E+Gq+Ax9mhE2iwj8Hlw8pl+749hPDRDBHZ2WlgOjP+twIG61vQ==
+detective-stylus@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/detective-stylus/-/detective-stylus-5.0.1.tgz#57d54a0b405305ee16655e42008b38a827a9f179"
+  integrity sha512-Dgn0bUqdGbE3oZJ+WCKf8Dmu7VWLcmRJGc6RCzBgG31DLIyai9WAoEhYRgIHpt/BCRMrnXLbGWGPQuBUrnF0TA==
 
-detective-typescript@^13.0.0:
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/detective-typescript/-/detective-typescript-13.0.0.tgz#41b391e77721b2872d70c96cc4d98261f9032353"
-  integrity sha512-tcMYfiFWoUejSbvSblw90NDt76/4mNftYCX0SMnVRYzSXv8Fvo06hi4JOPdNvVNxRtCAKg3MJ3cBJh+ygEMH+A==
+detective-typescript@^13.0.0, detective-typescript@^13.0.1:
+  version "13.0.1"
+  resolved "https://registry.yarnpkg.com/detective-typescript/-/detective-typescript-13.0.1.tgz#37fab40671e2a372c7a7cb498f6b378c3785f431"
+  integrity sha512-k+1EbJESP/PVA3G+Squsd7EjCoitCn3ZWdpl4ReWR8TyEfdF7AP7yMhlpbYXOw7i5VBFY2tOeOmKZD2XtsCpVQ==
   dependencies:
-    "@typescript-eslint/typescript-estree" "^7.6.0"
-    ast-module-types "^6.0.0"
-    node-source-walk "^7.0.0"
+    "@typescript-eslint/typescript-estree" "^7.18.0"
+    ast-module-types "^6.0.1"
+    node-source-walk "^7.0.1"
 
-detective-vue2@^2.0.3:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/detective-vue2/-/detective-vue2-2.1.1.tgz#96e8c1b08e18776f6a5f1acf9f5472b5236b4dbe"
-  integrity sha512-/TQ+cs4qmSyhgESjyBXxoUuh36XjS06+UhCItWcGGOpXmU3KBRGRknG+tDzv2dASn1+UJUm2rhpDFa9TWT0dFw==
+detective-vue2@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/detective-vue2/-/detective-vue2-2.1.2.tgz#b773308463d1209aa233f9ccd7d5a29065cce3f5"
+  integrity sha512-/uDzKDYTeLJTsgSJR5zNxj48umamdvn2OftjgwVxa2Ir2JjFjlgGRcWU2lJ354enjiGbRe1ZIapz/6s+e5lthw==
   dependencies:
-    "@dependents/detective-less" "^5.0.0"
+    "@dependents/detective-less" "^5.0.1"
     "@vue/compiler-sfc" "^3.5.13"
-    detective-es6 "^5.0.0"
-    detective-sass "^6.0.0"
-    detective-scss "^5.0.0"
-    detective-stylus "^5.0.0"
+    detective-es6 "^5.0.1"
+    detective-sass "^6.0.1"
+    detective-scss "^5.0.1"
+    detective-stylus "^5.0.1"
     detective-typescript "^13.0.0"
 
 diff-sequences@^29.6.3:
@@ -3789,7 +3789,7 @@ end-of-stream@^1.4.1:
   dependencies:
     once "^1.4.0"
 
-enhanced-resolve@^5.15.0, enhanced-resolve@^5.16.0, enhanced-resolve@^5.18.0:
+enhanced-resolve@^5.15.0, enhanced-resolve@^5.18.0:
   version "5.18.0"
   resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.18.0.tgz#91eb1db193896b9801251eeff1c6980278b1e404"
   integrity sha512-0/r0MySGYG8YqlayBZ6MuCfECmHFdJ5qyPh8s8wa5Hnm6SaFLSK1VYCbj+NKp090Nm1caZhD+QTnmxO7esYGyQ==
@@ -4223,22 +4223,22 @@ filelist@^1.0.4:
   dependencies:
     minimatch "^5.0.1"
 
-filing-cabinet@^5.0.1:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/filing-cabinet/-/filing-cabinet-5.0.2.tgz#5d35bce3216af258a7ce7d3561d68ed86fb37d6f"
-  integrity sha512-RZlFj8lzyu6jqtFBeXNqUjjNG6xm+gwXue3T70pRxw1W40kJwlgq0PSWAmh0nAnn5DHuBIecLXk9+1VKS9ICXA==
+filing-cabinet@^5.0.2:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/filing-cabinet/-/filing-cabinet-5.0.3.tgz#e5ab960958653ee7fe70d5d99b3b88c342ce7907"
+  integrity sha512-PlPcMwVWg60NQkhvfoxZs4wEHjhlOO/y7OAm4sKM60o1Z9nttRY4mcdQxp/iZ+kg/Vv6Hw1OAaTbYVM9DA9pYg==
   dependencies:
     app-module-path "^2.2.0"
-    commander "^12.0.0"
-    enhanced-resolve "^5.16.0"
-    module-definition "^6.0.0"
-    module-lookup-amd "^9.0.1"
-    resolve "^1.22.8"
-    resolve-dependency-path "^4.0.0"
-    sass-lookup "^6.0.1"
-    stylus-lookup "^6.0.0"
+    commander "^12.1.0"
+    enhanced-resolve "^5.18.0"
+    module-definition "^6.0.1"
+    module-lookup-amd "^9.0.3"
+    resolve "^1.22.10"
+    resolve-dependency-path "^4.0.1"
+    sass-lookup "^6.1.0"
+    stylus-lookup "^6.1.0"
     tsconfig-paths "^4.2.0"
-    typescript "^5.4.4"
+    typescript "^5.7.3"
 
 fill-range@^7.1.1:
   version "7.1.1"
@@ -4367,13 +4367,13 @@ gensync@^1.0.0-beta.2:
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
 
-get-amd-module-type@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/get-amd-module-type/-/get-amd-module-type-6.0.0.tgz#702ddcbe6cb8a41ab8f69ce5ea520bf3b0ede69a"
-  integrity sha512-hFM7oivtlgJ3d6XWD6G47l8Wyh/C6vFw5G24Kk1Tbq85yh5gcM8Fne5/lFhiuxB+RT6+SI7I1ThB9lG4FBh3jw==
+get-amd-module-type@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/get-amd-module-type/-/get-amd-module-type-6.0.1.tgz#191f479ae8706c246b52bf402fbe1bb0965d9f1e"
+  integrity sha512-MtjsmYiCXcYDDrGqtNbeIYdAl85n+5mSv2r3FbzER/YV3ZILw4HNNIw34HuV5pyl0jzs6GFYU1VHVEefhgcNHQ==
   dependencies:
-    ast-module-types "^6.0.0"
-    node-source-walk "^7.0.0"
+    ast-module-types "^6.0.1"
+    node-source-walk "^7.0.1"
 
 get-caller-file@^2.0.5:
   version "2.0.5"
@@ -5928,18 +5928,18 @@ modify-values@^1.0.1:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-module-definition@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/module-definition/-/module-definition-6.0.0.tgz#724b4c57543f53f814d2892499857777c3859630"
-  integrity sha512-sEGP5nKEXU7fGSZUML/coJbrO+yQtxcppDAYWRE9ovWsTbFoUHB2qDUx564WUzDaBHXsD46JBbIK5WVTwCyu3w==
+module-definition@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/module-definition/-/module-definition-6.0.1.tgz#47e73144cc5a9aa31f3380166fddf8e962ccb2e4"
+  integrity sha512-FeVc50FTfVVQnolk/WQT8MX+2WVcDnTGiq6Wo+/+lJ2ET1bRVi3HG3YlJUfqagNMc/kUlFSoR96AJkxGpKz13g==
   dependencies:
-    ast-module-types "^6.0.0"
-    node-source-walk "^7.0.0"
+    ast-module-types "^6.0.1"
+    node-source-walk "^7.0.1"
 
-module-lookup-amd@^9.0.1:
-  version "9.0.2"
-  resolved "https://registry.yarnpkg.com/module-lookup-amd/-/module-lookup-amd-9.0.2.tgz#e132b11356a3690ed46ab0164dde2c1ddcd3a8a5"
-  integrity sha512-p7PzSVEWiW9fHRX9oM+V4aV5B2nCVddVNv4DZ/JB6t9GsXY4E+ZVhPpnwUX7bbJyGeeVZqhS8q/JZ/H77IqPFA==
+module-lookup-amd@^9.0.3:
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/module-lookup-amd/-/module-lookup-amd-9.0.3.tgz#460e3f874f4b5fc40a1191b98473ca4c0776d945"
+  integrity sha512-T4Dz56Qsq6NAC2Z3yDb2NYYn2T4dYUzxONCqleqjsxYZLzjJ7+GM8kv/6qHfjY5MAXgIeO4eapaas3mS/nXvUw==
   dependencies:
     commander "^12.1.0"
     glob "^7.2.3"
@@ -5987,7 +5987,7 @@ node-releases@^2.0.19:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.19.tgz#9e445a52950951ec4d177d843af370b411caf314"
   integrity sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==
 
-node-source-walk@^7.0.0:
+node-source-walk@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/node-source-walk/-/node-source-walk-7.0.1.tgz#3e4ab8d065377228fd038af7b2d4fb58f61defd3"
   integrity sha512-3VW/8JpPqPvnJvseXowjZcirPisssnBuDikk6JIZ8jQzF7KJQX52iPFX4RYYxLycYH7IbMRSPUOga/esVjy5Yg==
@@ -6331,7 +6331,7 @@ postcss-values-parser@^6.0.2:
     is-url-superb "^4.0.0"
     quote-unquote "^1.0.0"
 
-postcss@^8.4.40, postcss@^8.4.48:
+postcss@^8.4.48, postcss@^8.5.1:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.1.tgz#e2272a1f8a807fafa413218245630b5db10a3214"
   integrity sha512-6oz2beyjc5VMn/KV1pPw8fliQkhBXrVn1Z3TVyqZxU8kZpzEKhBdmCFqI6ZbmGtamQvQGuU1sgPTk8ZrXDD7jQ==
@@ -6340,26 +6340,26 @@ postcss@^8.4.40, postcss@^8.4.48:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-precinct@^12.0.2:
-  version "12.1.2"
-  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.1.2.tgz#e6982e5fc90a0f1b6696f3a96acbd91cd6b3c841"
-  integrity sha512-x2qVN3oSOp3D05ihCd8XdkIPuEQsyte7PSxzLqiRgktu79S5Dr1I75/S+zAup8/0cwjoiJTQztE9h0/sWp9bJQ==
+precinct@^12.1.3:
+  version "12.1.3"
+  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.1.3.tgz#cb8542ac2168f1d395aea785eaf183f5d84d3cdb"
+  integrity sha512-6zuVmMR89TGHQ0oI2632SjTrqqnhoTkB/AuxQchWNmv5BJXFdUEG86rq7geI41/hX7hGadMJ5em6eQWwpSHK7A==
   dependencies:
-    "@dependents/detective-less" "^5.0.0"
+    "@dependents/detective-less" "^5.0.1"
     commander "^12.1.0"
-    detective-amd "^6.0.0"
-    detective-cjs "^6.0.0"
-    detective-es6 "^5.0.0"
-    detective-postcss "^7.0.0"
-    detective-sass "^6.0.0"
-    detective-scss "^5.0.0"
-    detective-stylus "^5.0.0"
-    detective-typescript "^13.0.0"
-    detective-vue2 "^2.0.3"
-    module-definition "^6.0.0"
-    node-source-walk "^7.0.0"
-    postcss "^8.4.40"
-    typescript "^5.5.4"
+    detective-amd "^6.0.1"
+    detective-cjs "^6.0.1"
+    detective-es6 "^5.0.1"
+    detective-postcss "^7.0.1"
+    detective-sass "^6.0.1"
+    detective-scss "^5.0.1"
+    detective-stylus "^5.0.1"
+    detective-typescript "^13.0.1"
+    detective-vue2 "^2.1.2"
+    module-definition "^6.0.1"
+    node-source-walk "^7.0.1"
+    postcss "^8.5.1"
+    typescript "^5.7.3"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -6603,10 +6603,10 @@ resolve-cwd@^3.0.0:
   dependencies:
     resolve-from "^5.0.0"
 
-resolve-dependency-path@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/resolve-dependency-path/-/resolve-dependency-path-4.0.0.tgz#ec0b2aa83ce8cd125c7db734a40b4809959bf688"
-  integrity sha512-hlY1SybBGm5aYN3PC4rp15MzsJLM1w+MEA/4KU3UBPfz4S0lL3FL6mgv7JgaA8a+ZTeEQAiF1a1BuN2nkqiIlg==
+resolve-dependency-path@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/resolve-dependency-path/-/resolve-dependency-path-4.0.1.tgz#1b9d43e5b62384301e26d040b9fce61ee5db60bd"
+  integrity sha512-YQftIIC4vzO9UMhO/sCgXukNyiwVRCVaxiWskCBy7Zpqkplm8kTAISZ8O1MoKW1ca6xzgLUBjZTcDgypXvXxiQ==
 
 resolve-from@^4.0.0:
   version "4.0.0"
@@ -6628,7 +6628,7 @@ resolve.exports@^2.0.0:
   resolved "https://registry.yarnpkg.com/resolve.exports/-/resolve.exports-2.0.3.tgz#41955e6f1b4013b7586f873749a635dea07ebe3f"
   integrity sha512-OcXjMsGdhL4XnbShKpAcSqPMzQoYkYyhbEaeSko47MjRP9NfEQMhZkXL1DoFlt9LWQn4YttrdnV6X2OiyzBi+A==
 
-resolve@^1.1.6, resolve@^1.10.0, resolve@^1.20.0, resolve@^1.22.4, resolve@^1.22.8:
+resolve@^1.1.6, resolve@^1.10.0, resolve@^1.20.0, resolve@^1.22.10, resolve@^1.22.4:
   version "1.22.10"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.10.tgz#b663e83ffb09bbf2386944736baae803029b8b39"
   integrity sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w==
@@ -6710,7 +6710,7 @@ safe-regex-test@^1.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sass-lookup@^6.0.1:
+sass-lookup@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/sass-lookup/-/sass-lookup-6.1.0.tgz#a13b1f31dd44d2b4bcd55ba8f72763db4d95bd7c"
   integrity sha512-Zx+lVyoWqXZxHuYWlTA17Z5sczJ6braNT2C7rmClw+c4E7r/n911Zwss3h1uHI9reR5AgHZyNHF7c2+VIp5AUA==
@@ -7078,7 +7078,7 @@ strnum@^1.0.5:
   resolved "https://registry.yarnpkg.com/strnum/-/strnum-1.0.5.tgz#5c4e829fe15ad4ff0d20c3db5ac97b73c9b072db"
   integrity sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==
 
-stylus-lookup@^6.0.0:
+stylus-lookup@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/stylus-lookup/-/stylus-lookup-6.1.0.tgz#f0fe88a885b830dc7520f51dd0a7e59e5d3307b4"
   integrity sha512-5QSwgxAzXPMN+yugy61C60PhoANdItfdjSEZR8siFwz7yL9jTmV0UBKDCfn3K8GkGB4g0Y9py7vTCX8rFu4/pQ==
@@ -7226,9 +7226,9 @@ ts-api-utils@^1.3.0:
   integrity sha512-i3eMG77UTMD0hZhgRS562pv83RC6ukSAC2GMNWc+9dieh/+jDM5u5YG+NHX6VNDRHQcHwmsTHctP9LhbC3WxVw==
 
 ts-api-utils@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.0.0.tgz#b9d7d5f7ec9f736f4d0f09758b8607979044a900"
-  integrity sha512-xCt/TOAc+EOHS1XPnijD3/yzpH6qg2xppZO1YDqGoVsNXfQfzHpOdNuXwrwOU8u4ITXJyDCTyt8w5g1sZv9ynQ==
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.0.1.tgz#660729385b625b939aaa58054f45c058f33f10cd"
+  integrity sha512-dnlgjFSVetynI8nzgJ+qF62efpglpWRk8isUEWZGWlJYySCTD6aKvbUDu+zbPeDakk3bg5H4XpitHukgfL1m9w==
 
 ts-graphviz@^2.1.2:
   version "2.1.6"
@@ -7385,7 +7385,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@^5.4.4, typescript@^5.4.5, typescript@^5.5.4, typescript@^5.7.3:
+typescript@^5.7.3:
   version "5.7.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.7.3.tgz#919b44a7dbb8583a9b856d162be24a54bf80073e"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
