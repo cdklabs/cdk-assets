@@ -21,10 +21,10 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@aws-cdk/cloud-assembly-schema@^39.2.11":
-  version "39.2.11"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.11.tgz#97b692f3e00e7e68dfb2890457a89c9e0edd2946"
-  integrity sha512-/iDXQtxtqKOuUpds51GK/neVzq/UdxLWuGgLs01HdA30xOunVbAe+CAExvHPw0/h2qlfaEkJRpAxZ0Ch6gJnJQ==
+"@aws-cdk/cloud-assembly-schema@^39.2.12":
+  version "39.2.12"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.12.tgz#7322a426672a410646b0b3be248820cd2e972741"
+  integrity sha512-LjHz0Yrl3sFPihZVpIGoBrMnKjj18G755IlVH79Tzufx7eWVL/G/4RCiLUn0+NFE5e3ssTtfXr3KY9pxGMe/bA==
   dependencies:
     jsonschema "~1.4.1"
     semver "^7.7.0"
@@ -4704,9 +4704,9 @@ immediate@~3.0.5:
   integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
 
 import-fresh@^3.2.1:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.0.tgz#37162c25fcb9ebaa2e6e53d5b4d88ce17d9e0c2b"
-  integrity sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.1.tgz#9cecb56503c0ada1f2741dbbd6546e4b13b57ccf"
+  integrity sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==
   dependencies:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
@@ -5937,9 +5937,9 @@ module-definition@^6.0.1:
     node-source-walk "^7.0.1"
 
 module-lookup-amd@^9.0.3:
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/module-lookup-amd/-/module-lookup-amd-9.0.3.tgz#460e3f874f4b5fc40a1191b98473ca4c0776d945"
-  integrity sha512-T4Dz56Qsq6NAC2Z3yDb2NYYn2T4dYUzxONCqleqjsxYZLzjJ7+GM8kv/6qHfjY5MAXgIeO4eapaas3mS/nXvUw==
+  version "9.0.4"
+  resolved "https://registry.yarnpkg.com/module-lookup-amd/-/module-lookup-amd-9.0.4.tgz#328aff0913a47b25f02dd03c40efc9640d60f38c"
+  integrity sha512-DWJEuLVvjxh5b8wrvJC5wr2a7qo7pOWXIgdCBNazU416kcIyzO4drxvlqKhsHzYwxcC4cWuhoK+MiWCKCGnv7A==
   dependencies:
     commander "^12.1.0"
     glob "^7.2.3"
