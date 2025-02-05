@@ -21,13 +21,13 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
-"@aws-cdk/cloud-assembly-schema@^39.2.13":
-  version "39.2.13"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.13.tgz#b76674ad27b41ab18e8e0968043616451d03069e"
-  integrity sha512-wZ+b55jwGhUrhyR1VIyFkA2zv/6vMpnXX5vAs6KWN5LtGk06//b11eefGHULgKuTGdOEKk1PhoDg07oWW22/Gw==
+"@aws-cdk/cloud-assembly-schema@^39.2.14":
+  version "39.2.14"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.2.14.tgz#bcb0f9634e1388e558df5279794ef09f55ed78ef"
+  integrity sha512-G6hudyROAI95rdsKjhOkt3pPC54yx2rqkadeqk5e/xnSX+4NgixK36HJ8giVYNUVFtP12GUeFsQ8NC4ME3GgYg==
   dependencies:
     jsonschema "~1.4.1"
-    semver "^7.7.0"
+    semver "^7.7.1"
 
 "@aws-cdk/cx-api@^2.177.0":
   version "2.177.0"
@@ -104,10 +104,10 @@
     "@smithy/util-utf8" "^2.0.0"
     tslib "^2.6.2"
 
-"@aws-sdk/client-cognito-identity@3.741.0":
-  version "3.741.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/client-cognito-identity/-/client-cognito-identity-3.741.0.tgz#21bbfde0c21cd97c22e72749d6dc219ac7777949"
-  integrity sha512-zd1HMnBi/hSGEBHf1qEbjAZSynDWv6XUDW8dFLHaXJCFZiTJ0YLTxxKTGLHmqg969OOHLC7YSGoIiaF1Cpu9Mg==
+"@aws-sdk/client-cognito-identity@3.742.0":
+  version "3.742.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-cognito-identity/-/client-cognito-identity-3.742.0.tgz#8f30f690d7364c728dfe3298bd7ceeb4685bbab3"
+  integrity sha512-H8L7mPeKXy5rbLHZcCxpQEqpQmC/nHMxefQkLd5brMKK6CwHgWPq1aJdPrq+qaiyPXBSEJjXzRZktggMpn3NEA==
   dependencies:
     "@aws-crypto/sha256-browser" "5.2.0"
     "@aws-crypto/sha256-js" "5.2.0"
@@ -410,12 +410,12 @@
     fast-xml-parser "4.4.1"
     tslib "^2.6.2"
 
-"@aws-sdk/credential-provider-cognito-identity@3.741.0":
-  version "3.741.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/credential-provider-cognito-identity/-/credential-provider-cognito-identity-3.741.0.tgz#75be2fbc09e3f722ff9a05ff3b161661f5bd041e"
-  integrity sha512-EoEO1hxe9WToWvrknnHHIb/N5HQoIj53JAbdRlhDRjedKr7nQu8ELVGn4s0UkXuZc1CAUMlvwdiZpr3NxhcofA==
+"@aws-sdk/credential-provider-cognito-identity@3.742.0":
+  version "3.742.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/credential-provider-cognito-identity/-/credential-provider-cognito-identity-3.742.0.tgz#b0f6077ccec80de5a983c02ca68c18e3f16577ad"
+  integrity sha512-/+T3aglDyEuY0Z/y5Uby4p3HTU5cC7mKBTzgbCzHw3GqQJrYsy2sNpe5yVdCBSjd+KqnKG3blApWjQngQsW4Hg==
   dependencies:
-    "@aws-sdk/client-cognito-identity" "3.741.0"
+    "@aws-sdk/client-cognito-identity" "3.742.0"
     "@aws-sdk/types" "3.734.0"
     "@smithy/property-provider" "^4.0.1"
     "@smithy/types" "^4.1.0"
@@ -523,14 +523,14 @@
     "@smithy/types" "^4.1.0"
     tslib "^2.6.2"
 
-"@aws-sdk/credential-providers@^3.741.0":
-  version "3.741.0"
-  resolved "https://registry.yarnpkg.com/@aws-sdk/credential-providers/-/credential-providers-3.741.0.tgz#f743e5a7959409817f4ea4f7fd527f37781a04c3"
-  integrity sha512-X0R46k09GtfOaCwZei6atf5gxFhwuZl7p9T5/LWTNo7rUiAWPLpnxwfDfymHQqTH0u4ShZYCRDHEoOk06wKm6g==
+"@aws-sdk/credential-providers@^3.742.0":
+  version "3.742.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/credential-providers/-/credential-providers-3.742.0.tgz#a36df7c06919509adef3a4013c2a1976228aca40"
+  integrity sha512-JKB5VoU0NJFrj7bTuVlvNy9u78Nu2NaNEPDjRaHQLTDfoHFJNCzgwQD00I6FHxa+/3Tl11X/lQMMjIAA7nqscA==
   dependencies:
-    "@aws-sdk/client-cognito-identity" "3.741.0"
+    "@aws-sdk/client-cognito-identity" "3.742.0"
     "@aws-sdk/core" "3.734.0"
-    "@aws-sdk/credential-provider-cognito-identity" "3.741.0"
+    "@aws-sdk/credential-provider-cognito-identity" "3.742.0"
     "@aws-sdk/credential-provider-env" "3.734.0"
     "@aws-sdk/credential-provider-http" "3.734.0"
     "@aws-sdk/credential-provider-ini" "3.741.0"
@@ -3063,9 +3063,9 @@ camelcase@^6.2.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001688:
-  version "1.0.30001696"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001696.tgz#00c30a2fc11e3c98c25e5125418752af3ae2f49f"
-  integrity sha512-pDCPkvzfa39ehJtJ+OwGT/2yvT2SbjfHhiIW2LWOAcMQ7BzwxT/XuyUp4OTOd0XFWA6BKw0JalnBHgSi5DGJBQ==
+  version "1.0.30001697"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001697.tgz#040bbbb54463c4b4b3377c716b34a322d16e6fc7"
+  integrity sha512-GwNPlWJin8E+d7Gxq96jxM6w0w+VFeyyXRsjU58emtkYqnbwHqXm5uT2uCmO0RQE9htWknOP4xtBlLmM/gWxvQ==
 
 case@^1.6.3:
   version "1.6.3"
@@ -3790,9 +3790,9 @@ end-of-stream@^1.4.1:
     once "^1.4.0"
 
 enhanced-resolve@^5.15.0, enhanced-resolve@^5.18.0:
-  version "5.18.0"
-  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.18.0.tgz#91eb1db193896b9801251eeff1c6980278b1e404"
-  integrity sha512-0/r0MySGYG8YqlayBZ6MuCfECmHFdJ5qyPh8s8wa5Hnm6SaFLSK1VYCbj+NKp090Nm1caZhD+QTnmxO7esYGyQ==
+  version "5.18.1"
+  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.18.1.tgz#728ab082f8b7b6836de51f1637aab5d3b9568faf"
+  integrity sha512-ZSW3ma5GkcQBIpwZTSRAI8N71Uuwgs93IezB7mf7R60tC8ZbJideoDNKjHn2O9KIlx6rkGTTEk1xUCK2E1Y2Yg==
   dependencies:
     graceful-fs "^4.2.4"
     tapable "^2.2.0"
@@ -6399,10 +6399,10 @@ process-nextick-args@~2.0.0:
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
   integrity sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==
 
-projen@^0.91.7:
-  version "0.91.7"
-  resolved "https://registry.yarnpkg.com/projen/-/projen-0.91.7.tgz#7a1bca77dcc70d0c93df34d41d04a9f6623d1a9b"
-  integrity sha512-HECW1Q/0TzS1fKVGpobr/fcLAHRWGfaOL7GmLAmwh0enhcmeE0Tld5kjyb8Sj+q3Hf0KdWP8lufuQ0WxltYcYQ==
+projen@^0.91.8:
+  version "0.91.8"
+  resolved "https://registry.yarnpkg.com/projen/-/projen-0.91.8.tgz#7fd8d2bf614fbfd3f44efdf223783786ebc55b31"
+  integrity sha512-TWpxSiv3ZkJoZ2Y0hjnjwmKLlUnxmbPANmQ8yDdUeE6LIYoPmfU0Zw0ijNDI3uTq0BjIz5mFDkic94RW/1Hguw==
   dependencies:
     "@iarna/toml" "^2.2.5"
     case "^1.6.3"
@@ -6413,7 +6413,7 @@ projen@^0.91.7:
     fast-json-patch "^3.1.1"
     glob "^8"
     ini "^2.0.0"
-    semver "^7.7.0"
+    semver "^7.7.1"
     shx "^0.3.4"
     xmlbuilder2 "^3.1.1"
     yaml "^2.2.2"
@@ -6735,7 +6735,7 @@ semver@^6.3.0, semver@^6.3.1:
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.0.0, semver@^7.3.4, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.6.3, semver@^7.7.0:
+semver@^7.0.0, semver@^7.3.4, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.6.3, semver@^7.7.1:
   version "7.7.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.1.tgz#abd5098d82b18c6c81f6074ff2647fd3e7220c9f"
   integrity sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==
