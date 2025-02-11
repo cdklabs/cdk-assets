@@ -41,8 +41,6 @@ describe('Docker', () => {
       docker = new Docker();
     });
 
-=======
->>>>>>> 8bdea13 (fix: docker build attestations break cdk-assets (400 Bad Request) (#342))
     test('returns true when image inspect command does not throw', async () => {
       const spy = makeShellExecuteMock(() => undefined);
 
