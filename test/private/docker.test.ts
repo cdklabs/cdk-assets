@@ -25,21 +25,6 @@ beforeEach(() => {
 
 describe('Docker', () => {
   describe('exists', () => {
-    let docker: Docker;
-
-    const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
-      jest
-        .spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute')
-        .mockImplementation(async (params: string[], _options?: ShellOptions) => fn(params));
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    beforeEach(() => {
-      docker = new Docker();
-    });
-
     test('returns true when image inspect command does not throw', async () => {
       const spy = makeShellExecuteMock(() => undefined);
 
