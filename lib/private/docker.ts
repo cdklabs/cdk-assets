@@ -123,7 +123,6 @@ export class Docker {
     await this.execute(buildCommand, {
       cwd: options.directory,
       quiet: options.quiet,
-      subprocessOutputDestination: this.subprocessOutputDestination,
       env: {
         BUILDX_NO_DEFAULT_ATTESTATIONS: '1', // Docker Build adds provenance attestations by default that confuse cdk-assets
       },
