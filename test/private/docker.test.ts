@@ -6,8 +6,26 @@ type ShellExecuteMock = jest.SpyInstance<
   Parameters<Docker['execute']>
 >;
 
+let docker: Docker;
+
+const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
+  jest
+    .spyOn<{ execute: Docker['execute'] }, 'execute'>(Docker.prototype as any, 'execute')
+    .mockImplementation(
+      async (params: string[], _options?: Omit<ShellOptions, 'shellEventPublisher'>) => fn(params)
+    );
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+beforeEach(() => {
+  docker = new Docker(() => {}, 'ignore');
+});
+
 describe('Docker', () => {
   describe('exists', () => {
+<<<<<<< HEAD
     let docker: Docker;
 
     const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
@@ -23,6 +41,8 @@ describe('Docker', () => {
       docker = new Docker();
     });
 
+=======
+>>>>>>> 8bdea13 (fix: docker build attestations break cdk-assets (400 Bad Request) (#342))
     test('returns true when image inspect command does not throw', async () => {
       const spy = makeShellExecuteMock(() => undefined);
 
@@ -90,6 +110,27 @@ describe('Docker', () => {
       const imageExists = await docker.exists('foo');
 
       expect(imageExists).toBe(false);
+    });
+  });
+
+  describe('build', () => {
+    test('includes BUILDX_NO_DEFAULT_ATTESTATIONS env variable in commands', async () => {
+      const spy = makeShellExecuteMock(() => undefined);
+
+      await docker.build({
+        directory: 'foo',
+        tag: 'bar',
+      });
+
+      // Verify the options passed to build
+      expect(spy).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.objectContaining({
+          env: expect.objectContaining({
+            BUILDX_NO_DEFAULT_ATTESTATIONS: '1',
+          }),
+        })
+      );
     });
   });
 });
