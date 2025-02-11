@@ -25,7 +25,6 @@ beforeEach(() => {
 
 describe('Docker', () => {
   describe('exists', () => {
-<<<<<<< HEAD
     let docker: Docker;
 
     const makeShellExecuteMock = (fn: (params: string[]) => void): ShellExecuteMock =>
