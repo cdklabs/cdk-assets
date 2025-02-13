@@ -55,14 +55,14 @@
     "jszip": "^3.10.1",
     "mock-fs": "^5",
     "prettier": "^3.5.0",
-    "projen": "^0.91.8",
+    "projen": "^0.91.9",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
     "@aws-cdk/cloud-assembly-schema": "^39.2.20",
-    "@aws-cdk/cx-api": "^2.178.1",
+    "@aws-cdk/cx-api": "^2.178.2",
     "archiver": "^5.3.2",
     "aws-sdk": "^2.1692.0",
     "glob": "^7.2.3",
