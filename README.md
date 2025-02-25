@@ -21,7 +21,8 @@ A tool for publishing CDK assets to AWS environments.
 > cdk-assets v2 will not be updated to support any new AWS services, new features,
 > or any changes to existing services.
 >
-> cdk-assets v3 now has an available release candidate that uses AWS SDK for JavaScript v3 and will be stabilized prior to v2 being put into maintenance mode.
+> cdk-assets v3 now has an available release candidate that uses AWS SDK for JavaScript v3.
+> It can be found here: [aws/aws-cdk-cli](https://github.com/aws/aws-cdk-cli/tree/main/packages/cdk-assets)
 >
 > The following table outlines the future level of support for v2:
 >
