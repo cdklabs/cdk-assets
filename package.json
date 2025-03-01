@@ -58,11 +58,11 @@
     "projen": "^0.91.13",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@aws-cdk/cloud-assembly-schema": "^39.2.20",
-    "@aws-cdk/cx-api": "^2.181.0",
+    "@aws-cdk/cx-api": "^2.181.1",
     "archiver": "^5.3.2",
     "aws-sdk": "^2.1692.0",
     "glob": "^7.2.3",
